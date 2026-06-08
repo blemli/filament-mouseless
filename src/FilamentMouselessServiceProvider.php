@@ -1,6 +1,6 @@
 <?php
 
-namespace VendorName\Skeleton;
+namespace Blemli\FilamentMouseless;
 
 use Filament\Support\Assets\AlpineComponent;
 use Filament\Support\Assets\Asset;
@@ -13,14 +13,14 @@ use Livewire\Features\SupportTesting\Testable;
 use Spatie\LaravelPackageTools\Commands\InstallCommand;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
-use VendorName\Skeleton\Commands\SkeletonCommand;
-use VendorName\Skeleton\Testing\TestsSkeleton;
+use Blemli\FilamentMouseless\Commands\FilamentMouselessCommand;
+use Blemli\FilamentMouseless\Testing\TestsFilamentMouseless;
 
-class SkeletonServiceProvider extends PackageServiceProvider
+class FilamentMouselessServiceProvider extends PackageServiceProvider
 {
-    public static string $name = 'skeleton';
+    public static string $name = 'filament-mouseless';
 
-    public static string $viewNamespace = 'skeleton';
+    public static string $viewNamespace = 'filament-mouseless';
 
     public function configurePackage(Package $package): void
     {
@@ -35,8 +35,7 @@ class SkeletonServiceProvider extends PackageServiceProvider
                 $command
                     ->publishConfigFile()
                     ->publishMigrations()
-                    ->askToRunMigrations()
-                    ->askToStarRepoOnGitHub(':vendor_slug/:package_slug');
+                    ->askToRunMigrations();
             });
 
         $configFileName = $package->shortName();
@@ -80,18 +79,18 @@ class SkeletonServiceProvider extends PackageServiceProvider
         if (app()->runningInConsole()) {
             foreach (app(Filesystem::class)->files(__DIR__ . '/../stubs/') as $file) {
                 $this->publishes([
-                    $file->getRealPath() => base_path("stubs/skeleton/{$file->getFilename()}"),
-                ], 'skeleton-stubs');
+                    $file->getRealPath() => base_path("stubs/filament-mouseless/{$file->getFilename()}"),
+                ], 'filament-mouseless-stubs');
             }
         }
 
         // Testing
-        Testable::mixin(new TestsSkeleton);
+        Testable::mixin(new TestsFilamentMouseless);
     }
 
     protected function getAssetPackageName(): ?string
     {
-        return ':vendor_slug/:package_slug';
+        return 'blemli/filament-mouseless';
     }
 
     /**
@@ -100,9 +99,9 @@ class SkeletonServiceProvider extends PackageServiceProvider
     protected function getAssets(): array
     {
         return [
-            // AlpineComponent::make('skeleton', __DIR__ . '/../resources/dist/components/skeleton.js'),
-            // Css::make('skeleton-styles', __DIR__ . '/../resources/dist/skeleton.css'),
-            // Js::make('skeleton-scripts', __DIR__ . '/../resources/dist/skeleton.js'),
+            // AlpineComponent::make('filament-mouseless', __DIR__ . '/../resources/dist/components/filament-mouseless.js'),
+            // Css::make('filament-mouseless-styles', __DIR__ . '/../resources/dist/filament-mouseless.css'),
+            // Js::make('filament-mouseless-scripts', __DIR__ . '/../resources/dist/filament-mouseless.js'),
         ];
     }
 
@@ -112,7 +111,7 @@ class SkeletonServiceProvider extends PackageServiceProvider
     protected function getCommands(): array
     {
         return [
-            SkeletonCommand::class,
+            FilamentMouselessCommand::class,
         ];
     }
 
@@ -146,7 +145,7 @@ class SkeletonServiceProvider extends PackageServiceProvider
     protected function getMigrations(): array
     {
         return [
-            'create_skeleton_table',
+            'create_filament-mouseless_table',
         ];
     }
 }

@@ -1,12 +1,12 @@
 <?php
 
-namespace VendorName\Skeleton\Commands;
+namespace Blemli\FilamentMouseless\Commands;
 
 use Illuminate\Console\Command;
 
-class SkeletonCommand extends Command
+class FilamentMouselessCommand extends Command
 {
-    public $signature = 'skeleton';
+    public $signature = 'filament-mouseless';
 
     public $description = 'My command';
 
