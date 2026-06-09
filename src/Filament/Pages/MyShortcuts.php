@@ -2,6 +2,7 @@
 
 namespace Blemli\FilamentMouseless\Filament\Pages;
 
+use Blemli\FilamentMouseless\FilamentMouselessPlugin;
 use Filament\Pages\Page;
 
 class MyShortcuts extends Page
@@ -20,7 +21,19 @@ class MyShortcuts extends Page
 
     public static function canAccess(): bool
     {
-        return auth()->check();
+        if (! auth()->check()) {
+            return false;
+        }
+
+        try {
+            if (FilamentMouselessPlugin::get()->isStateless()) {
+                return false;
+            }
+        } catch (\Throwable) {
+            // Plugin not registered on the current panel — allow access fall-through.
+        }
+
+        return true;
     }
 
     public function getTitle(): string

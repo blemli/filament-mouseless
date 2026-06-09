@@ -16,6 +16,7 @@ use Filament\Support\Facades\FilamentIcon;
 use Illuminate\Filesystem\Filesystem;
 use Livewire\Features\SupportTesting\Testable;
 use Livewire\Livewire;
+use Illuminate\Support\Facades\Schema;
 use Spatie\LaravelPackageTools\Commands\InstallCommand;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
@@ -33,9 +34,30 @@ class FilamentMouselessServiceProvider extends PackageServiceProvider
             ->hasInstallCommand(function (InstallCommand $command) {
                 $command
                     ->publishConfigFile()
-                    ->publishMigrations()
-                    ->askToRunMigrations()
+                    ->startWith(function (InstallCommand $command) {
+                        if ($this->mouselessTablesPresent()) {
+                            return;
+                        }
+
+                        $wantsStateful = $command->confirm(
+                            'Allow each user to customize their own shortcuts? Publishes and runs the package migrations.',
+                            true,
+                        );
+
+                        if (! $wantsStateful) {
+                            return;
+                        }
+
+                        $command->comment('Publishing migrations...');
+                        $command->callSilent('vendor:publish', [
+                            '--tag' => 'filament-mouseless-migrations',
+                        ]);
+                        $command->comment('Running migrations...');
+                        $command->call('migrate');
+                    })
                     ->endWith(function (InstallCommand $command) {
+                        $stateless = ! $this->mouselessTablesPresent();
+
                         $command->newLine();
                         $command->warn('One more step: register the plugin in your Panel provider.');
                         $command->line('');
@@ -46,10 +68,26 @@ class FilamentMouselessServiceProvider extends PackageServiceProvider
                         $command->line('      return $panel');
                         $command->line('          // ...');
                         $command->line('          ->plugins([');
-                        $command->line('              FilamentMouselessPlugin::make(),');
+                        if ($stateless) {
+                            $command->line('              FilamentMouselessPlugin::make()');
+                            $command->line('                  ->stateless(),');
+                        } else {
+                            $command->line('              FilamentMouselessPlugin::make(),');
+                        }
                         $command->line('          ]);');
                         $command->line('  }');
                         $command->newLine();
+
+                        if ($stateless) {
+                            $command->info('Running in stateless mode — no migrations were published. To enable per-user shortcuts later, run:');
+                            $command->line('');
+                            $command->line('  php artisan vendor:publish --tag=filament-mouseless-migrations');
+                            $command->line('  php artisan migrate');
+                            $command->line('');
+                            $command->info('…and remove the ->stateless() call.');
+                            $command->newLine();
+                        }
+
                         $command->info('Then press ? on any Filament page to see the shortcut overlay.');
                     });
             });
@@ -110,6 +148,15 @@ class FilamentMouselessServiceProvider extends PackageServiceProvider
     protected function getAssetPackageName(): ?string
     {
         return 'blemli/filament-mouseless';
+    }
+
+    protected function mouselessTablesPresent(): bool
+    {
+        try {
+            return Schema::hasTable('mouseless_user_settings');
+        } catch (\Throwable) {
+            return false;
+        }
     }
 
     /**

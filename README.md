@@ -33,13 +33,26 @@ Go to any page and press <kbd>?</kbd> outside a textfield to show all the availa
 
 ## Features Overview
 
-Dark-Mode Support, Language Adaptive: DE (**N**eu) & EN (**C**reate),  Filament Native Style (no custom theme needed), Mobile Friendly, stateless mode available (without migrations), Show a Shortcuts Overlay with <kbd>?</kbd>, Let Users Register custom Combinations, Many Convenience Combinations (escape, go home, search), Hidden on Devices without Keyboard, 
+Dark-Mode Support, Language Adaptive: DE (**N**eu) & EN (**C**reate),  Filament Native Style (no custom theme needed), Mobile Friendly, Stateless mode available (without migrations), Show a Shortcuts Overlay with <kbd>?</kbd>, Let Users Register custom Combinations, Many Convenience Combinations (escape, go home, search), Hidden on Devices without Keyboard, 
 
 ## Configure
 
+### Stateless Mode
+
+If you don't want users to customize their own shortcuts (and don't want to run the package migrations), turn the plugin stateless:
+
+```php
+->plugins([
+  FilamentMouselessPlugin::make()
+      ->stateless(),
+])
+```
+
+This hides the `/my-shortcuts` page and removes its user-menu link. Shortcuts still work — everyone just rides on the configured default preset.
+
 ### Hide Overlay
 
-If for some reason you don't want the help overlay you can disable it on the plugin:
+If for some reason you don't want the help overlay you can disable it:
 
 ```php
 ->plugins([
@@ -48,7 +61,7 @@ If for some reason you don't want the help overlay you can disable it on the plu
 ])
 ```
 
-Shortcuts still work — only the overlay popup is suppressed.
+Shortcuts still work, only the overlay popup is suppressed.
 
 ### Shortcuts on Mobile
 
@@ -56,7 +69,7 @@ The user-menu link to "My Shortcuts" is hidden on phones and tablets by default 
 
 **Keyboard on a phone?** No config needed. The link is rendered server-side but CSS-hidden on mobile UAs. The first time a real hardware key is pressed, the JS engine writes `localStorage.mouseless_kbd = '1'` and adds a class to `<body>` — the link appears instantly. On the next page load, a tiny inline script reads localStorage and reapplies the class before paint, so there's no flash. Soft keyboards don't trigger it (filtered via IME signals).
 
-To force-show the link everywhere — skipping the heuristic:
+To force-show the link everywhere, skipping the heuristic:
 
 ```php
 ->plugins([

@@ -20,9 +20,29 @@ class FilamentMouselessPlugin implements Plugin
 
     protected bool $keyboardProbeEnabled = true;
 
+    protected bool $stateless = false;
+
     public function getId(): string
     {
         return 'filament-mouseless';
+    }
+
+    /**
+     * Disable the user-editable shortcuts UI: hides the /my-shortcuts page
+     * and the user-menu link. Shortcuts still work — they just can't be
+     * customized per user. Use this when you don't want to run the package
+     * migrations, or when you want every user on the same preset.
+     */
+    public function stateless(bool $enabled = true): static
+    {
+        $this->stateless = $enabled;
+
+        return $this;
+    }
+
+    public function isStateless(): bool
+    {
+        return $this->stateless;
     }
 
     public function adminPage(bool $enabled = true): static
@@ -60,13 +80,21 @@ class FilamentMouselessPlugin implements Plugin
 
     public function register(Panel $panel): void
     {
-        $pages = [MyShortcuts::class];
+        $pages = [];
+
+        if (! $this->stateless) {
+            $pages[] = MyShortcuts::class;
+        }
 
         if ($this->registerAdminPage && config('mouseless.admin.enabled', true)) {
             $pages[] = MouselessSettings::class;
         }
 
         $panel->pages($pages);
+
+        if ($this->stateless) {
+            return;
+        }
 
         // Always render the link; CSS hides it on mobile when no keyboard has
         // been detected. The fi-mouseless-shortcuts-link class is the CSS hook.
