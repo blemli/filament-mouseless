@@ -35,7 +35,7 @@ Go to any page and press <kbd>?</kbd> outside a textfield to show all the availa
 
 ## Features Overview
 
-Dark-Mode Support, Language Adaptive: DE (**N**eu) & EN (**C**reate),  Filament Native Style (no custom theme needed), Mobile Friendly, Stateless mode available (without migrations), Show a Shortcuts Overlay with <kbd>?</kbd>,  Convenient `mouseless:install` command, Let Users Register custom Combinations, Covers all Filament-Functions  (escape, go home, search, logout), Hidden on Devices without Keyboard, Compatible with Filament Shield but not required, 
+Dark-Mode Support, Language Adaptive: DE (**N**eu) & EN (**C**reate),  Filament Native Style (no custom theme needed), Mobile Friendly, Stateless mode available (without migrations), Show a Shortcuts Overlay with <kbd>?</kbd>,  Convenient `mouseless:install` command, Let Users Register custom Combinations, Covers all Filament-Functions  (escape, go home, search, logout), Hidden on Devices without Keyboard, Compatible with Filament Shield but not required, Configure Icons and Labels
 
 ## Configure
 
@@ -95,11 +95,47 @@ If the auto-reveal heuristic ever misbehaves, you can switch it off:
 
 With the probe disabled, mobile users must use `->showShortcutsOnMobile()` to see the link.
 
+### Show the Admin page
 
+The `/mouseless-settings` page (default preset, disabled actions, resource letters, moderation queue) is off by default. Opt in:
+
+```php
+->plugins([
+  FilamentMouselessPlugin::make()
+      ->settingsPage(),
+])
+```
+
+### Custom Icon
+
+For the admin page and/or the user-menu link.
+
+```php
+FilamentMouselessPlugin::make()
+    ->settingsPageIcon('heroicon-o-cog-6-tooth')
+    ->shortcutsIcon('heroicon-o-command-line')
+```
+
+### Custom Label
+
+```php
+FilamentMouselessPlugin::make()
+    ->settingsPageLabel('Keyboard')
+    ->shortcutsLabel(fn () => __('app.my_shortcuts'))
+```
+
+### Navigation Group
+
+Defaults to a translated "System". Pass `null` to drop the group.
+
+```php
+FilamentMouselessPlugin::make()
+    ->settingsPageNavigationGroup('Settings')
+```
 
 ## Permission
 
-By default everyone gets shortcuts and both pages — same as without Shield. With [Filament Shield](https://github.com/bezhanSalleh/filament-shield) installed, mouseless registers three permissions so they appear in the role-edit UI, but they're only enforced when you opt in:
+By default everyone gets shortcuts. With [Filament Shield](https://github.com/bezhanSalleh/filament-shield) installed, mouseless registers three permissions so they appear in the role-edit UI, but they're only enforced when you opt in:
 
 ```php
 ->plugins([
@@ -126,6 +162,8 @@ Grant via the role UI, or in tinker:
 Spatie\Permission\Models\Role::firstWhere('name', 'panel_user')
     ?->givePermissionTo(['MouselessUse', 'View:MyShortcuts']);
 ```
+
+
 
 ### Go Home
 

@@ -3,6 +3,7 @@
 namespace Blemli\FilamentMouseless\Filament\Pages;
 
 use Blemli\FilamentMouseless\Facades\FilamentMouseless;
+use Blemli\FilamentMouseless\FilamentMouselessPlugin;
 use Blemli\FilamentMouseless\Models\Preset;
 use Blemli\FilamentMouseless\Support\Shield;
 use Filament\Facades\Filament;
@@ -25,18 +26,22 @@ class MouselessSettings extends Page implements HasForms
 
     protected static ?string $slug = 'mouseless-settings';
 
-    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-cursor-arrow-ripple';
-
-    protected static string | \UnitEnum | null $navigationGroup = null;
+    public static function getNavigationIcon(): string|\BackedEnum|\Illuminate\Contracts\Support\Htmlable|null
+    {
+        return FilamentMouselessPlugin::safeGet()?->getSettingsPageIcon()
+            ?? FilamentMouselessPlugin::DEFAULT_ICON;
+    }
 
     public static function getNavigationGroup(): ?string
     {
-        return __('filament-mouseless::mouseless.admin.nav_group');
+        return FilamentMouselessPlugin::safeGet()?->getSettingsPageNavigationGroup()
+            ?? __('filament-mouseless::mouseless.admin.nav_group');
     }
 
     public static function getNavigationLabel(): string
     {
-        return __('filament-mouseless::mouseless.admin.nav_label');
+        return FilamentMouselessPlugin::safeGet()?->getSettingsPageLabel()
+            ?? __('filament-mouseless::mouseless.admin.nav_label');
     }
 
     protected string $view = 'filament-mouseless::pages.settings';

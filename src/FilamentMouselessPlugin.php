@@ -5,6 +5,7 @@ namespace Blemli\FilamentMouseless;
 use Blemli\FilamentMouseless\Filament\Pages\MouselessSettings;
 use Blemli\FilamentMouseless\Filament\Pages\MyShortcuts;
 use Blemli\FilamentMouseless\Support\Shield;
+use Closure;
 use Filament\Actions\Action;
 use Filament\Contracts\Plugin;
 use Filament\Panel;
@@ -13,7 +14,9 @@ use Illuminate\Support\Facades\Blade;
 
 class FilamentMouselessPlugin implements Plugin
 {
-    protected bool $registerAdminPage = true;
+    public const DEFAULT_ICON = 'heroicon-o-cursor-arrow-ripple';
+
+    protected bool $registerSettingsPage = false;
 
     protected bool $renderHelpOverlay = true;
 
@@ -24,6 +27,18 @@ class FilamentMouselessPlugin implements Plugin
     protected bool $stateless = false;
 
     protected bool $strictPermissions = false;
+
+    protected string|Closure|null $settingsPageIcon = null;
+
+    protected string|Closure|null $settingsPageLabel = null;
+
+    protected string|Closure|null $settingsPageNavigationGroup = null;
+
+    protected bool $settingsPageNavigationGroupSet = false;
+
+    protected string|Closure|null $shortcutsIcon = null;
+
+    protected string|Closure|null $shortcutsLabel = null;
 
     public function getId(): string
     {
@@ -66,9 +81,16 @@ class FilamentMouselessPlugin implements Plugin
         return $this->strictPermissions;
     }
 
-    public function adminPage(bool $enabled = true): static
+    /**
+     * Opt in to the `/mouseless-settings` admin page (default presets,
+     * disabled actions, resource letters, moderation queue). Off by default
+     * — the plugin runs perfectly well without it. Enable it when you want
+     * admins to tune mouseless from inside Filament instead of editing the
+     * config file.
+     */
+    public function settingsPage(bool $enabled = true): static
     {
-        $this->registerAdminPage = $enabled;
+        $this->registerSettingsPage = $enabled;
 
         return $this;
     }
@@ -99,6 +121,91 @@ class FilamentMouselessPlugin implements Plugin
         return $this;
     }
 
+    /** Icon shown on the admin settings page's sidebar entry. */
+    public function settingsPageIcon(string|Closure $icon): static
+    {
+        $this->settingsPageIcon = $icon;
+
+        return $this;
+    }
+
+    /** Sidebar label for the admin settings page. */
+    public function settingsPageLabel(string|Closure $label): static
+    {
+        $this->settingsPageLabel = $label;
+
+        return $this;
+    }
+
+    /**
+     * Sidebar navigation group for the admin settings page. Pass `null` to
+     * remove the group entirely; never calling this leaves the translated
+     * "System" default in place.
+     */
+    public function settingsPageNavigationGroup(string|Closure|null $group): static
+    {
+        $this->settingsPageNavigationGroup = $group;
+        $this->settingsPageNavigationGroupSet = true;
+
+        return $this;
+    }
+
+    /** Icon for the user-menu link AND the (hidden) my-shortcuts page nav. */
+    public function shortcutsIcon(string|Closure $icon): static
+    {
+        $this->shortcutsIcon = $icon;
+
+        return $this;
+    }
+
+    /** Label for the user-menu link AND the my-shortcuts page navigation. */
+    public function shortcutsLabel(string|Closure $label): static
+    {
+        $this->shortcutsLabel = $label;
+
+        return $this;
+    }
+
+    public function getSettingsPageIcon(): string
+    {
+        return $this->evaluate($this->settingsPageIcon) ?? self::DEFAULT_ICON;
+    }
+
+    public function getSettingsPageLabel(): string
+    {
+        return $this->evaluate($this->settingsPageLabel)
+            ?? __('filament-mouseless::mouseless.admin.nav_label');
+    }
+
+    public function getSettingsPageNavigationGroup(): ?string
+    {
+        if (! $this->settingsPageNavigationGroupSet) {
+            return __('filament-mouseless::mouseless.admin.nav_group');
+        }
+
+        return $this->evaluate($this->settingsPageNavigationGroup);
+    }
+
+    public function getShortcutsIcon(): string
+    {
+        return $this->evaluate($this->shortcutsIcon) ?? self::DEFAULT_ICON;
+    }
+
+    public function getShortcutsLabel(): string
+    {
+        return $this->evaluate($this->shortcutsLabel)
+            ?? __('filament-mouseless::mouseless.profile.nav_label');
+    }
+
+    protected function evaluate(string|Closure|null $value): ?string
+    {
+        if ($value instanceof Closure) {
+            $value = $value();
+        }
+
+        return $value === '' ? null : $value;
+    }
+
     public function register(Panel $panel): void
     {
         $pages = [];
@@ -107,7 +214,7 @@ class FilamentMouselessPlugin implements Plugin
             $pages[] = MyShortcuts::class;
         }
 
-        if ($this->registerAdminPage && config('mouseless.admin.enabled', true)) {
+        if ($this->registerSettingsPage && config('mouseless.admin.enabled', true)) {
             $pages[] = MouselessSettings::class;
         }
 
@@ -121,8 +228,8 @@ class FilamentMouselessPlugin implements Plugin
         // been detected. Shield's `MouselessUse` also hides it when denied.
         $panel->userMenuItems([
             Action::make('mouseless-shortcuts')
-                ->label(fn () => __('filament-mouseless::mouseless.profile.nav_label'))
-                ->icon('heroicon-o-cursor-arrow-ripple')
+                ->label(fn (): string => $this->getShortcutsLabel())
+                ->icon(fn (): string => $this->getShortcutsIcon())
                 ->url(fn () => MyShortcuts::getUrl())
                 ->visible(fn (): bool => Shield::userMayUse())
                 ->extraAttributes(['class' => 'fi-mouseless-shortcuts-link']),
@@ -179,5 +286,15 @@ HTML;
         $plugin = filament(app(static::class)->getId());
 
         return $plugin;
+    }
+
+    /** Like {@see get()} but returns null when the plugin isn't registered. */
+    public static function safeGet(): ?static
+    {
+        try {
+            return static::get();
+        } catch (\Throwable) {
+            return null;
+        }
     }
 }

@@ -10,9 +10,13 @@ class MyShortcuts extends Page
 {
     protected static ?string $slug = 'my-shortcuts';
 
-    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-cursor-arrow-ripple';
-
     protected string $view = 'filament-mouseless::pages.my-shortcuts';
+
+    public static function getNavigationIcon(): string|\BackedEnum|\Illuminate\Contracts\Support\Htmlable|null
+    {
+        return FilamentMouselessPlugin::safeGet()?->getShortcutsIcon()
+            ?? FilamentMouselessPlugin::DEFAULT_ICON;
+    }
 
     public static function shouldRegisterNavigation(): bool
     {
@@ -44,6 +48,7 @@ class MyShortcuts extends Page
 
     public static function getNavigationLabel(): string
     {
-        return __('filament-mouseless::mouseless.profile.nav_label');
+        return FilamentMouselessPlugin::safeGet()?->getShortcutsLabel()
+            ?? __('filament-mouseless::mouseless.profile.nav_label');
     }
 }
