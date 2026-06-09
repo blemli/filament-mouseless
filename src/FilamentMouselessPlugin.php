@@ -4,6 +4,7 @@ namespace Blemli\FilamentMouseless;
 
 use Blemli\FilamentMouseless\Filament\Pages\MouselessSettings;
 use Blemli\FilamentMouseless\Filament\Pages\MyShortcuts;
+use Blemli\FilamentMouseless\Support\Shield;
 use Filament\Actions\Action;
 use Filament\Contracts\Plugin;
 use Filament\Panel;
@@ -96,13 +97,14 @@ class FilamentMouselessPlugin implements Plugin
             return;
         }
 
-        // Always render the link; CSS hides it on mobile when no keyboard has
-        // been detected. The fi-mouseless-shortcuts-link class is the CSS hook.
+        // Link is always rendered; CSS hides it on mobile when no keyboard has
+        // been detected. Shield's `MouselessUse` also hides it when denied.
         $panel->userMenuItems([
             Action::make('mouseless-shortcuts')
                 ->label(fn () => __('filament-mouseless::mouseless.profile.nav_label'))
                 ->icon('heroicon-o-cursor-arrow-ripple')
                 ->url(fn () => MyShortcuts::getUrl())
+                ->visible(fn (): bool => Shield::userMayUse())
                 ->extraAttributes(['class' => 'fi-mouseless-shortcuts-link']),
         ]);
     }
@@ -112,13 +114,15 @@ class FilamentMouselessPlugin implements Plugin
         if ($this->renderHelpOverlay) {
             FilamentView::registerRenderHook(
                 'panels::body.end',
-                fn (): string => Blade::render('@livewire(\Blemli\FilamentMouseless\Livewire\HelpOverlay::class)'),
+                fn (): string => Shield::userMayUse()
+                    ? Blade::render('@livewire(\Blemli\FilamentMouseless\Livewire\HelpOverlay::class)')
+                    : '',
             );
         }
 
         FilamentView::registerRenderHook(
             'panels::body.start',
-            fn (): string => $this->renderBootScript(),
+            fn (): string => Shield::userMayUse() ? $this->renderBootScript() : '',
         );
     }
 

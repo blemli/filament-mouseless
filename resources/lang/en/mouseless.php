@@ -118,4 +118,10 @@ return [
         'collision' => 'Key “:key” is already used by :action. Remove that binding first.',
         'reserved_key' => '“:key” is reserved and cannot be bound.',
     ],
+
+    'shield' => [
+        'permissions' => [
+            'mouseless_use' => 'Use Mouseless',
+        ],
+    ],
 ];

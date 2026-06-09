@@ -3,6 +3,7 @@
 namespace Blemli\FilamentMouseless\Services;
 
 use Blemli\FilamentMouseless\Models\UserSetting;
+use Blemli\FilamentMouseless\Support\Shield;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Log;
 
@@ -24,6 +25,12 @@ class BindingResolver
      */
     public function forUser(?int $userId): array
     {
+        // Shield master switch: when the user lacks `mouseless_use`, hand back
+        // an empty binding map so the JS engine and help overlay no-op.
+        if ($userId && ! Shield::userMayUse()) {
+            return ['bindings' => [], 'preset' => null, 'overrides' => [], 'disabled' => []];
+        }
+
         $disabled = (array) config('mouseless.disabled_actions', []);
 
         $settings = $userId ? $this->loadSettings($userId) : null;

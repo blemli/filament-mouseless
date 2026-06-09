@@ -3,6 +3,7 @@
 namespace Blemli\FilamentMouseless\Filament\Pages;
 
 use Blemli\FilamentMouseless\FilamentMouselessPlugin;
+use Blemli\FilamentMouseless\Support\Shield;
 use Filament\Pages\Page;
 
 class MyShortcuts extends Page
@@ -30,10 +31,10 @@ class MyShortcuts extends Page
                 return false;
             }
         } catch (\Throwable) {
-            // Plugin not registered on the current panel — allow access fall-through.
+            // Plugin not registered on this panel — fall through to Shield check.
         }
 
-        return true;
+        return Shield::userCanAccessPage(static::class);
     }
 
     public function getTitle(): string

@@ -7,6 +7,7 @@ use Blemli\FilamentMouseless\Livewire\HelpOverlay;
 use Blemli\FilamentMouseless\Livewire\ShortcutsProfileTab;
 use Blemli\FilamentMouseless\Services\BindingResolver;
 use Blemli\FilamentMouseless\Services\PresetRegistry;
+use Blemli\FilamentMouseless\Support\Shield;
 use Blemli\FilamentMouseless\Testing\TestsFilamentMouseless;
 use Filament\Support\Assets\Asset;
 use Filament\Support\Assets\Css;
@@ -119,6 +120,8 @@ class FilamentMouselessServiceProvider extends PackageServiceProvider
 
     public function packageBooted(): void
     {
+        $this->registerShieldCustomPermission();
+
         FilamentAsset::register(
             $this->getAssets(),
             $this->getAssetPackageName()
@@ -157,6 +160,29 @@ class FilamentMouselessServiceProvider extends PackageServiceProvider
         } catch (\Throwable) {
             return false;
         }
+    }
+
+    /**
+     * Register the `mouseless_use` master-switch permission with Shield so
+     * that `shield:generate` seeds it and the role-edit UI renders its label.
+     * Idempotent and a no-op when Shield isn't installed.
+     */
+    protected function registerShieldCustomPermission(): void
+    {
+        if (! Shield::isInstalled()) {
+            return;
+        }
+
+        $existing = (array) config('filament-shield.custom_permissions', []);
+
+        foreach ($existing as $key => $value) {
+            if ((is_int($key) ? $value : $key) === Shield::CUSTOM_PERMISSION) {
+                return;
+            }
+        }
+
+        $existing[Shield::CUSTOM_PERMISSION] = Shield::permissionLabel();
+        config(['filament-shield.custom_permissions' => $existing]);
     }
 
     /**

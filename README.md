@@ -33,7 +33,7 @@ Go to any page and press <kbd>?</kbd> outside a textfield to show all the availa
 
 ## Features Overview
 
-Dark-Mode Support, Language Adaptive: DE (**N**eu) & EN (**C**reate),  Filament Native Style (no custom theme needed), Mobile Friendly, Stateless mode available (without migrations), Show a Shortcuts Overlay with <kbd>?</kbd>, Let Users Register custom Combinations, Many Convenience Combinations (escape, go home, search), Hidden on Devices without Keyboard, 
+Dark-Mode Support, Language Adaptive: DE (**N**eu) & EN (**C**reate),  Filament Native Style (no custom theme needed), Mobile Friendly, Stateless mode available (without migrations), Show a Shortcuts Overlay with <kbd>?</kbd>, Let Users Register custom Combinations, Many Convenience Combinations (escape, go home, search), Hidden on Devices without Keyboard, Compatible with Filament Shield, 
 
 ## Configure
 
@@ -94,6 +94,26 @@ If the auto-reveal heuristic ever misbehaves, you can switch it off:
 With the probe disabled, mobile users must use `->showShortcutsOnMobile()` to see the link.
 
 
+
+## Permission
+
+Without [Filament Shield](https://github.com/bezhanSalleh/filament-shield), every authenticated panel user has full access.
+
+When Shield is installed, mouseless registers three permissions automatically:
+
+| Permission | Gates |
+| --- | --- |
+| `MouselessUse` (custom) | Master switch — when denied, the user-menu link, help overlay, boot script, and both pages all go dark. |
+| `View:MyShortcuts` | The per-user customization page. Requires `MouselessUse`. |
+| `View:MouselessSettings` | The admin settings page. Requires `MouselessUse`. |
+
+Key formatting follows your Shield config (`permissions.case`/`separator`); names above use the defaults.
+
+To surface `MouselessUse` in the role-edit UI, flip on the custom-permissions tab in `config/filament-shield.php`, then run `shield:generate`:
+
+```php
+'shield_resource' => ['tabs' => ['custom_permissions' => true]],
+```
 
 ### Go Home
 

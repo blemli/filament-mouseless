@@ -4,6 +4,7 @@ namespace Blemli\FilamentMouseless\Filament\Pages;
 
 use Blemli\FilamentMouseless\Facades\FilamentMouseless;
 use Blemli\FilamentMouseless\Models\Preset;
+use Blemli\FilamentMouseless\Support\Shield;
 use Filament\Facades\Filament;
 use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\Repeater;
@@ -44,14 +45,14 @@ class MouselessSettings extends Page implements HasForms
 
     public static function shouldRegisterNavigation(): bool
     {
-        return (bool) config('mouseless.admin.enabled', true)
-            && static::userMayModerate();
+        return static::canAccess();
     }
 
     public static function canAccess(): bool
     {
         return (bool) config('mouseless.admin.enabled', true)
-            && static::userMayModerate();
+            && static::userMayModerate()
+            && Shield::userCanAccessPage(static::class);
     }
 
     /**

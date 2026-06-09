@@ -117,4 +117,10 @@ return [
         'collision' => 'Taste „:key" ist bereits durch :action belegt. Erst dort entfernen.',
         'reserved_key' => '„:key" ist reserviert und kann nicht belegt werden.',
     ],
+
+    'shield' => [
+        'permissions' => [
+            'mouseless_use' => 'Mouseless verwenden',
+        ],
+    ],
 ];
