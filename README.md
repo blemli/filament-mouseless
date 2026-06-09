@@ -37,6 +37,10 @@ Go to any page and press <kbd>?</kbd> outside a textfield to show all the availa
 
 Dark-Mode Support, Language Adaptive: DE (**N**eu) & EN (**C**reate),  Filament Native Style (no custom theme needed), Mobile Friendly, Stateless mode available (without migrations), Show a Shortcuts Overlay with <kbd>?</kbd>,  Convenient `mouseless:install` command, Let Users Register custom Combinations, Covers all Filament-Functions  (escape, go home, search, logout), Hidden on Devices without Keyboard, Compatible with Filament Shield but not required, Configure Icons and Labels
 
+### v2
+
+Multipanel support, Multitenant Support, Presets hub, 
+
 ## Configure
 
 ### Stateless Mode
@@ -108,12 +112,11 @@ The `/mouseless-settings` page (default preset, disabled actions, resource lette
 
 ### Custom Icon
 
-For the admin page and/or the user-menu link.
+Used by the admin page nav and the user-menu link.
 
 ```php
 FilamentMouselessPlugin::make()
-    ->settingsPageIcon('heroicon-o-cog-6-tooth')
-    ->shortcutsIcon('heroicon-o-command-line')
+    ->icon('heroicon-o-cog-6-tooth')
 ```
 
 ### Custom Label

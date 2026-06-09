@@ -14,7 +14,7 @@ class MyShortcuts extends Page
 
     public static function getNavigationIcon(): string|\BackedEnum|\Illuminate\Contracts\Support\Htmlable|null
     {
-        return FilamentMouselessPlugin::safeGet()?->getShortcutsIcon()
+        return FilamentMouselessPlugin::safeGet()?->getIcon()
             ?? FilamentMouselessPlugin::DEFAULT_ICON;
     }
 

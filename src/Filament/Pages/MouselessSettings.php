@@ -28,7 +28,7 @@ class MouselessSettings extends Page implements HasForms
 
     public static function getNavigationIcon(): string|\BackedEnum|\Illuminate\Contracts\Support\Htmlable|null
     {
-        return FilamentMouselessPlugin::safeGet()?->getSettingsPageIcon()
+        return FilamentMouselessPlugin::safeGet()?->getIcon()
             ?? FilamentMouselessPlugin::DEFAULT_ICON;
     }
 

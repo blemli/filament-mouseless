@@ -28,15 +28,13 @@ class FilamentMouselessPlugin implements Plugin
 
     protected bool $strictPermissions = false;
 
-    protected string|Closure|null $settingsPageIcon = null;
+    protected string|Closure|null $icon = null;
 
     protected string|Closure|null $settingsPageLabel = null;
 
     protected string|Closure|null $settingsPageNavigationGroup = null;
 
     protected bool $settingsPageNavigationGroupSet = false;
-
-    protected string|Closure|null $shortcutsIcon = null;
 
     protected string|Closure|null $shortcutsLabel = null;
 
@@ -121,10 +119,10 @@ class FilamentMouselessPlugin implements Plugin
         return $this;
     }
 
-    /** Icon shown on the admin settings page's sidebar entry. */
-    public function settingsPageIcon(string|Closure $icon): static
+    /** Icon shared by the admin settings page nav AND the user-menu link. */
+    public function icon(string|Closure $icon): static
     {
-        $this->settingsPageIcon = $icon;
+        $this->icon = $icon;
 
         return $this;
     }
@@ -150,14 +148,6 @@ class FilamentMouselessPlugin implements Plugin
         return $this;
     }
 
-    /** Icon for the user-menu link AND the (hidden) my-shortcuts page nav. */
-    public function shortcutsIcon(string|Closure $icon): static
-    {
-        $this->shortcutsIcon = $icon;
-
-        return $this;
-    }
-
     /** Label for the user-menu link AND the my-shortcuts page navigation. */
     public function shortcutsLabel(string|Closure $label): static
     {
@@ -166,9 +156,9 @@ class FilamentMouselessPlugin implements Plugin
         return $this;
     }
 
-    public function getSettingsPageIcon(): string
+    public function getIcon(): string
     {
-        return $this->evaluate($this->settingsPageIcon) ?? self::DEFAULT_ICON;
+        return $this->evaluate($this->icon) ?? self::DEFAULT_ICON;
     }
 
     public function getSettingsPageLabel(): string
@@ -184,11 +174,6 @@ class FilamentMouselessPlugin implements Plugin
         }
 
         return $this->evaluate($this->settingsPageNavigationGroup);
-    }
-
-    public function getShortcutsIcon(): string
-    {
-        return $this->evaluate($this->shortcutsIcon) ?? self::DEFAULT_ICON;
     }
 
     public function getShortcutsLabel(): string
@@ -229,7 +214,7 @@ class FilamentMouselessPlugin implements Plugin
         $panel->userMenuItems([
             Action::make('mouseless-shortcuts')
                 ->label(fn (): string => $this->getShortcutsLabel())
-                ->icon(fn (): string => $this->getShortcutsIcon())
+                ->icon(fn (): string => $this->getIcon())
                 ->url(fn () => MyShortcuts::getUrl())
                 ->visible(fn (): bool => Shield::userMayUse())
                 ->extraAttributes(['class' => 'fi-mouseless-shortcuts-link']),
