@@ -139,6 +139,13 @@ body.fi-mouseless-mobile:not(.fi-mouseless-kbd) .fi-mouseless-shortcuts-link {
     font-size: 0.875rem;
 }
 
+@media (max-width: 32rem) {
+    .fi-mouseless-help-list {
+        grid-template-columns: minmax(0, 1fr);
+        row-gap: 0.5rem;
+    }
+}
+
 .fi-mouseless-help-item {
     display: flex;
     align-items: center;
