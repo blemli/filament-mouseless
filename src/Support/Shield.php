@@ -3,11 +3,14 @@
 namespace Blemli\FilamentMouseless\Support;
 
 use BezhanSalleh\FilamentShield\Facades\FilamentShield;
+use Blemli\FilamentMouseless\FilamentMouselessPlugin;
 use Illuminate\Support\Str;
 
 /**
- * Optional adapter for bezhansalleh/filament-shield. Every method fail-opens
- * (returns "allowed" / null) when Shield isn't installed.
+ * Optional adapter for bezhansalleh/filament-shield. Permission gates are
+ * off by default — callers see "allowed" unless the plugin is in strict
+ * mode AND Shield denies. Strict mode is opted into via the plugin's
+ * `->strictPermissions()` method.
  */
 class Shield
 {
@@ -23,6 +26,16 @@ class Shield
         return class_exists(FilamentShield::class);
     }
 
+    /** True only when the plugin is registered on the current panel in strict mode. */
+    public static function isStrict(): bool
+    {
+        try {
+            return FilamentMouselessPlugin::get()->isStrict();
+        } catch (\Throwable) {
+            return false;
+        }
+    }
+
     /** The "use mouseless at all" permission key, case-formatted per Shield config. */
     public static function permission(): string
     {
@@ -35,19 +48,23 @@ class Shield
         return __('filament-mouseless::mouseless.shield.permissions.mouseless_use');
     }
 
-    /** Master switch: true when the current user may use mouseless at all. */
+    /** Master switch. Permissive (true) unless strict mode is on AND Shield denies. */
     public static function userMayUse(): bool
     {
-        return static::userCan(static::permission());
+        return ! static::isStrict() || static::userCan(static::permission());
     }
 
     /**
-     * Combined gate for a mouseless page: the master switch AND (when Shield
-     * is installed) the specific page permission. Returns true when allowed.
+     * Combined gate for a mouseless page: master switch + page permission.
+     * Always allowed in permissive (default) mode — strict mode opts in.
      */
     public static function userCanAccessPage(string $pageClass): bool
     {
-        if (! static::userMayUse()) {
+        if (! static::isStrict()) {
+            return true;
+        }
+
+        if (! static::userCan(static::permission())) {
             return false;
         }
 

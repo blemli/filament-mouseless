@@ -6,19 +6,21 @@ Use filament without a mouse. For Real.
 
 ## Installation
 
-You can install the package via composer:
+You can install the package in only three simple steps
+
+1. install via composer:
 
 ```bash
 composer require blemli/filament-mouseless
 ```
 
-then run the installer
+2. run the installer
 
 ```bash
 php artisan filament-mouseless:install
 ```
 
-and don't forget to register in the AdminPanelProvider:
+3.  don't forget to register in the AdminPanelProvider:
 
 ```php
 ->plugins([
@@ -33,7 +35,7 @@ Go to any page and press <kbd>?</kbd> outside a textfield to show all the availa
 
 ## Features Overview
 
-Dark-Mode Support, Language Adaptive: DE (**N**eu) & EN (**C**reate),  Filament Native Style (no custom theme needed), Mobile Friendly, Stateless mode available (without migrations), Show a Shortcuts Overlay with <kbd>?</kbd>, Let Users Register custom Combinations, Many Convenience Combinations (escape, go home, search), Hidden on Devices without Keyboard, Compatible with Filament Shield, 
+Dark-Mode Support, Language Adaptive: DE (**N**eu) & EN (**C**reate),  Filament Native Style (no custom theme needed), Mobile Friendly, Stateless mode available (without migrations), Show a Shortcuts Overlay with <kbd>?</kbd>,  Convenient `mouseless:install` command, Let Users Register custom Combinations, Covers all Filament-Functions  (escape, go home, search, logout), Hidden on Devices without Keyboard, Compatible with Filament Shield but not required, 
 
 ## Configure
 
@@ -97,22 +99,32 @@ With the probe disabled, mobile users must use `->showShortcutsOnMobile()` to se
 
 ## Permission
 
-Without [Filament Shield](https://github.com/bezhanSalleh/filament-shield), every authenticated panel user has full access.
+By default everyone gets shortcuts and both pages — same as without Shield. With [Filament Shield](https://github.com/bezhanSalleh/filament-shield) installed, mouseless registers three permissions so they appear in the role-edit UI, but they're only enforced when you opt in:
 
-When Shield is installed, mouseless registers three permissions automatically:
+```php
+->plugins([
+  FilamentMouselessPlugin::make()
+      ->strictPermissions(),
+])
+```
 
-| Permission | Gates |
+| Permission | Gates (strict mode only) |
 | --- | --- |
-| `MouselessUse` (custom) | Master switch — when denied, the user-menu link, help overlay, boot script, and both pages all go dark. |
-| `View:MyShortcuts` | The per-user customization page. Requires `MouselessUse`. |
-| `View:MouselessSettings` | The admin settings page. Requires `MouselessUse`. |
+| `MouselessUse` (custom) | Master switch. When denied: no link, no overlay, no boot script, no page access. |
+| `View:MyShortcuts` | The per-user customization page. Requires `MouselessUse` too. |
+| `View:MouselessSettings` | The admin settings page. Requires `MouselessUse` too. |
 
-Key formatting follows your Shield config (`permissions.case`/`separator`); names above use the defaults.
-
-To surface `MouselessUse` in the role-edit UI, flip on the custom-permissions tab in `config/filament-shield.php`, then run `shield:generate`:
+Key formatting follows Shield's `permissions.case`/`separator`. Surface `MouselessUse` in the role-edit UI by enabling the custom-permissions tab, then `shield:generate`:
 
 ```php
 'shield_resource' => ['tabs' => ['custom_permissions' => true]],
+```
+
+Grant via the role UI, or in tinker:
+
+```php
+Spatie\Permission\Models\Role::firstWhere('name', 'panel_user')
+    ?->givePermissionTo(['MouselessUse', 'View:MyShortcuts']);
 ```
 
 ### Go Home

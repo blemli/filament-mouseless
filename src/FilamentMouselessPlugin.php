@@ -23,6 +23,8 @@ class FilamentMouselessPlugin implements Plugin
 
     protected bool $stateless = false;
 
+    protected bool $strictPermissions = false;
+
     public function getId(): string
     {
         return 'filament-mouseless';
@@ -44,6 +46,24 @@ class FilamentMouselessPlugin implements Plugin
     public function isStateless(): bool
     {
         return $this->stateless;
+    }
+
+    /**
+     * Enforce the Shield permissions (`MouselessUse`, `View:MyShortcuts`,
+     * `View:MouselessSettings`). Without this call, mouseless ignores those
+     * permissions even when Shield is installed — the plugin Just Works
+     * out of the box. Call this once you've assigned the perms to roles.
+     */
+    public function strictPermissions(bool $enabled = true): static
+    {
+        $this->strictPermissions = $enabled;
+
+        return $this;
+    }
+
+    public function isStrict(): bool
+    {
+        return $this->strictPermissions;
     }
 
     public function adminPage(bool $enabled = true): static
