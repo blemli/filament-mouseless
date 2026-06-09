@@ -1,0 +1,196 @@
+[     451ms] [LOG] [mouseless] script tag loaded, readyState= loading @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:397
+[     622ms] [LOG] [mouseless] === boot starting === @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:12
+[     622ms] [LOG] [mouseless] document.readyState= interactive @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:13
+[     622ms] [LOG] [mouseless] window.filamentData= {mouseless: Object} @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:14
+[     622ms] [LOG] [mouseless] mouseless cfg= {bindings: Object, reserved: Array(0), listModeIgnore: Array(0), debug: false, actionLabels: Object} @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:17
+[     622ms] [LOG] [mouseless] bindings count= 33 @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:28
+[     622ms] [LOG] [mouseless] bindings= {crud.create: alt+n, crud.edit: alt+b, crud.delete: alt+l, crud.save: alt+s, crud.view: alt+a} @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:29
+[     622ms] [LOG] [mouseless] reserved= [] @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:30
+[     623ms] [LOG] [mouseless] ignoreSel= "input,textarea,[contenteditable]" @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:31
+[     623ms] [LOG] [mouseless] keyToAction map= {alt+n: crud.create, alt+b: crud.edit, alt+l: crud.delete, alt+s: crud.save, alt+a: crud.view} @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:55
+[     623ms] [LOG] [mouseless] attaching keydown listener (capture) @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:56
+[     623ms] [LOG] [mouseless] === boot complete === @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:59
+[    2951ms] [LOG] [mouseless] script tag loaded, readyState= loading @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:397
+[    3024ms] [LOG] [mouseless] === boot starting === @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:12
+[    3024ms] [LOG] [mouseless] document.readyState= interactive @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:13
+[    3024ms] [LOG] [mouseless] window.filamentData= {mouseless: Object} @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:14
+[    3024ms] [LOG] [mouseless] mouseless cfg= {bindings: Object, reserved: Array(0), listModeIgnore: Array(0), debug: false, actionLabels: Object} @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:17
+[    3024ms] [LOG] [mouseless] bindings count= 33 @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:28
+[    3024ms] [LOG] [mouseless] bindings= {crud.create: alt+n, crud.edit: alt+b, crud.delete: alt+l, crud.save: alt+s, crud.view: alt+a} @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:29
+[    3024ms] [LOG] [mouseless] reserved= [] @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:30
+[    3024ms] [LOG] [mouseless] ignoreSel= "input,textarea,[contenteditable]" @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:31
+[    3025ms] [LOG] [mouseless] keyToAction map= {alt+n: crud.create, alt+b: crud.edit, alt+l: crud.delete, alt+s: crud.save, alt+a: crud.view} @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:55
+[    3025ms] [LOG] [mouseless] attaching keydown listener (capture) @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:56
+[    3025ms] [LOG] [mouseless] === boot complete === @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:59
+[   37889ms] [LOG] [mouseless] keydown {key: j, code: KeyJ, alt: false, ctrl: false, meta: false} @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:71
+[   37889ms] [LOG] [mouseless] suppressed bare key inside input/textarea @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:84
+[   38113ms] [LOG] [mouseless] keydown {key: k, code: KeyK, alt: false, ctrl: false, meta: false} @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:71
+[   38113ms] [LOG] [mouseless] suppressed bare key inside input/textarea @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:84
+[   38274ms] [LOG] [mouseless] keydown {key: j, code: KeyJ, alt: false, ctrl: false, meta: false} @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:71
+[   38274ms] [LOG] [mouseless] suppressed bare key inside input/textarea @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:84
+[   38374ms] [LOG] [mouseless] keydown {key: k, code: KeyK, alt: false, ctrl: false, meta: false} @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:71
+[   38374ms] [LOG] [mouseless] suppressed bare key inside input/textarea @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:84
+[   38507ms] [LOG] [mouseless] keydown {key: j, code: KeyJ, alt: false, ctrl: false, meta: false} @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:71
+[   38507ms] [LOG] [mouseless] suppressed bare key inside input/textarea @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:84
+[   38574ms] [LOG] [mouseless] keydown {key: k, code: KeyK, alt: false, ctrl: false, meta: false} @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:71
+[   38574ms] [LOG] [mouseless] suppressed bare key inside input/textarea @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:84
+[   38641ms] [LOG] [mouseless] keydown {key: j, code: KeyJ, alt: false, ctrl: false, meta: false} @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:71
+[   38641ms] [LOG] [mouseless] suppressed bare key inside input/textarea @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:84
+[   38724ms] [LOG] [mouseless] keydown {key: k, code: KeyK, alt: false, ctrl: false, meta: false} @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:71
+[   38724ms] [LOG] [mouseless] suppressed bare key inside input/textarea @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:84
+[   38817ms] [LOG] [mouseless] keydown {key: j, code: KeyJ, alt: false, ctrl: false, meta: false} @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:71
+[   38818ms] [LOG] [mouseless] suppressed bare key inside input/textarea @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:84
+[   61952ms] [LOG] [mouseless] keydown {key: j, code: KeyJ, alt: false, ctrl: false, meta: false} @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:71
+[   61952ms] [LOG] [mouseless] suppressed bare key inside input/textarea @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:84
+[   62222ms] [LOG] [mouseless] keydown {key: j, code: KeyJ, alt: false, ctrl: false, meta: false} @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:71
+[   62222ms] [LOG] [mouseless] suppressed bare key inside input/textarea @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:84
+[   62404ms] [LOG] [mouseless] keydown {key: j, code: KeyJ, alt: false, ctrl: false, meta: false} @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:71
+[   62405ms] [LOG] [mouseless] suppressed bare key inside input/textarea @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:84
+[   66666ms] [LOG] [mouseless] keydown {key: j, code: KeyJ, alt: false, ctrl: false, meta: false} @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:71
+[   66667ms] [LOG] [mouseless] suppressed bare key inside input/textarea @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:84
+[   66934ms] [LOG] [mouseless] keydown {key: j, code: KeyJ, alt: false, ctrl: false, meta: false} @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:71
+[   66934ms] [LOG] [mouseless] suppressed bare key inside input/textarea @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:84
+[   67008ms] [LOG] [mouseless] keydown {key: k, code: KeyK, alt: false, ctrl: false, meta: false} @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:71
+[   67008ms] [LOG] [mouseless] suppressed bare key inside input/textarea @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:84
+[   67112ms] [LOG] [mouseless] keydown {key: j, code: KeyJ, alt: false, ctrl: false, meta: false} @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:71
+[   67113ms] [LOG] [mouseless] suppressed bare key inside input/textarea @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:84
+[   67200ms] [LOG] [mouseless] keydown {key: k, code: KeyK, alt: false, ctrl: false, meta: false} @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:71
+[   67200ms] [LOG] [mouseless] suppressed bare key inside input/textarea @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:84
+[   67487ms] [LOG] [mouseless] keydown {key: ArrowUp, code: ArrowUp, alt: false, ctrl: false, meta: false} @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:71
+[   67727ms] [LOG] [mouseless] keydown {key: ArrowUp, code: ArrowUp, alt: false, ctrl: false, meta: false} @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:71
+[   68103ms] [LOG] [mouseless] keydown {key: ArrowUp, code: ArrowUp, alt: false, ctrl: false, meta: false} @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:71
+[   68312ms] [LOG] [mouseless] keydown {key: ArrowUp, code: ArrowUp, alt: false, ctrl: false, meta: false} @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:71
+[   69227ms] [LOG] [mouseless] keydown {key: x, code: KeyX, alt: false, ctrl: false, meta: false} @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:71
+[   69227ms] [LOG] [mouseless] suppressed bare key inside input/textarea @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:84
+[   69602ms] [LOG] [mouseless] keydown {key:  , code: Space, alt: false, ctrl: false, meta: false} @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:71
+[   69602ms] [LOG] [mouseless] suppressed bare key inside input/textarea @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:84
+[   70711ms] [LOG] [mouseless] keydown {key: ?, code: Minus, alt: false, ctrl: false, meta: false} @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:71
+[   70712ms] [LOG] [mouseless] matched action ui.help — dispatching @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:95
+[   70712ms] [LOG] [mouseless] dispatch start ui.help @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:107
+[   70712ms] [LOG] [mouseless] dispatch -> ui.help (window event "mouseless-help") @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:111
+[  114621ms] [LOG] [mouseless] keydown {key: ArrowLeft, code: ArrowLeft, alt: true, ctrl: false, meta: false} @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:71
+[  114622ms] [LOG] [mouseless] matched action list.prev-page — dispatching @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:95
+[  114622ms] [LOG] [mouseless] dispatch start list.prev-page @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:107
+[  114622ms] [LOG] [mouseless] looking for Filament action button. Candidates: [] @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:227
+[  114622ms] [WARNING] [mouseless] NO MATCH for list.prev-page — no button, no data-attribute target @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:245
+[  114622ms] [INFO] [mouseless] toast: Keine passende Aktion auf dieser Seite. @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:357
+[  114951ms] [LOG] [mouseless] keydown {key: ArrowRight, code: ArrowRight, alt: true, ctrl: false, meta: false} @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:71
+[  114952ms] [LOG] [mouseless] matched action list.next-page — dispatching @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:95
+[  114952ms] [LOG] [mouseless] dispatch start list.next-page @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:107
+[  114952ms] [LOG] [mouseless] looking for Filament action button. Candidates: [] @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:227
+[  114952ms] [WARNING] [mouseless] NO MATCH for list.next-page — no button, no data-attribute target @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:245
+[  114952ms] [INFO] [mouseless] toast: Keine passende Aktion auf dieser Seite. @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:357
+[  115702ms] [LOG] [mouseless] keydown {key: ArrowLeft, code: ArrowLeft, alt: true, ctrl: false, meta: false} @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:71
+[  115702ms] [LOG] [mouseless] matched action list.prev-page — dispatching @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:95
+[  115702ms] [LOG] [mouseless] dispatch start list.prev-page @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:107
+[  115702ms] [LOG] [mouseless] looking for Filament action button. Candidates: [] @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:227
+[  115702ms] [WARNING] [mouseless] NO MATCH for list.prev-page — no button, no data-attribute target @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:245
+[  115702ms] [INFO] [mouseless] toast: Keine passende Aktion auf dieser Seite. @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:357
+[  116395ms] [LOG] [mouseless] keydown {key: ArrowRight, code: ArrowRight, alt: true, ctrl: false, meta: false} @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:71
+[  116395ms] [LOG] [mouseless] matched action list.next-page — dispatching @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:95
+[  116395ms] [LOG] [mouseless] dispatch start list.next-page @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:107
+[  116395ms] [LOG] [mouseless] looking for Filament action button. Candidates: [] @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:227
+[  116395ms] [WARNING] [mouseless] NO MATCH for list.next-page — no button, no data-attribute target @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:245
+[  116395ms] [INFO] [mouseless] toast: Keine passende Aktion auf dieser Seite. @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:357
+[  116559ms] [LOG] [mouseless] keydown {key: ArrowLeft, code: ArrowLeft, alt: true, ctrl: false, meta: false} @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:71
+[  116560ms] [LOG] [mouseless] matched action list.prev-page — dispatching @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:95
+[  116560ms] [LOG] [mouseless] dispatch start list.prev-page @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:107
+[  116560ms] [LOG] [mouseless] looking for Filament action button. Candidates: [] @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:227
+[  116560ms] [WARNING] [mouseless] NO MATCH for list.prev-page — no button, no data-attribute target @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:245
+[  116560ms] [INFO] [mouseless] toast: Keine passende Aktion auf dieser Seite. @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:357
+[  116663ms] [LOG] [mouseless] keydown {key: ArrowRight, code: ArrowRight, alt: true, ctrl: false, meta: false} @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:71
+[  116663ms] [LOG] [mouseless] matched action list.next-page — dispatching @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:95
+[  116663ms] [LOG] [mouseless] dispatch start list.next-page @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:107
+[  116663ms] [LOG] [mouseless] looking for Filament action button. Candidates: [] @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:227
+[  116663ms] [WARNING] [mouseless] NO MATCH for list.next-page — no button, no data-attribute target @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:245
+[  116663ms] [INFO] [mouseless] toast: Keine passende Aktion auf dieser Seite. @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:357
+[  116766ms] [LOG] [mouseless] keydown {key: ArrowLeft, code: ArrowLeft, alt: true, ctrl: false, meta: false} @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:71
+[  116766ms] [LOG] [mouseless] matched action list.prev-page — dispatching @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:95
+[  116766ms] [LOG] [mouseless] dispatch start list.prev-page @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:107
+[  116767ms] [LOG] [mouseless] looking for Filament action button. Candidates: [] @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:227
+[  116767ms] [WARNING] [mouseless] NO MATCH for list.prev-page — no button, no data-attribute target @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:245
+[  116767ms] [INFO] [mouseless] toast: Keine passende Aktion auf dieser Seite. @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:357
+[  116890ms] [LOG] [mouseless] keydown {key: ArrowRight, code: ArrowRight, alt: true, ctrl: false, meta: false} @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:71
+[  116890ms] [LOG] [mouseless] matched action list.next-page — dispatching @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:95
+[  116890ms] [LOG] [mouseless] dispatch start list.next-page @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:107
+[  116890ms] [LOG] [mouseless] looking for Filament action button. Candidates: [] @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:227
+[  116890ms] [WARNING] [mouseless] NO MATCH for list.next-page — no button, no data-attribute target @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:245
+[  116890ms] [INFO] [mouseless] toast: Keine passende Aktion auf dieser Seite. @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:357
+[  116973ms] [LOG] [mouseless] keydown {key: ArrowLeft, code: ArrowLeft, alt: true, ctrl: false, meta: false} @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:71
+[  116973ms] [LOG] [mouseless] matched action list.prev-page — dispatching @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:95
+[  116973ms] [LOG] [mouseless] dispatch start list.prev-page @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:107
+[  116973ms] [LOG] [mouseless] looking for Filament action button. Candidates: [] @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:227
+[  116974ms] [WARNING] [mouseless] NO MATCH for list.prev-page — no button, no data-attribute target @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:245
+[  116974ms] [INFO] [mouseless] toast: Keine passende Aktion auf dieser Seite. @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:357
+[  117074ms] [LOG] [mouseless] keydown {key: ArrowRight, code: ArrowRight, alt: true, ctrl: false, meta: false} @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:71
+[  117074ms] [LOG] [mouseless] matched action list.next-page — dispatching @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:95
+[  117074ms] [LOG] [mouseless] dispatch start list.next-page @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:107
+[  117074ms] [LOG] [mouseless] looking for Filament action button. Candidates: [] @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:227
+[  117074ms] [WARNING] [mouseless] NO MATCH for list.next-page — no button, no data-attribute target @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:245
+[  117075ms] [INFO] [mouseless] toast: Keine passende Aktion auf dieser Seite. @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:357
+[  117144ms] [LOG] [mouseless] keydown {key: ArrowLeft, code: ArrowLeft, alt: true, ctrl: false, meta: false} @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:71
+[  117145ms] [LOG] [mouseless] matched action list.prev-page — dispatching @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:95
+[  117145ms] [LOG] [mouseless] dispatch start list.prev-page @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:107
+[  117145ms] [LOG] [mouseless] looking for Filament action button. Candidates: [] @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:227
+[  117145ms] [WARNING] [mouseless] NO MATCH for list.prev-page — no button, no data-attribute target @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:245
+[  117145ms] [INFO] [mouseless] toast: Keine passende Aktion auf dieser Seite. @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:357
+[  119646ms] [LOG] [mouseless] keydown {key: ArrowLeft, code: ArrowLeft, alt: true, ctrl: false, meta: false} @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:71
+[  119646ms] [LOG] [mouseless] matched action list.prev-page — dispatching @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:95
+[  119647ms] [LOG] [mouseless] dispatch start list.prev-page @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:107
+[  119647ms] [LOG] [mouseless] looking for Filament action button. Candidates: [] @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:227
+[  119647ms] [WARNING] [mouseless] NO MATCH for list.prev-page — no button, no data-attribute target @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:245
+[  119647ms] [INFO] [mouseless] toast: Keine passende Aktion auf dieser Seite. @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:357
+[  122230ms] [LOG] [mouseless] script tag loaded, readyState= loading @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:397
+[  122267ms] [LOG] [mouseless] === boot starting === @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:12
+[  122267ms] [LOG] [mouseless] document.readyState= interactive @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:13
+[  122267ms] [LOG] [mouseless] window.filamentData= {mouseless: Object} @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:14
+[  122267ms] [LOG] [mouseless] mouseless cfg= {bindings: Object, reserved: Array(0), listModeIgnore: Array(0), debug: false, actionLabels: Object} @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:17
+[  122267ms] [LOG] [mouseless] bindings count= 33 @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:28
+[  122267ms] [LOG] [mouseless] bindings= {crud.create: alt+n, crud.edit: alt+b, crud.delete: alt+l, crud.save: alt+s, crud.view: alt+a} @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:29
+[  122267ms] [LOG] [mouseless] reserved= [] @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:30
+[  122267ms] [LOG] [mouseless] ignoreSel= "input,textarea,[contenteditable]" @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:31
+[  122267ms] [LOG] [mouseless] keyToAction map= {alt+n: crud.create, alt+b: crud.edit, alt+l: crud.delete, alt+s: crud.save, alt+a: crud.view} @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:55
+[  122267ms] [LOG] [mouseless] attaching keydown listener (capture) @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:56
+[  122267ms] [LOG] [mouseless] === boot complete === @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:59
+[  123075ms] [LOG] [mouseless] script tag loaded, readyState= loading @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:397
+[  123107ms] [LOG] [mouseless] === boot starting === @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:12
+[  123107ms] [LOG] [mouseless] document.readyState= interactive @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:13
+[  123108ms] [LOG] [mouseless] window.filamentData= {mouseless: Object} @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:14
+[  123108ms] [LOG] [mouseless] mouseless cfg= {bindings: Object, reserved: Array(0), listModeIgnore: Array(0), debug: false, actionLabels: Object} @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:17
+[  123108ms] [LOG] [mouseless] bindings count= 33 @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:28
+[  123108ms] [LOG] [mouseless] bindings= {crud.create: alt+n, crud.edit: alt+b, crud.delete: alt+l, crud.save: alt+s, crud.view: alt+a} @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:29
+[  123108ms] [LOG] [mouseless] reserved= [] @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:30
+[  123108ms] [LOG] [mouseless] ignoreSel= "input,textarea,[contenteditable]" @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:31
+[  123108ms] [LOG] [mouseless] keyToAction map= {alt+n: crud.create, alt+b: crud.edit, alt+l: crud.delete, alt+s: crud.save, alt+a: crud.view} @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:55
+[  123108ms] [LOG] [mouseless] attaching keydown listener (capture) @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:56
+[  123108ms] [LOG] [mouseless] === boot complete === @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:59
+[  128892ms] [LOG] [mouseless] keydown {key: ArrowLeft, code: ArrowLeft, alt: false, ctrl: false, meta: true} @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:71
+[  129191ms] [LOG] [mouseless] script tag loaded, readyState= loading @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:397
+[  129221ms] [LOG] [mouseless] === boot starting === @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:12
+[  129221ms] [LOG] [mouseless] document.readyState= interactive @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:13
+[  129221ms] [LOG] [mouseless] window.filamentData= {mouseless: Object} @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:14
+[  129221ms] [LOG] [mouseless] mouseless cfg= {bindings: Object, reserved: Array(0), listModeIgnore: Array(0), debug: false, actionLabels: Object} @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:17
+[  129221ms] [LOG] [mouseless] bindings count= 33 @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:28
+[  129222ms] [LOG] [mouseless] bindings= {crud.create: alt+n, crud.edit: alt+b, crud.delete: alt+l, crud.save: alt+s, crud.view: alt+a} @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:29
+[  129222ms] [LOG] [mouseless] reserved= [] @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:30
+[  129222ms] [LOG] [mouseless] ignoreSel= "input,textarea,[contenteditable]" @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:31
+[  129222ms] [LOG] [mouseless] keyToAction map= {alt+n: crud.create, alt+b: crud.edit, alt+l: crud.delete, alt+s: crud.save, alt+a: crud.view} @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:55
+[  129222ms] [LOG] [mouseless] attaching keydown listener (capture) @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:56
+[  129222ms] [LOG] [mouseless] === boot complete === @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:59
+[  129758ms] [LOG] [mouseless] keydown {key: ArrowRight, code: ArrowRight, alt: false, ctrl: false, meta: true} @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:71
+[  130065ms] [LOG] [mouseless] script tag loaded, readyState= loading @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:397
+[  130109ms] [LOG] [mouseless] === boot starting === @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:12
+[  130109ms] [LOG] [mouseless] document.readyState= interactive @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:13
+[  130109ms] [LOG] [mouseless] window.filamentData= {mouseless: Object} @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:14
+[  130109ms] [LOG] [mouseless] mouseless cfg= {bindings: Object, reserved: Array(0), listModeIgnore: Array(0), debug: false, actionLabels: Object} @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:17
+[  130109ms] [LOG] [mouseless] bindings count= 33 @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:28
+[  130109ms] [LOG] [mouseless] bindings= {crud.create: alt+n, crud.edit: alt+b, crud.delete: alt+l, crud.save: alt+s, crud.view: alt+a} @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:29
+[  130109ms] [LOG] [mouseless] reserved= [] @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:30
+[  130109ms] [LOG] [mouseless] ignoreSel= "input,textarea,[contenteditable]" @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:31
+[  130109ms] [LOG] [mouseless] keyToAction map= {alt+n: crud.create, alt+b: crud.edit, alt+l: crud.delete, alt+s: crud.save, alt+a: crud.view} @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:55
+[  130109ms] [LOG] [mouseless] attaching keydown listener (capture) @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:56
+[  130109ms] [LOG] [mouseless] === boot complete === @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:59
+[  142118ms] [LOG] [mouseless] keydown {key: ?, code: Minus, alt: false, ctrl: false, meta: false} @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:71
+[  142118ms] [LOG] [mouseless] matched action ui.help — dispatching @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:95
+[  142118ms] [LOG] [mouseless] dispatch start ui.help @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:107
+[  142118ms] [LOG] [mouseless] dispatch -> ui.help (window event "mouseless-help") @ https://audiobeam.test/js/blemli/filament-mouseless/filament-mouseless.js?v=5.9999999.9999999.9999999-dev:111

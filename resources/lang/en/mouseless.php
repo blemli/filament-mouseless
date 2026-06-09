@@ -1,6 +1,121 @@
 <?php
 
-// translations for Blemli/FilamentMouseless
 return [
-    //
+    'nav_label' => 'Mouseless',
+    'plugin_name' => 'Mouseless',
+
+    'help' => [
+        'title' => 'Keyboard shortcuts',
+        'close' => 'Close',
+        'source' => 'Preset: :preset · :overrides personal overrides',
+        'no_match' => 'No matching action on this page.',
+    ],
+
+    'ns' => [
+        'crud' => 'CRUD',
+        'list' => 'List',
+        'record' => 'Record',
+        'bulk' => 'Bulk',
+        'nav' => 'Navigation',
+        'ui' => 'UI',
+    ],
+
+    // Nested so Laravel's translator (which uses dots as separators) finds them.
+    'action' => [
+        'crud' => [
+            'create' => 'Create',
+            'edit' => 'Edit',
+            'delete' => 'Delete',
+            'save' => 'Save',
+            'cancel' => 'Cancel',
+            'view' => 'View',
+            'duplicate' => 'Duplicate',
+        ],
+        'list' => [
+            'search' => 'Search',
+            'filter' => 'Filter',
+            'refresh' => 'Refresh',
+            'export' => 'Export',
+            'import' => 'Import',
+            'select-all' => 'Select all',
+            'bulk-action' => 'Bulk action',
+            'next-page' => 'Next page',
+            'prev-page' => 'Previous page',
+            'next-row' => 'Next row',
+            'prev-row' => 'Previous row',
+            'toggle-row' => 'Toggle row selection',
+        ],
+        'record' => [
+            'print' => 'Print',
+            'history' => 'History',
+            'comment' => 'Comment',
+            'archive' => 'Archive',
+            'approve' => 'Approve',
+            'reject' => 'Reject',
+        ],
+        'bulk' => [
+            'merge' => 'Merge',
+        ],
+        'nav' => [
+            'dashboard' => 'Dashboard',
+            'profile' => 'Profile',
+            'logout' => 'Logout',
+            'command-palette' => 'Command palette',
+            'recently-viewed' => 'Recently viewed',
+            'notifications' => 'Notifications',
+        ],
+        'ui' => [
+            'help' => 'Help',
+            'close' => 'Close',
+            'next-tab' => 'Next tab',
+            'prev-tab' => 'Previous tab',
+        ],
+    ],
+
+    'admin' => [
+        'title' => 'Shortcuts',
+        'nav_label' => 'Shortcuts',
+        'nav_group' => 'System',
+        'default_preset' => 'Default preset',
+        'disabled_actions' => 'Disabled actions',
+        'resource_letters' => 'Resource letter overrides',
+        'resource_class' => 'Resource class',
+        'letter' => 'Letter',
+        'add_override' => 'Add override',
+        'moderation_queue' => 'Moderation queue',
+        'queue_empty' => 'No presets awaiting approval.',
+        'approve' => 'Approve',
+        'reject' => 'Reject',
+        'save' => 'Save',
+        'saved' => 'Settings saved.',
+        'preset_approved' => 'Preset “:name” approved.',
+        'preset_rejected' => 'Preset rejected.',
+    ],
+
+    'profile' => [
+        'title' => 'My shortcuts',
+        'nav_label' => 'Shortcuts',
+        'tab' => 'Shortcuts',
+        'active_preset' => 'Active preset',
+        'bindings' => 'Bindings',
+        'rebind' => 'Rebind',
+        'reset' => 'Reset',
+        'press_key' => 'Press a key combination…',
+        'cancel' => 'Cancel',
+        'export' => 'Copy export to clipboard',
+        'import' => 'Import preset (JSON)',
+        'import_button' => 'Import',
+        'import_invalid' => 'Invalid preset JSON.',
+        'import_ok' => 'Preset imported.',
+        'imported' => 'Imported preset',
+        'fork_publish' => 'Fork',
+        'publish' => 'Publish',
+        'unpublish' => 'Unpublish',
+        'published' => 'Preset published.',
+        'unpublished' => 'Preset unpublished.',
+        'fork_ok' => 'Preset forked.',
+        'binding_saved' => 'Binding saved.',
+        'collision' => 'Key “:key” is already used by :action. Remove that binding first.',
+        'reserved_key' => '“:key” is reserved and cannot be bound.',
+    ],
 ];

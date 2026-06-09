@@ -1,0 +1,263 @@
+/*
+ * filament-mouseless — styles owned by the JS engine and views.
+ *
+ * Loaded on every Filament page via Css::make() in the service provider.
+ * Uses CSS custom properties for theming; `.dark` on <html> flips them.
+ */
+
+:root {
+    --mouseless-help-bg: #ffffff;
+    --mouseless-help-fg: #111827;
+    --mouseless-help-muted: #6b7280;
+    --mouseless-help-border: rgba(0, 0, 0, 0.1);
+    --mouseless-help-kbd-bg: rgba(0, 0, 0, 0.06);
+    --mouseless-help-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4);
+    --mouseless-help-ring: rgba(0, 0, 0, 0.08);
+    --mouseless-help-backdrop: rgba(0, 0, 0, 0.55);
+}
+
+.dark {
+    --mouseless-help-bg: #111827;
+    --mouseless-help-fg: #f3f4f6;
+    --mouseless-help-muted: #9ca3af;
+    --mouseless-help-border: rgba(255, 255, 255, 0.1);
+    --mouseless-help-kbd-bg: rgba(255, 255, 255, 0.08);
+    --mouseless-help-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8);
+    --mouseless-help-ring: rgba(255, 255, 255, 0.08);
+    --mouseless-help-backdrop: rgba(0, 0, 0, 0.7);
+}
+
+/* ---------- mobile shortcuts-link gate ----------
+ * Plugin's body.start render hook adds .fi-mouseless-mobile to <body> when
+ * navigator.userAgent matches a phone/tablet, and .fi-mouseless-kbd when
+ * localStorage says a hardware keyboard was once detected (or when the
+ * panel was configured with ->showShortcutsOnMobile()). The link is rendered
+ * unconditionally server-side; this rule hides it before paint when needed.
+ */
+body.fi-mouseless-mobile:not(.fi-mouseless-kbd) .fi-mouseless-shortcuts-link {
+    display: none !important;
+}
+
+/* ---------- whole-row highlight ---------- */
+
+.fi-ta-row:focus-within > td,
+.fi-ta-record:focus-within {
+    background-color: rgba(59, 130, 246, 0.12) !important;
+}
+
+.fi-ta-row:focus-within > td:first-child {
+    box-shadow: inset 3px 0 0 0 rgb(59, 130, 246) !important;
+}
+
+.fi-ta-record:focus-within {
+    box-shadow: inset 3px 0 0 0 rgb(59, 130, 246) !important;
+}
+
+.dark .fi-ta-row:focus-within > td,
+.dark .fi-ta-record:focus-within {
+    background-color: rgba(96, 165, 250, 0.18) !important;
+}
+
+.fi-ta-row:focus-within a:focus-visible,
+.fi-ta-row:focus-within button:focus-visible,
+.fi-ta-record:focus-within a:focus-visible,
+.fi-ta-record:focus-within button:focus-visible {
+    outline: none !important;
+}
+
+/* ---------- help overlay (the `?` popup) ---------- */
+
+.fi-mouseless-help-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--mouseless-help-backdrop);
+    padding: 1.5rem;
+}
+
+.fi-mouseless-help-panel {
+    width: 100%;
+    max-width: 56rem;
+    max-height: 80vh;
+    overflow-y: auto;
+    background: var(--mouseless-help-bg);
+    color: var(--mouseless-help-fg);
+    border: 1px solid var(--mouseless-help-ring);
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+    box-shadow: var(--mouseless-help-shadow);
+}
+
+.fi-mouseless-help-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+}
+
+.fi-mouseless-help-title {
+    margin: 0;
+    font-size: 1.125rem;
+    font-weight: 600;
+}
+
+.fi-mouseless-help-close {
+    background: transparent;
+    border: 0;
+    font-size: 1.5rem;
+    line-height: 1;
+    cursor: pointer;
+    color: var(--mouseless-help-muted);
+}
+
+.fi-mouseless-help-body {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.fi-mouseless-help-group-heading {
+    margin: 0 0 0.5rem;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--mouseless-help-muted);
+}
+
+.fi-mouseless-help-list {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 1.5rem;
+    row-gap: 0.25rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    font-size: 0.875rem;
+}
+
+.fi-mouseless-help-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+}
+
+.fi-mouseless-help-kbd {
+    background: var(--mouseless-help-kbd-bg);
+    padding: 0.125rem 0.5rem;
+    border-radius: 0.25rem;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 0.75rem;
+}
+
+.fi-mouseless-help-footer {
+    margin-top: 1.5rem;
+    border-top: 1px solid var(--mouseless-help-border);
+    padding-top: 0.75rem;
+    font-size: 0.75rem;
+    color: var(--mouseless-help-muted);
+}
+
+/* ---------- shared layout primitives used by admin / profile pages ---------- */
+
+.fi-mouseless-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.fi-mouseless-row-end {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 1rem;
+}
+
+.fi-mouseless-actions-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.fi-mouseless-muted {
+    color: var(--mouseless-help-muted);
+    font-size: 0.875rem;
+    margin: 0;
+}
+
+/* ---------- moderation queue (admin settings page) ---------- */
+
+.fi-mouseless-queue {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.fi-mouseless-queue-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.75rem;
+    border: 1px solid var(--mouseless-help-border);
+    border-radius: 0.5rem;
+}
+
+.fi-mouseless-queue-name {
+    font-weight: 500;
+}
+
+.fi-mouseless-queue-meta {
+    font-size: 0.75rem;
+    color: var(--mouseless-help-muted);
+}
+
+.fi-mouseless-queue-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+/* ---------- bindings table (profile shortcuts tab) ---------- */
+
+.fi-mouseless-bindings {
+    width: 100%;
+    font-size: 0.875rem;
+    border-collapse: collapse;
+}
+
+.fi-mouseless-bindings tr {
+    border-bottom: 1px solid var(--mouseless-help-border);
+}
+
+.fi-mouseless-bindings td {
+    padding: 0.5rem 0;
+}
+
+.fi-mouseless-bindings-cell-key {
+    text-align: right;
+}
+
+.fi-mouseless-bindings-cell-action {
+    text-align: right;
+    padding-left: 0.5rem !important;
+    white-space: nowrap;
+}
+
+/* ---------- import textarea ---------- */
+
+.fi-mouseless-import-textarea {
+    width: 100%;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 0.75rem;
+    resize: vertical;
+}
+
+.fi-mouseless-import-submit {
+    margin-top: 0.5rem;
+}

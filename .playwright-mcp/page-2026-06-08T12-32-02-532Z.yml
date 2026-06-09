@@ -1,0 +1,62 @@
+- generic [ref=e1]:
+  - main [ref=e4]:
+    - generic [ref=e6]:
+      - generic [ref=e7]:
+        - generic [ref=e9]:
+          - img "Logo" [ref=e10]
+          - generic [ref=e11]: Audiobeam
+        - heading "Melden Sie sich an." [level=1] [ref=e12]
+      - generic [ref=e13]:
+        - generic [ref=e16]:
+          - generic [ref=e20]:
+            - generic [ref=e23]:
+              - generic [ref=e27]:
+                - text: E-Mail-Adresse
+                - superscript [ref=e28]: "*"
+              - textbox "E-Mail-Adresse*" [active] [ref=e32]
+            - generic [ref=e35]:
+              - generic [ref=e37]:
+                - generic [ref=e39]:
+                  - text: Passwort
+                  - superscript [ref=e40]: "*"
+                - link "Passwort vergessen?" [ref=e45] [cursor=pointer]:
+                  - /url: https://audiobeam.test/admin/password-reset/request
+              - generic [ref=e47]:
+                - textbox "Passwort*" [ref=e49]
+                - button "Passwort anzeigen" [ref=e52] [cursor=pointer]:
+                  - img [ref=e53]
+            - generic [ref=e61]:
+              - checkbox "Angemeldet bleiben" [ref=e62]
+              - generic [ref=e63]: Angemeldet bleiben
+          - button "Anmelden" [ref=e69] [cursor=pointer]:
+            - generic [ref=e70]: Anmelden
+        - paragraph [ref=e72]: Einloggen als
+        - button "Admin (helmut.binder@audio-book.eu)" [ref=e75] [cursor=pointer]
+        - button "User (christoph@problem.li)" [ref=e78] [cursor=pointer]
+  - generic:
+    - status
+  - generic [ref=e81]:
+    - generic [ref=e83]:
+      - generic [ref=e84] [cursor=pointer]:
+        - generic: Request
+      - generic [ref=e85] [cursor=pointer]:
+        - generic: Timeline
+      - generic [ref=e86] [cursor=pointer]:
+        - generic: Views
+        - generic [ref=e87]: "5"
+      - generic [ref=e88] [cursor=pointer]:
+        - generic: Queries
+        - generic [ref=e89]: "2"
+      - generic [ref=e90] [cursor=pointer]:
+        - generic: Livewire
+        - generic [ref=e91]: "3"
+    - generic [ref=e92]:
+      - generic [ref=e99] [cursor=pointer]:
+        - generic [ref=e100]: "2"
+        - generic [ref=e101]: GET /admin/login
+      - generic [ref=e102] [cursor=pointer]:
+        - generic: 94.02ms
+      - generic [ref=e104] [cursor=pointer]:
+        - generic: 8MB
+      - generic [ref=e106] [cursor=pointer]:
+        - generic: 13.x

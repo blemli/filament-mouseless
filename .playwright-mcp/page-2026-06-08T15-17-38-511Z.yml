@@ -1,0 +1,314 @@
+- generic [active] [ref=e846]:
+  - navigation [ref=e848]:
+    - generic [ref=e849]:
+      - button "Seitenleiste einklappen" [ref=e851] [cursor=pointer]:
+        - img [ref=e852]
+      - link "Logo Audiobeam" [ref=e854] [cursor=pointer]:
+        - /url: https://audiobeam.test/admin
+        - generic [ref=e856]:
+          - img "Logo" [ref=e857]
+          - generic [ref=e858]: Audiobeam
+    - generic [ref=e14]:
+      - generic [ref=e17]:
+        - generic [ref=e18]: Globale Suche
+        - generic [ref=e19]:
+          - img [ref=e21]
+          - searchbox "Globale Suche" [ref=e24]
+          - generic [ref=e26]: ⌘K
+      - button "Wechsle zu" [ref=e30] [cursor=pointer]:
+        - img [ref=e31]
+        - text: Wechsle zu
+      - button "Letzte Datensätze" [ref=e36] [cursor=pointer]:
+        - img [ref=e37]
+      - button "Benutzermenü" [ref=e41] [cursor=pointer]:
+        - img "Avatar von Helmut Binder" [ref=e42]
+  - generic [ref=e859]:
+    - complementary [ref=e861]:
+      - navigation [ref=e862]:
+        - list [ref=e863]:
+          - listitem [ref=e864]:
+            - list [ref=e865]:
+              - listitem [ref=e866]:
+                - link "Dashboard" [ref=e867] [cursor=pointer]:
+                  - /url: https://audiobeam.test/admin
+                  - img [ref=e868]
+                  - generic [ref=e870]: Dashboard
+              - listitem [ref=e871]:
+                - link "Hörbücher" [ref=e872] [cursor=pointer]:
+                  - /url: https://audiobeam.test/admin/audiobooks
+                  - img [ref=e873]
+                  - generic [ref=e875]: Hörbücher
+              - listitem [ref=e876]:
+                - link "Importieren" [ref=e877] [cursor=pointer]:
+                  - /url: https://audiobeam.test/admin/audiobooks/import
+                  - img [ref=e878]
+                  - generic [ref=e880]: Importieren
+              - listitem [ref=e881]:
+                - link "Kategorien" [ref=e882] [cursor=pointer]:
+                  - /url: https://audiobeam.test/admin/categories
+                  - img [ref=e883]
+                  - generic [ref=e885]: Kategorien
+              - listitem [ref=e886]:
+                - link "Mitwirkende" [ref=e887] [cursor=pointer]:
+                  - /url: https://audiobeam.test/admin/contributors
+                  - img [ref=e888]
+                  - generic [ref=e890]: Mitwirkende
+              - listitem [ref=e891]:
+                - link "Verlage" [ref=e892] [cursor=pointer]:
+                  - /url: https://audiobeam.test/admin/publishers
+                  - img [ref=e893]
+                  - generic [ref=e895]: Verlage
+              - listitem [ref=e896]:
+                - link "Tokens" [ref=e897] [cursor=pointer]:
+                  - /url: https://audiobeam.test/admin/tokens
+                  - img [ref=e898]
+                  - generic [ref=e900]: Tokens
+          - listitem [ref=e901]:
+            - generic [ref=e902] [cursor=pointer]:
+              - img [ref=e903]
+              - generic [ref=e906]: System
+              - button "System" [ref=e907]:
+                - img [ref=e908]
+    - main [ref=e911]:
+      - generic [ref=e913]:
+        - generic [ref=e914]:
+          - generic [ref=e915]:
+            - navigation [ref=e916]:
+              - list [ref=e917]:
+                - listitem [ref=e918]:
+                  - link "Hörbücher" [ref=e919] [cursor=pointer]:
+                    - /url: https://audiobeam.test/admin/audiobooks
+                - listitem [ref=e920]:
+                  - img [ref=e921]
+                  - link "Die Große Hörbibel - Von der Weisheit" [ref=e923] [cursor=pointer]:
+                    - /url: https://audiobeam.test/admin/audiobooks/5023
+                - listitem [ref=e924]:
+                  - img [ref=e925]
+                  - generic [ref=e927]: Ansehen
+            - heading "Die Große Hörbibel - Von der Weisheit" [level=1] [ref=e928]
+          - generic [ref=e930]:
+            - button "Markdown kopieren" [ref=e931] [cursor=pointer]:
+              - img [ref=e932]
+              - text: Markdown kopieren
+            - button "Löschen" [ref=e934] [cursor=pointer]
+            - link "Bearbeiten" [ref=e935] [cursor=pointer]:
+              - /url: https://audiobeam.test/admin/audiobooks/5023/edit
+            - button "Aktivitäten" [ref=e936] [cursor=pointer]:
+              - img [ref=e937]
+              - text: Aktivitäten
+        - generic [ref=e954]:
+          - generic [ref=e964]:
+            - generic [ref=e970]:
+              - definition [ref=e975]:
+                - generic [ref=e977]: Die Große Hörbibel - Von der Weisheit
+              - definition [ref=e982]:
+                - generic [ref=e984]: Bibeltexte, szenisch gelesen, in der Übersetzung Martin Luthers
+              - generic [ref=e987]:
+                - term [ref=e990]: ISBN
+                - definition [ref=e992]:
+                  - generic [ref=e994]: —
+              - generic [ref=e997]:
+                - term [ref=e1000]: Ceebo-ID
+                - definition [ref=e1002]:
+                  - generic [ref=e1004]: "3610104"
+            - generic [ref=e1010]:
+              - definition [ref=e1015]:
+                - img [ref=e1018]
+              - button "Hörprobe" [ref=e1020] [cursor=pointer]:
+                - img [ref=e1021]
+                - text: Hörprobe
+            - generic [ref=e1026]:
+              - heading "Verkauf" [level=2] [ref=e1029]
+              - generic [ref=e1031]:
+                - generic [ref=e1034]:
+                  - term [ref=e1037]: Vollpreis
+                  - definition [ref=e1039]:
+                    - generic [ref=e1041]: 4,99 €
+                - generic [ref=e1044]:
+                  - term [ref=e1047]: Verkauf erlaubt
+                  - definition [ref=e1049]:
+                    - generic [ref=e1051]:
+                      - img [ref=e1052]
+                      - text: Kein Verkauf
+                - generic [ref=e1056]:
+                  - generic [ref=e1058]:
+                    - term [ref=e1059]: Komplett
+                    - button [ref=e1062] [cursor=pointer]:
+                      - img [ref=e1063]
+                  - definition [ref=e1066]:
+                    - generic [ref=e1068]:
+                      - img [ref=e1069]
+                      - text: Unvollständig
+          - generic [ref=e1076]:
+            - generic [ref=e1079]:
+              - term [ref=e1082]: Verlag
+              - definition [ref=e1084]:
+                - link "Deutsche Bibelgesellschaft" [ref=e1085] [cursor=pointer]:
+                  - /url: https://audiobeam.test/admin/publishers/6
+                  - generic [ref=e1086]: Deutsche Bibelgesellschaft
+            - generic [ref=e1089]:
+              - term [ref=e1092]: Sprache
+              - definition [ref=e1094]:
+                - generic [ref=e1096]: —
+            - generic [ref=e1099]:
+              - term [ref=e1102]: Kategorie
+              - definition [ref=e1104]:
+                - link "Hörbibeln" [ref=e1105] [cursor=pointer]:
+                  - /url: https://audiobeam.test/admin/categories/3
+                  - generic [ref=e1106]: Hörbibeln
+            - generic [ref=e1109]:
+              - term [ref=e1112]: Mitwirkende
+              - definition [ref=e1114]:
+                - table [ref=e1117]:
+                  - rowgroup [ref=e1118]:
+                    - row "Name Rolle" [ref=e1119]:
+                      - columnheader "Name" [ref=e1120]
+                      - columnheader "Rolle" [ref=e1121]
+                  - rowgroup [ref=e1122]:
+                    - row "Frauke Poolmann Gelesen von" [ref=e1123]:
+                      - cell "Frauke Poolmann" [ref=e1124]:
+                        - definition [ref=e1127]:
+                          - link "Frauke Poolmann" [ref=e1128] [cursor=pointer]:
+                            - /url: https://audiobeam.test/admin/contributors/196
+                            - generic [ref=e1129]: Frauke Poolmann
+                      - cell "Gelesen von" [ref=e1130]:
+                        - definition [ref=e1133]:
+                          - generic [ref=e1135]: Gelesen von
+                    - row "Reinhard Firchow Gelesen von" [ref=e1136]:
+                      - cell "Reinhard Firchow" [ref=e1137]:
+                        - definition [ref=e1140]:
+                          - link "Reinhard Firchow" [ref=e1141] [cursor=pointer]:
+                            - /url: https://audiobeam.test/admin/contributors/198
+                            - generic [ref=e1142]: Reinhard Firchow
+                      - cell "Gelesen von" [ref=e1143]:
+                        - definition [ref=e1146]:
+                          - generic [ref=e1148]: Gelesen von
+                    - row "Matthias Ponnier Gelesen von" [ref=e1149]:
+                      - cell "Matthias Ponnier" [ref=e1150]:
+                        - definition [ref=e1153]:
+                          - link "Matthias Ponnier" [ref=e1154] [cursor=pointer]:
+                            - /url: https://audiobeam.test/admin/contributors/105
+                            - generic [ref=e1155]: Matthias Ponnier
+                      - cell "Gelesen von" [ref=e1156]:
+                        - definition [ref=e1159]:
+                          - generic [ref=e1161]: Gelesen von
+                    - row "Bodo Primus Gelesen von" [ref=e1162]:
+                      - cell "Bodo Primus" [ref=e1163]:
+                        - definition [ref=e1166]:
+                          - link "Bodo Primus" [ref=e1167] [cursor=pointer]:
+                            - /url: https://audiobeam.test/admin/contributors/95
+                            - generic [ref=e1168]: Bodo Primus
+                      - cell "Gelesen von" [ref=e1169]:
+                        - definition [ref=e1172]:
+                          - generic [ref=e1174]: Gelesen von
+                    - row "Hans Bayer Gelesen von" [ref=e1175]:
+                      - cell "Hans Bayer" [ref=e1176]:
+                        - definition [ref=e1179]:
+                          - link "Hans Bayer" [ref=e1180] [cursor=pointer]:
+                            - /url: https://audiobeam.test/admin/contributors/192
+                            - generic [ref=e1181]: Hans Bayer
+                      - cell "Gelesen von" [ref=e1182]:
+                        - definition [ref=e1185]:
+                          - generic [ref=e1187]: Gelesen von
+                    - row "Thomas Friebe Gelesen von" [ref=e1188]:
+                      - cell "Thomas Friebe" [ref=e1189]:
+                        - definition [ref=e1192]:
+                          - link "Thomas Friebe" [ref=e1193] [cursor=pointer]:
+                            - /url: https://audiobeam.test/admin/contributors/128
+                            - generic [ref=e1194]: Thomas Friebe
+                      - cell "Gelesen von" [ref=e1195]:
+                        - definition [ref=e1198]:
+                          - generic [ref=e1200]: Gelesen von
+                    - row "Silke Linderhaus Gelesen von" [ref=e1201]:
+                      - cell "Silke Linderhaus" [ref=e1202]:
+                        - definition [ref=e1205]:
+                          - link "Silke Linderhaus" [ref=e1206] [cursor=pointer]:
+                            - /url: https://audiobeam.test/admin/contributors/200
+                            - generic [ref=e1207]: Silke Linderhaus
+                      - cell "Gelesen von" [ref=e1208]:
+                        - definition [ref=e1211]:
+                          - generic [ref=e1213]: Gelesen von
+                    - row "Philipp Schepmann Gelesen von" [ref=e1214]:
+                      - cell "Philipp Schepmann" [ref=e1215]:
+                        - definition [ref=e1218]:
+                          - link "Philipp Schepmann" [ref=e1219] [cursor=pointer]:
+                            - /url: https://audiobeam.test/admin/contributors/90
+                            - generic [ref=e1220]: Philipp Schepmann
+                      - cell "Gelesen von" [ref=e1221]:
+                        - definition [ref=e1224]:
+                          - generic [ref=e1226]: Gelesen von
+                    - row "Christiane Zeiske Gelesen von" [ref=e1227]:
+                      - cell "Christiane Zeiske" [ref=e1228]:
+                        - definition [ref=e1231]:
+                          - link "Christiane Zeiske" [ref=e1232] [cursor=pointer]:
+                            - /url: https://audiobeam.test/admin/contributors/197
+                            - generic [ref=e1233]: Christiane Zeiske
+                      - cell "Gelesen von" [ref=e1234]:
+                        - definition [ref=e1237]:
+                          - generic [ref=e1239]: Gelesen von
+                    - row "Eva Garg Gelesen von" [ref=e1240]:
+                      - cell "Eva Garg" [ref=e1241]:
+                        - definition [ref=e1244]:
+                          - link "Eva Garg" [ref=e1245] [cursor=pointer]:
+                            - /url: https://audiobeam.test/admin/contributors/183
+                            - generic [ref=e1246]: Eva Garg
+                      - cell "Gelesen von" [ref=e1247]:
+                        - definition [ref=e1250]:
+                          - generic [ref=e1252]: Gelesen von
+                    - row "Walter Renneisen Gelesen von" [ref=e1253]:
+                      - cell "Walter Renneisen" [ref=e1254]:
+                        - definition [ref=e1257]:
+                          - link "Walter Renneisen" [ref=e1258] [cursor=pointer]:
+                            - /url: https://audiobeam.test/admin/contributors/190
+                            - generic [ref=e1259]: Walter Renneisen
+                      - cell "Gelesen von" [ref=e1260]:
+                        - definition [ref=e1263]:
+                          - generic [ref=e1265]: Gelesen von
+                    - row "Walter Gontermann Gelesen von" [ref=e1266]:
+                      - cell "Walter Gontermann" [ref=e1267]:
+                        - definition [ref=e1270]:
+                          - link "Walter Gontermann" [ref=e1271] [cursor=pointer]:
+                            - /url: https://audiobeam.test/admin/contributors/199
+                            - generic [ref=e1272]: Walter Gontermann
+                      - cell "Gelesen von" [ref=e1273]:
+                        - definition [ref=e1276]:
+                          - generic [ref=e1278]: Gelesen von
+                    - row "Ernst-August Schepmann Gelesen von" [ref=e1279]:
+                      - cell "Ernst-August Schepmann" [ref=e1280]:
+                        - definition [ref=e1283]:
+                          - link "Ernst-August Schepmann" [ref=e1284] [cursor=pointer]:
+                            - /url: https://audiobeam.test/admin/contributors/91
+                            - generic [ref=e1285]: Ernst-August Schepmann
+                      - cell "Gelesen von" [ref=e1286]:
+                        - definition [ref=e1289]:
+                          - generic [ref=e1291]: Gelesen von
+  - generic:
+    - status
+  - generic [ref=e1294]:
+    - generic [ref=e1296]:
+      - generic [ref=e1297] [cursor=pointer]:
+        - generic: Request
+      - generic [ref=e1298] [cursor=pointer]:
+        - generic: Timeline
+      - generic [ref=e1299] [cursor=pointer]:
+        - generic: Views
+        - generic [ref=e1300]: "1"
+      - generic [ref=e1301] [cursor=pointer]:
+        - generic: Queries
+        - generic [ref=e1302]: "4"
+      - generic [ref=e1303] [cursor=pointer]:
+        - generic: Models
+        - generic [ref=e1304]: "21"
+      - generic [ref=e1305] [cursor=pointer]:
+        - generic: Livewire
+        - generic [ref=e1306]: "1"
+    - generic [ref=e1307]:
+      - generic [ref=e1314] [cursor=pointer]:
+        - generic [ref=e1315]: "2"
+        - generic [ref=e1316]: POST /livewire-6f2eb9df/update
+      - generic [ref=e1317] [cursor=pointer]:
+        - generic: 77.43ms
+      - generic [ref=e1319] [cursor=pointer]:
+        - generic: 7MB
+      - generic [ref=e1321] [cursor=pointer]:
+        - generic: 13.x

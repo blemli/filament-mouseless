@@ -1,0 +1,895 @@
+- generic [active] [ref=e1]:
+  - navigation [ref=e3]:
+    - generic [ref=e4]:
+      - button "Seitenleiste einklappen" [ref=e6] [cursor=pointer]:
+        - img [ref=e7]
+      - link "Logo Audiobeam" [ref=e9] [cursor=pointer]:
+        - /url: https://audiobeam.test/admin
+        - generic [ref=e11]:
+          - img "Logo" [ref=e12]
+          - generic [ref=e13]: Audiobeam
+    - generic [ref=e14]:
+      - generic [ref=e17]:
+        - generic [ref=e18]: Globale Suche
+        - generic [ref=e19]:
+          - img [ref=e21]
+          - searchbox "Globale Suche" [ref=e24]
+          - generic [ref=e26]: ⌘K
+      - button "Wechsle zu" [ref=e30] [cursor=pointer]:
+        - img [ref=e31]
+        - text: Wechsle zu
+      - button "Letzte Datensätze" [ref=e36] [cursor=pointer]:
+        - img [ref=e37]
+      - button "Benutzermenü" [ref=e41] [cursor=pointer]:
+        - img "Avatar von Helmut Binder" [ref=e42]
+  - generic [ref=e43]:
+    - complementary [ref=e45]:
+      - navigation [ref=e46]:
+        - list [ref=e47]:
+          - listitem [ref=e48]:
+            - list [ref=e49]:
+              - listitem [ref=e50]:
+                - link "Dashboard" [ref=e51] [cursor=pointer]:
+                  - /url: https://audiobeam.test/admin
+                  - img [ref=e52]
+                  - generic [ref=e54]: Dashboard
+              - listitem [ref=e55]:
+                - link "Hörbücher" [ref=e56] [cursor=pointer]:
+                  - /url: https://audiobeam.test/admin/audiobooks
+                  - img [ref=e57]
+                  - generic [ref=e59]: Hörbücher
+              - listitem [ref=e60]:
+                - link "Importieren" [ref=e61] [cursor=pointer]:
+                  - /url: https://audiobeam.test/admin/audiobooks/import
+                  - img [ref=e62]
+                  - generic [ref=e64]: Importieren
+              - listitem [ref=e65]:
+                - link "Kategorien" [ref=e66] [cursor=pointer]:
+                  - /url: https://audiobeam.test/admin/categories
+                  - img [ref=e67]
+                  - generic [ref=e69]: Kategorien
+              - listitem [ref=e70]:
+                - link "Mitwirkende" [ref=e71] [cursor=pointer]:
+                  - /url: https://audiobeam.test/admin/contributors
+                  - img [ref=e72]
+                  - generic [ref=e74]: Mitwirkende
+              - listitem [ref=e75]:
+                - link "Verlage" [ref=e76] [cursor=pointer]:
+                  - /url: https://audiobeam.test/admin/publishers
+                  - img [ref=e77]
+                  - generic [ref=e79]: Verlage
+              - listitem [ref=e80]:
+                - link "Tokens" [ref=e81] [cursor=pointer]:
+                  - /url: https://audiobeam.test/admin/tokens
+                  - img [ref=e82]
+                  - generic [ref=e84]: Tokens
+          - listitem [ref=e85]:
+            - generic [ref=e86] [cursor=pointer]:
+              - img [ref=e87]
+              - generic [ref=e90]: System
+              - button "System" [ref=e91]:
+                - img [ref=e92]
+    - main [ref=e95]:
+      - generic [ref=e97]:
+        - generic [ref=e98]:
+          - generic [ref=e99]:
+            - navigation [ref=e100]:
+              - list [ref=e101]:
+                - listitem [ref=e102]:
+                  - link "Hörbücher" [ref=e103] [cursor=pointer]:
+                    - /url: https://audiobeam.test/admin/audiobooks
+                - listitem [ref=e104]:
+                  - img [ref=e105]
+                  - generic [ref=e107]: Übersicht
+            - heading "Hörbücher" [level=1] [ref=e108]
+          - link "Erstellen" [ref=e111] [cursor=pointer]:
+            - /url: https://audiobeam.test/admin/audiobooks/create
+        - generic [ref=e114]:
+          - tablist [ref=e118]:
+            - tab "Alle" [ref=e119] [cursor=pointer]:
+              - generic [ref=e120]: Alle
+            - tab "Eigenproduktionen" [ref=e121] [cursor=pointer]:
+              - generic [ref=e122]: Eigenproduktionen
+            - tab "Im Shop" [ref=e123] [cursor=pointer]:
+              - generic [ref=e124]: Im Shop
+          - generic [ref=e129]:
+            - generic [ref=e133]:
+              - generic [ref=e134]:
+                - generic [ref=e135]: Suche
+                - generic [ref=e136]:
+                  - img [ref=e138]
+                  - searchbox "Suche" [ref=e141]
+              - button "Filtern" [ref=e143] [cursor=pointer]:
+                - img [ref=e144]
+                - generic [ref=e147]: "0"
+              - button "Spalten auswählen" [ref=e150] [cursor=pointer]:
+                - img [ref=e151]
+            - table [ref=e154]:
+              - rowgroup [ref=e155]:
+                - row "Alle Einträge für Stapelverarbeitung auswählen/abwählen. Cover Titel Autor:in ISBN Verlag Kategorie Preis Verkauf erlaubt Komplett Aktionen" [ref=e156]:
+                  - columnheader "Alle Einträge für Stapelverarbeitung auswählen/abwählen." [ref=e157]:
+                    - checkbox "Alle Einträge für Stapelverarbeitung auswählen/abwählen." [ref=e158]
+                  - columnheader "Cover" [ref=e159]
+                  - columnheader "Titel" [ref=e160]:
+                    - button "Titel" [ref=e161] [cursor=pointer]:
+                      - text: Titel
+                      - img [ref=e162]
+                  - columnheader "Autor:in" [ref=e164]
+                  - columnheader "ISBN" [ref=e165]:
+                    - button "ISBN" [ref=e166] [cursor=pointer]:
+                      - text: ISBN
+                      - img [ref=e167]
+                  - columnheader "Verlag" [ref=e169]:
+                    - button "Verlag" [ref=e170] [cursor=pointer]:
+                      - text: Verlag
+                      - img [ref=e171]
+                  - columnheader "Kategorie" [ref=e173]:
+                    - button "Kategorie" [ref=e174] [cursor=pointer]:
+                      - text: Kategorie
+                      - img [ref=e175]
+                  - columnheader "Preis" [ref=e177]:
+                    - button "Preis" [ref=e178] [cursor=pointer]:
+                      - text: Preis
+                      - img [ref=e179]
+                  - columnheader "Verkauf erlaubt" [ref=e181]:
+                    - button "Verkauf erlaubt" [ref=e182] [cursor=pointer]:
+                      - text: Verkauf erlaubt
+                      - img [ref=e183]
+                  - columnheader "Komplett" [ref=e185]:
+                    - button "Komplett" [ref=e186] [cursor=pointer]:
+                      - text: Komplett
+                      - img [ref=e187]
+                  - columnheader "Aktionen" [ref=e189]
+              - rowgroup [ref=e190]:
+                - row "Eintrag 199956 für Stapelverarbeitung auswählen/abwählen. Moral Revolution Die nackte Wahrheit über sexuelle Reinheit Kris Vallotton , Jason Vallotton -> 9783952399958 Fountainvoice Audio Mann 14,95 € Kein Verkauf Unvollständig Bearbeiten Löschen Aktionen" [ref=e191]:
+                  - cell "Eintrag 199956 für Stapelverarbeitung auswählen/abwählen." [ref=e192]:
+                    - checkbox "Eintrag 199956 für Stapelverarbeitung auswählen/abwählen." [ref=e193]
+                  - cell [ref=e194]:
+                    - link [ref=e195] [cursor=pointer]:
+                      - /url: https://audiobeam.test/admin/audiobooks/199956
+                      - img [ref=e197]
+                  - cell "Moral Revolution Die nackte Wahrheit über sexuelle Reinheit" [ref=e198]:
+                    - link "Moral Revolution Die nackte Wahrheit über sexuelle Reinheit" [ref=e199] [cursor=pointer]:
+                      - /url: https://audiobeam.test/admin/audiobooks/199956
+                      - generic [ref=e200]:
+                        - paragraph [ref=e201]:
+                          - strong [ref=e202]: Moral Revolution
+                        - paragraph [ref=e203]: Die nackte Wahrheit über sexuelle Reinheit
+                  - cell "Kris Vallotton , Jason Vallotton ->" [ref=e204]:
+                    - link:
+                      - /url: https://audiobeam.test/admin/audiobooks/199956
+                    - generic [ref=e205]:
+                      - link:
+                        - /url: https://audiobeam.test/admin/audiobooks/199956
+                      - generic [ref=e206]:
+                        - link:
+                          - /url: https://audiobeam.test/admin/audiobooks/199956
+                        - link "Kris Vallotton" [ref=e207] [cursor=pointer]:
+                          - /url: https://audiobeam.test/admin/contributors/211
+                        - generic [ref=e208]: ","
+                        - link "Jason Vallotton" [ref=e210] [cursor=pointer]:
+                          - /url: https://audiobeam.test/admin/contributors/212
+                        - link "->" [ref=e211] [cursor=pointer]:
+                          - /url: https://audiobeam.test/admin/contributors?filters%5Baudiobook%5D%5Bvalues%5D%5B0%5D=199956
+                          - img [ref=e212]
+                          - text: "->"
+                  - cell "9783952399958" [ref=e214]:
+                    - link "9783952399958" [ref=e215] [cursor=pointer]:
+                      - /url: https://audiobeam.test/admin/audiobooks/199956
+                      - generic [ref=e216]: "9783952399958"
+                  - cell "Fountainvoice Audio" [ref=e217]:
+                    - link:
+                      - /url: https://audiobeam.test/admin/audiobooks/199956
+                    - generic [ref=e218]:
+                      - link:
+                        - /url: https://audiobeam.test/admin/audiobooks/199956
+                      - generic [ref=e219]:
+                        - link:
+                          - /url: https://audiobeam.test/admin/audiobooks/199956
+                        - link "Fountainvoice Audio" [ref=e220] [cursor=pointer]:
+                          - /url: https://audiobeam.test/admin/publishers/1
+                  - cell "Mann" [ref=e221]:
+                    - link "Mann" [ref=e222] [cursor=pointer]:
+                      - /url: https://audiobeam.test/admin/categories/4
+                      - generic [ref=e223]: Mann
+                  - cell "14,95 €" [ref=e224]:
+                    - link "14,95 €" [ref=e225] [cursor=pointer]:
+                      - /url: https://audiobeam.test/admin/audiobooks/199956
+                      - generic [ref=e226]: 14,95 €
+                  - cell "Kein Verkauf" [ref=e227]:
+                    - link "Kein Verkauf" [ref=e228] [cursor=pointer]:
+                      - /url: https://audiobeam.test/admin/audiobooks/199956
+                      - generic [ref=e229]:
+                        - img [ref=e230]
+                        - text: Kein Verkauf
+                  - cell "Unvollständig" [ref=e232]:
+                    - button "Unvollständig" [ref=e233] [cursor=pointer]:
+                      - generic [ref=e234]:
+                        - img [ref=e235]
+                        - text: Unvollständig
+                  - cell "Bearbeiten Löschen Aktionen" [ref=e237]:
+                    - generic [ref=e238]:
+                      - link "Bearbeiten" [ref=e239] [cursor=pointer]:
+                        - /url: https://audiobeam.test/admin/audiobooks/199956/edit
+                        - img [ref=e240]
+                        - text: Bearbeiten
+                      - button "Löschen" [ref=e243] [cursor=pointer]:
+                        - img [ref=e244]
+                        - text: Löschen
+                      - button "Aktionen" [ref=e248] [cursor=pointer]:
+                        - img [ref=e249]
+                - row "Eintrag 5023 für Stapelverarbeitung auswählen/abwählen. Die Große Hörbibel - Von der Weisheit Bibeltexte, szenisch gelesen, in der Übersetzung Martin Luthers Deutsche Bibelgesellschaft Hörbibeln 4,99 € Kein Verkauf Unvollständig Bearbeiten Löschen Aktionen" [ref=e251]:
+                  - cell "Eintrag 5023 für Stapelverarbeitung auswählen/abwählen." [ref=e252]:
+                    - checkbox "Eintrag 5023 für Stapelverarbeitung auswählen/abwählen." [ref=e253]
+                  - cell [ref=e254]:
+                    - link [ref=e255] [cursor=pointer]:
+                      - /url: https://audiobeam.test/admin/audiobooks/5023
+                      - img [ref=e257]
+                  - cell "Die Große Hörbibel - Von der Weisheit Bibeltexte, szenisch gelesen, in der Übersetzung Martin Luthers" [ref=e258]:
+                    - link "Die Große Hörbibel - Von der Weisheit Bibeltexte, szenisch gelesen, in der Übersetzung Martin Luthers" [ref=e259] [cursor=pointer]:
+                      - /url: https://audiobeam.test/admin/audiobooks/5023
+                      - generic [ref=e260]:
+                        - paragraph [ref=e261]:
+                          - strong [ref=e262]: Die Große Hörbibel - Von der Weisheit
+                        - paragraph [ref=e263]: Bibeltexte, szenisch gelesen, in der Übersetzung Martin Luthers
+                  - cell [ref=e264]:
+                    - link [ref=e265] [cursor=pointer]:
+                      - /url: https://audiobeam.test/admin/audiobooks/5023
+                  - cell [ref=e267]:
+                    - link [ref=e268] [cursor=pointer]:
+                      - /url: https://audiobeam.test/admin/audiobooks/5023
+                  - cell "Deutsche Bibelgesellschaft" [ref=e270]:
+                    - link:
+                      - /url: https://audiobeam.test/admin/audiobooks/5023
+                    - generic [ref=e271]:
+                      - link:
+                        - /url: https://audiobeam.test/admin/audiobooks/5023
+                      - generic [ref=e272]:
+                        - link:
+                          - /url: https://audiobeam.test/admin/audiobooks/5023
+                        - link "Deutsche Bibelgesellschaft" [ref=e273] [cursor=pointer]:
+                          - /url: https://audiobeam.test/admin/publishers/6
+                  - cell "Hörbibeln" [ref=e274]:
+                    - link "Hörbibeln" [ref=e275] [cursor=pointer]:
+                      - /url: https://audiobeam.test/admin/categories/3
+                      - generic [ref=e276]: Hörbibeln
+                  - cell "4,99 €" [ref=e277]:
+                    - link "4,99 €" [ref=e278] [cursor=pointer]:
+                      - /url: https://audiobeam.test/admin/audiobooks/5023
+                      - generic [ref=e279]: 4,99 €
+                  - cell "Kein Verkauf" [ref=e280]:
+                    - link "Kein Verkauf" [ref=e281] [cursor=pointer]:
+                      - /url: https://audiobeam.test/admin/audiobooks/5023
+                      - generic [ref=e282]:
+                        - img [ref=e283]
+                        - text: Kein Verkauf
+                  - cell "Unvollständig" [ref=e285]:
+                    - button "Unvollständig" [ref=e286] [cursor=pointer]:
+                      - generic [ref=e287]:
+                        - img [ref=e288]
+                        - text: Unvollständig
+                  - cell "Bearbeiten Löschen Aktionen" [ref=e290]:
+                    - generic [ref=e291]:
+                      - link "Bearbeiten" [ref=e292] [cursor=pointer]:
+                        - /url: https://audiobeam.test/admin/audiobooks/5023/edit
+                        - img [ref=e293]
+                        - text: Bearbeiten
+                      - button "Löschen" [ref=e296] [cursor=pointer]:
+                        - img [ref=e297]
+                        - text: Löschen
+                      - button "Aktionen" [ref=e301] [cursor=pointer]:
+                        - img [ref=e302]
+                - row "Eintrag 200900 für Stapelverarbeitung auswählen/abwählen. test 33,00 € Kein Verkauf Unvollständig Bearbeiten Löschen Aktionen" [ref=e304]:
+                  - cell "Eintrag 200900 für Stapelverarbeitung auswählen/abwählen." [ref=e305]:
+                    - checkbox "Eintrag 200900 für Stapelverarbeitung auswählen/abwählen." [ref=e306]
+                  - cell [ref=e307]:
+                    - link [ref=e308] [cursor=pointer]:
+                      - /url: https://audiobeam.test/admin/audiobooks/200900
+                  - cell "test" [ref=e310]:
+                    - link "test" [ref=e311] [cursor=pointer]:
+                      - /url: https://audiobeam.test/admin/audiobooks/200900
+                      - strong [ref=e313]: test
+                  - cell [ref=e314]:
+                    - link [ref=e315] [cursor=pointer]:
+                      - /url: https://audiobeam.test/admin/audiobooks/200900
+                  - cell [ref=e317]:
+                    - link [ref=e318] [cursor=pointer]:
+                      - /url: https://audiobeam.test/admin/audiobooks/200900
+                  - cell [ref=e320]:
+                    - link [ref=e321] [cursor=pointer]:
+                      - /url: https://audiobeam.test/admin/audiobooks/200900
+                  - cell [ref=e323]:
+                    - link [ref=e324] [cursor=pointer]:
+                      - /url: https://audiobeam.test/admin/audiobooks/200900
+                  - cell "33,00 €" [ref=e326]:
+                    - link "33,00 €" [ref=e327] [cursor=pointer]:
+                      - /url: https://audiobeam.test/admin/audiobooks/200900
+                      - generic [ref=e328]: 33,00 €
+                  - cell "Kein Verkauf" [ref=e329]:
+                    - link "Kein Verkauf" [ref=e330] [cursor=pointer]:
+                      - /url: https://audiobeam.test/admin/audiobooks/200900
+                      - generic [ref=e331]:
+                        - img [ref=e332]
+                        - text: Kein Verkauf
+                  - cell "Unvollständig" [ref=e334]:
+                    - button "Unvollständig" [ref=e335] [cursor=pointer]:
+                      - generic [ref=e336]:
+                        - img [ref=e337]
+                        - text: Unvollständig
+                  - cell "Bearbeiten Löschen Aktionen" [ref=e339]:
+                    - generic [ref=e340]:
+                      - link "Bearbeiten" [ref=e341] [cursor=pointer]:
+                        - /url: https://audiobeam.test/admin/audiobooks/200900/edit
+                        - img [ref=e342]
+                        - text: Bearbeiten
+                      - button "Löschen" [ref=e345] [cursor=pointer]:
+                        - img [ref=e346]
+                        - text: Löschen
+                      - button "Aktionen" [ref=e350] [cursor=pointer]:
+                        - img [ref=e351]
+                - row "Eintrag 75121 für Stapelverarbeitung auswählen/abwählen. \"Das Kind, das dauernd Kopfstand machte\" und andere Geschichten und Lieder von Wolfram Hänel und Arndt Schulz Wolfram Hänel -> 9788728057742 Saga Egmont Hörbuch 6,99 € Kein Verkauf Unvollständig Bearbeiten Löschen Aktionen" [ref=e353]:
+                  - cell "Eintrag 75121 für Stapelverarbeitung auswählen/abwählen." [ref=e354]:
+                    - checkbox "Eintrag 75121 für Stapelverarbeitung auswählen/abwählen." [ref=e355]
+                  - cell [ref=e356]:
+                    - link [ref=e357] [cursor=pointer]:
+                      - /url: https://audiobeam.test/admin/audiobooks/75121
+                      - img [ref=e359]
+                  - cell "\"Das Kind, das dauernd Kopfstand machte\" und andere Geschichten und Lieder von Wolfram Hänel und Arndt Schulz" [ref=e360]:
+                    - link "\"Das Kind, das dauernd Kopfstand machte\" und andere Geschichten und Lieder von Wolfram Hänel und Arndt Schulz" [ref=e361] [cursor=pointer]:
+                      - /url: https://audiobeam.test/admin/audiobooks/75121
+                      - strong [ref=e363]: "\"Das Kind, das dauernd Kopfstand machte\" und andere Geschichten und Lieder von Wolfram Hänel und Arndt Schulz"
+                  - cell "Wolfram Hänel ->" [ref=e364]:
+                    - link:
+                      - /url: https://audiobeam.test/admin/audiobooks/75121
+                    - generic [ref=e365]:
+                      - link:
+                        - /url: https://audiobeam.test/admin/audiobooks/75121
+                      - generic [ref=e366]:
+                        - link:
+                          - /url: https://audiobeam.test/admin/audiobooks/75121
+                        - link "Wolfram Hänel" [ref=e367] [cursor=pointer]:
+                          - /url: https://audiobeam.test/admin/contributors/226
+                        - link "->" [ref=e368] [cursor=pointer]:
+                          - /url: https://audiobeam.test/admin/contributors?filters%5Baudiobook%5D%5Bvalues%5D%5B0%5D=75121
+                          - img [ref=e369]
+                          - text: "->"
+                  - cell "9788728057742" [ref=e371]:
+                    - link "9788728057742" [ref=e372] [cursor=pointer]:
+                      - /url: https://audiobeam.test/admin/audiobooks/75121
+                      - generic [ref=e373]: "9788728057742"
+                  - cell "Saga Egmont Hörbuch" [ref=e374]:
+                    - link:
+                      - /url: https://audiobeam.test/admin/audiobooks/75121
+                    - generic [ref=e375]:
+                      - link:
+                        - /url: https://audiobeam.test/admin/audiobooks/75121
+                      - generic [ref=e376]:
+                        - link:
+                          - /url: https://audiobeam.test/admin/audiobooks/75121
+                        - link "Saga Egmont Hörbuch" [ref=e377] [cursor=pointer]:
+                          - /url: https://audiobeam.test/admin/publishers/28
+                  - cell [ref=e378]:
+                    - link [ref=e379] [cursor=pointer]:
+                      - /url: https://audiobeam.test/admin/audiobooks/75121
+                  - cell "6,99 €" [ref=e381]:
+                    - link "6,99 €" [ref=e382] [cursor=pointer]:
+                      - /url: https://audiobeam.test/admin/audiobooks/75121
+                      - generic [ref=e383]: 6,99 €
+                  - cell "Kein Verkauf" [ref=e384]:
+                    - link "Kein Verkauf" [ref=e385] [cursor=pointer]:
+                      - /url: https://audiobeam.test/admin/audiobooks/75121
+                      - generic [ref=e386]:
+                        - img [ref=e387]
+                        - text: Kein Verkauf
+                  - cell "Unvollständig" [ref=e389]:
+                    - button "Unvollständig" [ref=e390] [cursor=pointer]:
+                      - generic [ref=e391]:
+                        - img [ref=e392]
+                        - text: Unvollständig
+                  - cell "Bearbeiten Löschen Aktionen" [ref=e394]:
+                    - generic [ref=e395]:
+                      - link "Bearbeiten" [ref=e396] [cursor=pointer]:
+                        - /url: https://audiobeam.test/admin/audiobooks/75121/edit
+                        - img [ref=e397]
+                        - text: Bearbeiten
+                      - button "Löschen" [ref=e400] [cursor=pointer]:
+                        - img [ref=e401]
+                        - text: Löschen
+                      - button "Aktionen" [ref=e405] [cursor=pointer]:
+                        - img [ref=e406]
+                - row "Eintrag 5612 für Stapelverarbeitung auswählen/abwählen. \"Den Frieden leben\". Was die Lepra Ärztin und Nonne Ruth Pfau in Pakistan und Afghanistan bewirkt. Regina Oehler -> Hessischer Rundfunk 0,99 € Kein Verkauf Unvollständig Bearbeiten Löschen Aktionen" [ref=e408]:
+                  - cell "Eintrag 5612 für Stapelverarbeitung auswählen/abwählen." [ref=e409]:
+                    - checkbox "Eintrag 5612 für Stapelverarbeitung auswählen/abwählen." [ref=e410]
+                  - cell [ref=e411]:
+                    - link [ref=e412] [cursor=pointer]:
+                      - /url: https://audiobeam.test/admin/audiobooks/5612
+                      - img [ref=e414]
+                  - cell "\"Den Frieden leben\". Was die Lepra Ärztin und Nonne Ruth Pfau in Pakistan und Afghanistan bewirkt." [ref=e415]:
+                    - link "\"Den Frieden leben\". Was die Lepra Ärztin und Nonne Ruth Pfau in Pakistan und Afghanistan bewirkt." [ref=e416] [cursor=pointer]:
+                      - /url: https://audiobeam.test/admin/audiobooks/5612
+                      - strong [ref=e418]: "\"Den Frieden leben\". Was die Lepra Ärztin und Nonne Ruth Pfau in Pakistan und Afghanistan bewirkt."
+                  - cell "Regina Oehler ->" [ref=e419]:
+                    - link:
+                      - /url: https://audiobeam.test/admin/audiobooks/5612
+                    - generic [ref=e420]:
+                      - link:
+                        - /url: https://audiobeam.test/admin/audiobooks/5612
+                      - generic [ref=e421]:
+                        - link:
+                          - /url: https://audiobeam.test/admin/audiobooks/5612
+                        - link "Regina Oehler" [ref=e422] [cursor=pointer]:
+                          - /url: https://audiobeam.test/admin/contributors/227
+                        - link "->" [ref=e423] [cursor=pointer]:
+                          - /url: https://audiobeam.test/admin/contributors?filters%5Baudiobook%5D%5Bvalues%5D%5B0%5D=5612
+                          - img [ref=e424]
+                          - text: "->"
+                  - cell [ref=e426]:
+                    - link [ref=e427] [cursor=pointer]:
+                      - /url: https://audiobeam.test/admin/audiobooks/5612
+                  - cell "Hessischer Rundfunk" [ref=e429]:
+                    - link:
+                      - /url: https://audiobeam.test/admin/audiobooks/5612
+                    - generic [ref=e430]:
+                      - link:
+                        - /url: https://audiobeam.test/admin/audiobooks/5612
+                      - generic [ref=e431]:
+                        - link:
+                          - /url: https://audiobeam.test/admin/audiobooks/5612
+                        - link "Hessischer Rundfunk" [ref=e432] [cursor=pointer]:
+                          - /url: https://audiobeam.test/admin/publishers/174
+                  - cell [ref=e433]:
+                    - link [ref=e434] [cursor=pointer]:
+                      - /url: https://audiobeam.test/admin/audiobooks/5612
+                  - cell "0,99 €" [ref=e436]:
+                    - link "0,99 €" [ref=e437] [cursor=pointer]:
+                      - /url: https://audiobeam.test/admin/audiobooks/5612
+                      - generic [ref=e438]: 0,99 €
+                  - cell "Kein Verkauf" [ref=e439]:
+                    - link "Kein Verkauf" [ref=e440] [cursor=pointer]:
+                      - /url: https://audiobeam.test/admin/audiobooks/5612
+                      - generic [ref=e441]:
+                        - img [ref=e442]
+                        - text: Kein Verkauf
+                  - cell "Unvollständig" [ref=e444]:
+                    - button "Unvollständig" [ref=e445] [cursor=pointer]:
+                      - generic [ref=e446]:
+                        - img [ref=e447]
+                        - text: Unvollständig
+                  - cell "Bearbeiten Löschen Aktionen" [ref=e449]:
+                    - generic [ref=e450]:
+                      - link "Bearbeiten" [ref=e451] [cursor=pointer]:
+                        - /url: https://audiobeam.test/admin/audiobooks/5612/edit
+                        - img [ref=e452]
+                        - text: Bearbeiten
+                      - button "Löschen" [ref=e455] [cursor=pointer]:
+                        - img [ref=e456]
+                        - text: Löschen
+                      - button "Aktionen" [ref=e460] [cursor=pointer]:
+                        - img [ref=e461]
+                - row "Eintrag 72309 für Stapelverarbeitung auswählen/abwählen. \"Das Böse ist des Menschen beste Kraft\" Christian Liederer -> 9788728053560 Saga Egmont Hörbuch 6,99 € Kein Verkauf Unvollständig Bearbeiten Löschen Aktionen" [ref=e463]:
+                  - cell "Eintrag 72309 für Stapelverarbeitung auswählen/abwählen." [ref=e464]:
+                    - checkbox "Eintrag 72309 für Stapelverarbeitung auswählen/abwählen." [ref=e465]
+                  - cell [ref=e466]:
+                    - link [ref=e467] [cursor=pointer]:
+                      - /url: https://audiobeam.test/admin/audiobooks/72309
+                      - img [ref=e469]
+                  - cell "\"Das Böse ist des Menschen beste Kraft\"" [ref=e470]:
+                    - link "\"Das Böse ist des Menschen beste Kraft\"" [ref=e471] [cursor=pointer]:
+                      - /url: https://audiobeam.test/admin/audiobooks/72309
+                      - strong [ref=e473]: "\"Das Böse ist des Menschen beste Kraft\""
+                  - cell "Christian Liederer ->" [ref=e474]:
+                    - link:
+                      - /url: https://audiobeam.test/admin/audiobooks/72309
+                    - generic [ref=e475]:
+                      - link:
+                        - /url: https://audiobeam.test/admin/audiobooks/72309
+                      - generic [ref=e476]:
+                        - link:
+                          - /url: https://audiobeam.test/admin/audiobooks/72309
+                        - link "Christian Liederer" [ref=e477] [cursor=pointer]:
+                          - /url: https://audiobeam.test/admin/contributors/225
+                        - link "->" [ref=e478] [cursor=pointer]:
+                          - /url: https://audiobeam.test/admin/contributors?filters%5Baudiobook%5D%5Bvalues%5D%5B0%5D=72309
+                          - img [ref=e479]
+                          - text: "->"
+                  - cell "9788728053560" [ref=e481]:
+                    - link "9788728053560" [ref=e482] [cursor=pointer]:
+                      - /url: https://audiobeam.test/admin/audiobooks/72309
+                      - generic [ref=e483]: "9788728053560"
+                  - cell "Saga Egmont Hörbuch" [ref=e484]:
+                    - link:
+                      - /url: https://audiobeam.test/admin/audiobooks/72309
+                    - generic [ref=e485]:
+                      - link:
+                        - /url: https://audiobeam.test/admin/audiobooks/72309
+                      - generic [ref=e486]:
+                        - link:
+                          - /url: https://audiobeam.test/admin/audiobooks/72309
+                        - link "Saga Egmont Hörbuch" [ref=e487] [cursor=pointer]:
+                          - /url: https://audiobeam.test/admin/publishers/28
+                  - cell [ref=e488]:
+                    - link [ref=e489] [cursor=pointer]:
+                      - /url: https://audiobeam.test/admin/audiobooks/72309
+                  - cell "6,99 €" [ref=e491]:
+                    - link "6,99 €" [ref=e492] [cursor=pointer]:
+                      - /url: https://audiobeam.test/admin/audiobooks/72309
+                      - generic [ref=e493]: 6,99 €
+                  - cell "Kein Verkauf" [ref=e494]:
+                    - link "Kein Verkauf" [ref=e495] [cursor=pointer]:
+                      - /url: https://audiobeam.test/admin/audiobooks/72309
+                      - generic [ref=e496]:
+                        - img [ref=e497]
+                        - text: Kein Verkauf
+                  - cell "Unvollständig" [ref=e499]:
+                    - button "Unvollständig" [ref=e500] [cursor=pointer]:
+                      - generic [ref=e501]:
+                        - img [ref=e502]
+                        - text: Unvollständig
+                  - cell "Bearbeiten Löschen Aktionen" [ref=e504]:
+                    - generic [ref=e505]:
+                      - link "Bearbeiten" [ref=e506] [cursor=pointer]:
+                        - /url: https://audiobeam.test/admin/audiobooks/72309/edit
+                        - img [ref=e507]
+                        - text: Bearbeiten
+                      - button "Löschen" [ref=e510] [cursor=pointer]:
+                        - img [ref=e511]
+                        - text: Löschen
+                      - button "Aktionen" [ref=e515] [cursor=pointer]:
+                        - img [ref=e516]
+                - row "Eintrag 8053 für Stapelverarbeitung auswählen/abwählen. \"Als Kind wünschte ich mir goldene Locken\" Gespräche mit Überlebenden der Shoah Hilde Domin , Margot Friedländer , Inge Deutschkron , +2 -> Der Audio Verlag 13,99 € Kein Verkauf Unvollständig Bearbeiten Löschen Aktionen" [ref=e518]:
+                  - cell "Eintrag 8053 für Stapelverarbeitung auswählen/abwählen." [ref=e519]:
+                    - checkbox "Eintrag 8053 für Stapelverarbeitung auswählen/abwählen." [ref=e520]
+                  - cell [ref=e521]:
+                    - link [ref=e522] [cursor=pointer]:
+                      - /url: https://audiobeam.test/admin/audiobooks/8053
+                      - img [ref=e524]
+                  - cell "\"Als Kind wünschte ich mir goldene Locken\" Gespräche mit Überlebenden der Shoah" [ref=e525]:
+                    - link "\"Als Kind wünschte ich mir goldene Locken\" Gespräche mit Überlebenden der Shoah" [ref=e526] [cursor=pointer]:
+                      - /url: https://audiobeam.test/admin/audiobooks/8053
+                      - generic [ref=e527]:
+                        - paragraph [ref=e528]:
+                          - strong [ref=e529]: "\"Als Kind wünschte ich mir goldene Locken\""
+                        - paragraph [ref=e530]: Gespräche mit Überlebenden der Shoah
+                  - cell "Hilde Domin , Margot Friedländer , Inge Deutschkron , +2 ->" [ref=e531]:
+                    - link:
+                      - /url: https://audiobeam.test/admin/audiobooks/8053
+                    - generic [ref=e532]:
+                      - link:
+                        - /url: https://audiobeam.test/admin/audiobooks/8053
+                      - generic [ref=e533]:
+                        - link:
+                          - /url: https://audiobeam.test/admin/audiobooks/8053
+                        - link "Hilde Domin" [ref=e534] [cursor=pointer]:
+                          - /url: https://audiobeam.test/admin/contributors/220
+                        - generic [ref=e535]: ","
+                        - link "Margot Friedländer" [ref=e537] [cursor=pointer]:
+                          - /url: https://audiobeam.test/admin/contributors/222
+                        - generic [ref=e538]: ","
+                        - link "Inge Deutschkron" [ref=e540] [cursor=pointer]:
+                          - /url: https://audiobeam.test/admin/contributors/219
+                        - generic [ref=e541]: ","
+                        - generic [ref=e542]: "+2"
+                        - link "->" [ref=e543] [cursor=pointer]:
+                          - /url: https://audiobeam.test/admin/contributors?filters%5Baudiobook%5D%5Bvalues%5D%5B0%5D=8053
+                          - img [ref=e544]
+                          - text: "->"
+                  - cell [ref=e546]:
+                    - link [ref=e547] [cursor=pointer]:
+                      - /url: https://audiobeam.test/admin/audiobooks/8053
+                  - cell "Der Audio Verlag" [ref=e549]:
+                    - link:
+                      - /url: https://audiobeam.test/admin/audiobooks/8053
+                    - generic [ref=e550]:
+                      - link:
+                        - /url: https://audiobeam.test/admin/audiobooks/8053
+                      - generic [ref=e551]:
+                        - link:
+                          - /url: https://audiobeam.test/admin/audiobooks/8053
+                        - link "Der Audio Verlag" [ref=e552] [cursor=pointer]:
+                          - /url: https://audiobeam.test/admin/publishers/252
+                  - cell [ref=e553]:
+                    - link [ref=e554] [cursor=pointer]:
+                      - /url: https://audiobeam.test/admin/audiobooks/8053
+                  - cell "13,99 €" [ref=e556]:
+                    - link "13,99 €" [ref=e557] [cursor=pointer]:
+                      - /url: https://audiobeam.test/admin/audiobooks/8053
+                      - generic [ref=e558]: 13,99 €
+                  - cell "Kein Verkauf" [ref=e559]:
+                    - link "Kein Verkauf" [ref=e560] [cursor=pointer]:
+                      - /url: https://audiobeam.test/admin/audiobooks/8053
+                      - generic [ref=e561]:
+                        - img [ref=e562]
+                        - text: Kein Verkauf
+                  - cell "Unvollständig" [ref=e564]:
+                    - button "Unvollständig" [ref=e565] [cursor=pointer]:
+                      - generic [ref=e566]:
+                        - img [ref=e567]
+                        - text: Unvollständig
+                  - cell "Bearbeiten Löschen Aktionen" [ref=e569]:
+                    - generic [ref=e570]:
+                      - link "Bearbeiten" [ref=e571] [cursor=pointer]:
+                        - /url: https://audiobeam.test/admin/audiobooks/8053/edit
+                        - img [ref=e572]
+                        - text: Bearbeiten
+                      - button "Löschen" [ref=e575] [cursor=pointer]:
+                        - img [ref=e576]
+                        - text: Löschen
+                      - button "Aktionen" [ref=e580] [cursor=pointer]:
+                        - img [ref=e581]
+                - row "Eintrag 762 für Stapelverarbeitung auswählen/abwählen. Flug ins Nutella Mirjam Müntefering -> 9783837180428 Random House Audio 88,88 € Kein Verkauf Unvollständig Bearbeiten Löschen Aktionen" [ref=e583]:
+                  - cell "Eintrag 762 für Stapelverarbeitung auswählen/abwählen." [ref=e584]:
+                    - checkbox "Eintrag 762 für Stapelverarbeitung auswählen/abwählen." [ref=e585]
+                  - cell [ref=e586]:
+                    - link [ref=e587] [cursor=pointer]:
+                      - /url: https://audiobeam.test/admin/audiobooks/762
+                      - img [ref=e589]
+                  - cell "Flug ins Nutella" [ref=e590]:
+                    - link "Flug ins Nutella" [ref=e591] [cursor=pointer]:
+                      - /url: https://audiobeam.test/admin/audiobooks/762
+                      - strong [ref=e593]: Flug ins Nutella
+                  - cell "Mirjam Müntefering ->" [ref=e594]:
+                    - link:
+                      - /url: https://audiobeam.test/admin/audiobooks/762
+                    - generic [ref=e595]:
+                      - link:
+                        - /url: https://audiobeam.test/admin/audiobooks/762
+                      - generic [ref=e596]:
+                        - link:
+                          - /url: https://audiobeam.test/admin/audiobooks/762
+                        - link "Mirjam Müntefering" [ref=e597] [cursor=pointer]:
+                          - /url: https://audiobeam.test/admin/contributors/218
+                        - link "->" [ref=e598] [cursor=pointer]:
+                          - /url: https://audiobeam.test/admin/contributors?filters%5Baudiobook%5D%5Bvalues%5D%5B0%5D=762
+                          - img [ref=e599]
+                          - text: "->"
+                  - cell "9783837180428" [ref=e601]:
+                    - link "9783837180428" [ref=e602] [cursor=pointer]:
+                      - /url: https://audiobeam.test/admin/audiobooks/762
+                      - generic [ref=e603]: "9783837180428"
+                  - cell "Random House Audio" [ref=e604]:
+                    - link:
+                      - /url: https://audiobeam.test/admin/audiobooks/762
+                    - generic [ref=e605]:
+                      - link:
+                        - /url: https://audiobeam.test/admin/audiobooks/762
+                      - generic [ref=e606]:
+                        - link:
+                          - /url: https://audiobeam.test/admin/audiobooks/762
+                        - link "Random House Audio" [ref=e607] [cursor=pointer]:
+                          - /url: https://audiobeam.test/admin/publishers/26
+                  - cell [ref=e608]:
+                    - link [ref=e609] [cursor=pointer]:
+                      - /url: https://audiobeam.test/admin/audiobooks/762
+                  - cell "88,88 €" [ref=e611]:
+                    - link "88,88 €" [ref=e612] [cursor=pointer]:
+                      - /url: https://audiobeam.test/admin/audiobooks/762
+                      - generic [ref=e613]: 88,88 €
+                  - cell "Kein Verkauf" [ref=e614]:
+                    - link "Kein Verkauf" [ref=e615] [cursor=pointer]:
+                      - /url: https://audiobeam.test/admin/audiobooks/762
+                      - generic [ref=e616]:
+                        - img [ref=e617]
+                        - text: Kein Verkauf
+                  - cell "Unvollständig" [ref=e619]:
+                    - button "Unvollständig" [ref=e620] [cursor=pointer]:
+                      - generic [ref=e621]:
+                        - img [ref=e622]
+                        - text: Unvollständig
+                  - cell "Bearbeiten Löschen Aktionen" [ref=e624]:
+                    - generic [ref=e625]:
+                      - link "Bearbeiten" [ref=e626] [cursor=pointer]:
+                        - /url: https://audiobeam.test/admin/audiobooks/762/edit
+                        - img [ref=e627]
+                        - text: Bearbeiten
+                      - button "Löschen" [ref=e630] [cursor=pointer]:
+                        - img [ref=e631]
+                        - text: Löschen
+                      - button "Aktionen" [ref=e635] [cursor=pointer]:
+                        - img [ref=e636]
+                - row "Eintrag 199959 für Stapelverarbeitung auswählen/abwählen. Die Pilgerreise John Bunyan -> 9783775155267 Fountainvoice Audio Fantasy 14,95 € Erlaubt Unvollständig Bearbeiten Löschen Aktionen" [ref=e638]:
+                  - cell "Eintrag 199959 für Stapelverarbeitung auswählen/abwählen." [ref=e639]:
+                    - checkbox "Eintrag 199959 für Stapelverarbeitung auswählen/abwählen." [ref=e640]
+                  - cell [ref=e641]:
+                    - link [ref=e642] [cursor=pointer]:
+                      - /url: https://audiobeam.test/admin/audiobooks/199959
+                      - img [ref=e644]
+                  - cell "Die Pilgerreise" [ref=e645]:
+                    - link "Die Pilgerreise" [ref=e646] [cursor=pointer]:
+                      - /url: https://audiobeam.test/admin/audiobooks/199959
+                      - strong [ref=e648]: Die Pilgerreise
+                  - cell "John Bunyan ->" [ref=e649]:
+                    - link:
+                      - /url: https://audiobeam.test/admin/audiobooks/199959
+                    - generic [ref=e650]:
+                      - link:
+                        - /url: https://audiobeam.test/admin/audiobooks/199959
+                      - generic [ref=e651]:
+                        - link:
+                          - /url: https://audiobeam.test/admin/audiobooks/199959
+                        - link "John Bunyan" [ref=e652] [cursor=pointer]:
+                          - /url: https://audiobeam.test/admin/contributors/215
+                        - link "->" [ref=e653] [cursor=pointer]:
+                          - /url: https://audiobeam.test/admin/contributors?filters%5Baudiobook%5D%5Bvalues%5D%5B0%5D=199959
+                          - img [ref=e654]
+                          - text: "->"
+                  - cell "9783775155267" [ref=e656]:
+                    - link "9783775155267" [ref=e657] [cursor=pointer]:
+                      - /url: https://audiobeam.test/admin/audiobooks/199959
+                      - generic [ref=e658]: "9783775155267"
+                  - cell "Fountainvoice Audio" [ref=e659]:
+                    - link:
+                      - /url: https://audiobeam.test/admin/audiobooks/199959
+                    - generic [ref=e660]:
+                      - link:
+                        - /url: https://audiobeam.test/admin/audiobooks/199959
+                      - generic [ref=e661]:
+                        - link:
+                          - /url: https://audiobeam.test/admin/audiobooks/199959
+                        - link "Fountainvoice Audio" [ref=e662] [cursor=pointer]:
+                          - /url: https://audiobeam.test/admin/publishers/1
+                  - cell "Fantasy" [ref=e663]:
+                    - link "Fantasy" [ref=e664] [cursor=pointer]:
+                      - /url: https://audiobeam.test/admin/categories/10
+                      - generic [ref=e665]: Fantasy
+                  - cell "14,95 €" [ref=e666]:
+                    - link "14,95 €" [ref=e667] [cursor=pointer]:
+                      - /url: https://audiobeam.test/admin/audiobooks/199959
+                      - generic [ref=e668]: 14,95 €
+                  - cell "Erlaubt" [ref=e669]:
+                    - link "Erlaubt" [ref=e670] [cursor=pointer]:
+                      - /url: https://audiobeam.test/admin/audiobooks/199959
+                      - generic [ref=e671]:
+                        - img [ref=e672]
+                        - text: Erlaubt
+                  - cell "Unvollständig" [ref=e674]:
+                    - button "Unvollständig" [ref=e675] [cursor=pointer]:
+                      - generic [ref=e676]:
+                        - img [ref=e677]
+                        - text: Unvollständig
+                  - cell "Bearbeiten Löschen Aktionen" [ref=e679]:
+                    - generic [ref=e680]:
+                      - link "Bearbeiten" [ref=e681] [cursor=pointer]:
+                        - /url: https://audiobeam.test/admin/audiobooks/199959/edit
+                        - img [ref=e682]
+                        - text: Bearbeiten
+                      - button "Löschen" [ref=e685] [cursor=pointer]:
+                        - img [ref=e686]
+                        - text: Löschen
+                      - button "Aktionen" [ref=e690] [cursor=pointer]:
+                        - img [ref=e691]
+                - row "Eintrag 199958 für Stapelverarbeitung auswählen/abwählen. Der ungezähmte Christ \"In einem lebendigen Menschen verherrlicht sich Gott\" Irenäus von Lyon\" John Eldredge -> 9783952399903 Fountainvoice Audio Sachhörbücher 14,95 € Erlaubt Unvollständig Bearbeiten Löschen Aktionen" [ref=e693]:
+                  - cell "Eintrag 199958 für Stapelverarbeitung auswählen/abwählen." [ref=e694]:
+                    - checkbox "Eintrag 199958 für Stapelverarbeitung auswählen/abwählen." [ref=e695]
+                  - cell [ref=e696]:
+                    - link [ref=e697] [cursor=pointer]:
+                      - /url: https://audiobeam.test/admin/audiobooks/199958
+                      - img [ref=e699]
+                  - cell "Der ungezähmte Christ \"In einem lebendigen Menschen verherrlicht sich Gott\" Irenäus von Lyon\"" [ref=e700]:
+                    - link "Der ungezähmte Christ \"In einem lebendigen Menschen verherrlicht sich Gott\" Irenäus von Lyon\"" [ref=e701] [cursor=pointer]:
+                      - /url: https://audiobeam.test/admin/audiobooks/199958
+                      - generic [ref=e702]:
+                        - paragraph [ref=e703]:
+                          - strong [ref=e704]: Der ungezähmte Christ
+                        - paragraph [ref=e705]: "\"In einem lebendigen Menschen verherrlicht sich Gott\" Irenäus von Lyon\""
+                  - cell "John Eldredge ->" [ref=e706]:
+                    - link:
+                      - /url: https://audiobeam.test/admin/audiobooks/199958
+                    - generic [ref=e707]:
+                      - link:
+                        - /url: https://audiobeam.test/admin/audiobooks/199958
+                      - generic [ref=e708]:
+                        - link:
+                          - /url: https://audiobeam.test/admin/audiobooks/199958
+                        - link "John Eldredge" [ref=e709] [cursor=pointer]:
+                          - /url: https://audiobeam.test/admin/contributors/5
+                        - link "->" [ref=e710] [cursor=pointer]:
+                          - /url: https://audiobeam.test/admin/contributors?filters%5Baudiobook%5D%5Bvalues%5D%5B0%5D=199958
+                          - img [ref=e711]
+                          - text: "->"
+                  - cell "9783952399903" [ref=e713]:
+                    - link "9783952399903" [ref=e714] [cursor=pointer]:
+                      - /url: https://audiobeam.test/admin/audiobooks/199958
+                      - generic [ref=e715]: "9783952399903"
+                  - cell "Fountainvoice Audio" [ref=e716]:
+                    - link:
+                      - /url: https://audiobeam.test/admin/audiobooks/199958
+                    - generic [ref=e717]:
+                      - link:
+                        - /url: https://audiobeam.test/admin/audiobooks/199958
+                      - generic [ref=e718]:
+                        - link:
+                          - /url: https://audiobeam.test/admin/audiobooks/199958
+                        - link "Fountainvoice Audio" [ref=e719] [cursor=pointer]:
+                          - /url: https://audiobeam.test/admin/publishers/1
+                  - cell "Sachhörbücher" [ref=e720]:
+                    - link "Sachhörbücher" [ref=e721] [cursor=pointer]:
+                      - /url: https://audiobeam.test/admin/categories/2
+                      - generic [ref=e722]: Sachhörbücher
+                  - cell "14,95 €" [ref=e723]:
+                    - link "14,95 €" [ref=e724] [cursor=pointer]:
+                      - /url: https://audiobeam.test/admin/audiobooks/199958
+                      - generic [ref=e725]: 14,95 €
+                  - cell "Erlaubt" [ref=e726]:
+                    - link "Erlaubt" [ref=e727] [cursor=pointer]:
+                      - /url: https://audiobeam.test/admin/audiobooks/199958
+                      - generic [ref=e728]:
+                        - img [ref=e729]
+                        - text: Erlaubt
+                  - cell "Unvollständig" [ref=e731]:
+                    - button "Unvollständig" [ref=e732] [cursor=pointer]:
+                      - generic [ref=e733]:
+                        - img [ref=e734]
+                        - text: Unvollständig
+                  - cell "Bearbeiten Löschen Aktionen" [ref=e736]:
+                    - generic [ref=e737]:
+                      - link "Bearbeiten" [ref=e738] [cursor=pointer]:
+                        - /url: https://audiobeam.test/admin/audiobooks/199958/edit
+                        - img [ref=e739]
+                        - text: Bearbeiten
+                      - button "Löschen" [ref=e742] [cursor=pointer]:
+                        - img [ref=e743]
+                        - text: Löschen
+                      - button "Aktionen" [ref=e747] [cursor=pointer]:
+                        - img [ref=e748]
+            - navigation "Seitennavigation" [ref=e750]:
+              - generic [ref=e751]: Zeige 1 bis 10 von 157 Ergebnissen
+              - generic [ref=e754]:
+                - generic [ref=e756]: pro Seite
+                - combobox "pro Seite" [ref=e758]:
+                  - option "5"
+                  - option "10" [selected]
+                  - option "25"
+                  - option "50"
+              - list [ref=e759]:
+                - listitem [ref=e760]:
+                  - button "Weiter zur Seite 1" [ref=e761] [cursor=pointer]:
+                    - generic [ref=e762]: "1"
+                - listitem [ref=e763]:
+                  - button "Weiter zur Seite 2" [ref=e764] [cursor=pointer]:
+                    - generic [ref=e765]: "2"
+                - listitem [ref=e766]:
+                  - button "Weiter zur Seite 3" [ref=e767] [cursor=pointer]:
+                    - generic [ref=e768]: "3"
+                - listitem [ref=e769]:
+                  - button "Weiter zur Seite 4" [ref=e770] [cursor=pointer]:
+                    - generic [ref=e771]: "4"
+                - listitem [ref=e772]:
+                  - button "..." [disabled] [ref=e773]:
+                    - generic [ref=e774]: ...
+                - listitem [ref=e775]:
+                  - button "Weiter zur Seite 15" [ref=e776] [cursor=pointer]:
+                    - generic [ref=e777]: "15"
+                - listitem [ref=e778]:
+                  - button "Weiter zur Seite 16" [ref=e779] [cursor=pointer]:
+                    - generic [ref=e780]: "16"
+                - listitem [ref=e781]:
+                  - button "Nächste" [ref=e782] [cursor=pointer]:
+                    - img [ref=e783]
+  - generic:
+    - status
+  - generic [ref=e787]:
+    - generic [ref=e789]:
+      - generic [ref=e790] [cursor=pointer]:
+        - generic: Request
+      - generic [ref=e791] [cursor=pointer]:
+        - generic: Timeline
+      - generic [ref=e792] [cursor=pointer]:
+        - generic: Views
+        - generic [ref=e793]: "30"
+      - generic [ref=e794] [cursor=pointer]:
+        - generic: Queries
+        - generic [ref=e795]: "81"
+      - generic [ref=e796] [cursor=pointer]:
+        - generic: Models
+        - generic [ref=e797]: "309"
+      - generic [ref=e798] [cursor=pointer]:
+        - generic: Livewire
+        - generic [ref=e799]: "8"
+    - generic [ref=e800]:
+      - generic [ref=e808] [cursor=pointer]: GET /admin/audiobooks
+      - generic [ref=e809] [cursor=pointer]:
+        - generic: 206ms
+      - generic [ref=e811] [cursor=pointer]:
+        - generic: 18MB
+      - generic [ref=e813] [cursor=pointer]:
+        - generic: 13.x

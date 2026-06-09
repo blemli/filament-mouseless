@@ -1,13 +1,8 @@
-# use filament without a mouse
+# filament-mouseless
 
-[![Latest Version on Packagist](https://img.shields.io/packagist/v/blemli/filament-mouseless.svg?style=flat-square)](https://packagist.org/packages/blemli/filament-mouseless)
-[![GitHub Tests Action Status](https://img.shields.io/github/actions/workflow/status/blemli/filament-mouseless/run-tests.yml?branch=main&label=tests&style=flat-square)](https://github.com/blemli/filament-mouseless/actions?query=workflow%3Arun-tests+branch%3Amain)
-[![GitHub Code Style Action Status](https://img.shields.io/github/actions/workflow/status/blemli/filament-mouseless/fix-php-code-style-issues.yml?branch=main&label=code%20style&style=flat-square)](https://github.com/blemli/filament-mouseless/actions?query=workflow%3A"Fix+PHP+code+styling"+branch%3Amain)
-[![Total Downloads](https://img.shields.io/packagist/dt/blemli/filament-mouseless.svg?style=flat-square)](https://packagist.org/packages/blemli/filament-mouseless)
+[![Latest Version on Packagist](https://img.shields.io/packagist/v/blemli/filament-mouseless.svg?style=flat-square)](https://packagist.org/packages/blemli/filament-mouseless)[![GitHub Tests Action Status](https://img.shields.io/github/actions/workflow/status/blemli/filament-mouseless/run-tests.yml?branch=main&label=tests&style=flat-square)](https://github.com/blemli/filament-mouseless/actions?query=workflow%3Arun-tests+branch%3Amain)[![GitHub Code Style Action Status](https://img.shields.io/github/actions/workflow/status/blemli/filament-mouseless/fix-php-code-style-issues.yml?branch=main&label=code%20style&style=flat-square)](https://github.com/blemli/filament-mouseless/actions?query=workflow%3A"Fix+PHP+code+styling"+branch%3Amain)[![Total Downloads](https://img.shields.io/packagist/dt/blemli/filament-mouseless.svg?style=flat-square)](https://packagist.org/packages/blemli/filament-mouseless)
 
-
-
-This is where your description should go. Limit it to a paragraph or two. Consider adding a small example.
+Use filament without a mouse. For Real. 
 
 ## Installation
 
@@ -17,47 +12,79 @@ You can install the package via composer:
 composer require blemli/filament-mouseless
 ```
 
-> [!IMPORTANT]
-> If you have not set up a custom theme and are using Filament Panels follow the instructions in the [Filament Docs](https://filamentphp.com/docs/4.x/styling/overview#creating-a-custom-theme) first.
-
-After setting up a custom theme add the plugin's views to your theme css file or your app's css file if using the standalone packages.
-
-```css
-@source '../../../../vendor/blemli/filament-mouseless/resources/**/*.blade.php';
-```
-
-You can publish and run the migrations with:
+then run the installer
 
 ```bash
-php artisan vendor:publish --tag="filament-mouseless-migrations"
-php artisan migrate
+php artisan filament-mouseless:install
 ```
 
-You can publish the config file with:
-
-```bash
-php artisan vendor:publish --tag="filament-mouseless-config"
-```
-
-Optionally, you can publish the views using
-
-```bash
-php artisan vendor:publish --tag="filament-mouseless-views"
-```
-
-This is the contents of the published config file:
+and don't forget to register in the AdminPanelProvider:
 
 ```php
-return [
-];
+->plugins([
+  // other plugins
+  FilamentMouselessPlugin::make()
+])
 ```
 
 ## Usage
 
+Go to any page and press <kbd>?</kbd> outside a textfield to show all the available shortcuts.
+
+## Features Overview
+
+Dark-Mode Support, Language Adaptive: DE (**N**eu) & EN (**C**reate),  Filament Native Style (no custom theme needed), Mobile Friendly, stateless mode available (without migrations), Show a Shortcuts Overlay with <kbd>?</kbd>, Let Users Register custom Combinations, Many Convenience Combinations (escape, go home, search), Hidden on Devices without Keyboard, 
+
+## Configure
+
+### Hide Overlay
+
+If for some reason you don't want the help overlay you can disable it on the plugin:
+
 ```php
-$filamentMouseless = new Blemli\FilamentMouseless();
-echo $filamentMouseless->echoPhrase('Hello, Blemli!');
+->plugins([
+  FilamentMouselessPlugin::make()
+      ->disableHelpOverlay(),
+])
 ```
+
+Shortcuts still work — only the overlay popup is suppressed.
+
+### Shortcuts on Mobile
+
+The user-menu link to "My Shortcuts" is hidden on phones and tablets by default — keyboards usually aren't a thing there. Detection is User-Agent based, so a narrow window on a real desktop browser still shows the link.
+
+**Keyboard on a phone?** No config needed. The link is rendered server-side but CSS-hidden on mobile UAs. The first time a real hardware key is pressed, the JS engine writes `localStorage.mouseless_kbd = '1'` and adds a class to `<body>` — the link appears instantly. On the next page load, a tiny inline script reads localStorage and reapplies the class before paint, so there's no flash. Soft keyboards don't trigger it (filtered via IME signals).
+
+To force-show the link everywhere — skipping the heuristic:
+
+```php
+->plugins([
+  FilamentMouselessPlugin::make()
+      ->showShortcutsOnMobile(),
+])
+```
+
+The page itself stays reachable by direct URL regardless.
+
+#### Disabling the probe
+
+If the auto-reveal heuristic ever misbehaves, you can switch it off:
+
+```php
+->plugins([
+  FilamentMouselessPlugin::make()
+      ->disableProbe(),
+])
+```
+
+With the probe disabled, mobile users must use `->showShortcutsOnMobile()` to see the link.
+
+
+
+### Go Home
+
+By default <kbd>option</kbd>+<kbd>↑</kbd>  brings you home. 
 
 ## Testing
 
@@ -71,7 +98,9 @@ Please see [CHANGELOG](CHANGELOG.md) for more information on what has changed re
 
 ## Contributing
 
-Please see [CONTRIBUTING](.github/CONTRIBUTING.md) for details.
+If you still had to use your mouse for something, please report it!
+
+Contributions are very welcome, especially translations. If you don't have time for a PR, a bugreport is fine too. Lets make this plugin stable and comprehensive together!
 
 ## Security Vulnerabilities
 
