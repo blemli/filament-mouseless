@@ -28,15 +28,15 @@ class FilamentMouselessPlugin implements Plugin
 
     protected bool $strictPermissions = false;
 
-    protected string|Closure|null $icon = null;
+    protected string | Closure | null $icon = null;
 
-    protected string|Closure|null $settingsPageLabel = null;
+    protected string | Closure | null $settingsPageLabel = null;
 
-    protected string|Closure|null $settingsPageNavigationGroup = null;
+    protected string | Closure | null $settingsPageNavigationGroup = null;
 
     protected bool $settingsPageNavigationGroupSet = false;
 
-    protected string|Closure|null $shortcutsLabel = null;
+    protected string | Closure | null $shortcutsLabel = null;
 
     public function getId(): string
     {
@@ -120,7 +120,7 @@ class FilamentMouselessPlugin implements Plugin
     }
 
     /** Icon shared by the admin settings page nav AND the user-menu link. */
-    public function icon(string|Closure $icon): static
+    public function icon(string | Closure $icon): static
     {
         $this->icon = $icon;
 
@@ -128,7 +128,7 @@ class FilamentMouselessPlugin implements Plugin
     }
 
     /** Sidebar label for the admin settings page. */
-    public function settingsPageLabel(string|Closure $label): static
+    public function settingsPageLabel(string | Closure $label): static
     {
         $this->settingsPageLabel = $label;
 
@@ -140,7 +140,7 @@ class FilamentMouselessPlugin implements Plugin
      * remove the group entirely; never calling this leaves the translated
      * "System" default in place.
      */
-    public function settingsPageNavigationGroup(string|Closure|null $group): static
+    public function settingsPageNavigationGroup(string | Closure | null $group): static
     {
         $this->settingsPageNavigationGroup = $group;
         $this->settingsPageNavigationGroupSet = true;
@@ -149,7 +149,7 @@ class FilamentMouselessPlugin implements Plugin
     }
 
     /** Label for the user-menu link AND the my-shortcuts page navigation. */
-    public function shortcutsLabel(string|Closure $label): static
+    public function shortcutsLabel(string | Closure $label): static
     {
         $this->shortcutsLabel = $label;
 
@@ -182,7 +182,7 @@ class FilamentMouselessPlugin implements Plugin
             ?? __('filament-mouseless::mouseless.profile.nav_label');
     }
 
-    protected function evaluate(string|Closure|null $value): ?string
+    protected function evaluate(string | Closure | null $value): ?string
     {
         if ($value instanceof Closure) {
             $value = $value();

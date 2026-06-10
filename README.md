@@ -17,10 +17,10 @@ composer require blemli/filament-mouseless
 2. run the installer
 
 ```bash
-php artisan filament-mouseless:install
+php artisan mouseless:install
 ```
 
-3.  don't forget to register in the AdminPanelProvider:
+3.  let the installer register the plugin in your panel provider — or do it yourself:
 
 ```php
 ->plugins([
@@ -35,11 +35,11 @@ Go to any page and press <kbd>?</kbd> outside a textfield to show all the availa
 
 ## Features Overview
 
-Dark-Mode Support, Language Adaptive: DE (**N**eu) & EN (**C**reate),  Filament Native Style (no custom theme needed), Mobile Friendly, Stateless mode available (without migrations), Show a Shortcuts Overlay with <kbd>?</kbd>,  Convenient `mouseless:install` command, Let Users Register custom Combinations, Covers all Filament-Functions  (escape, go home, search, logout), Hidden on Devices without Keyboard, Compatible with Filament Shield but not required, Configure Icons and Labels
+Dark-Mode Support, Language Adaptive: DE (**N**eu) & EN (**C**reate),  Filament Native Style (no custom theme needed), Mobile Friendly, Stateless mode available (without migrations), Show a Shortcuts Overlay with <kbd>?</kbd>,  Convenient `mouseless:install` command, Let Users Register custom Combinations, Hidden on Devices without Keyboard, Compatible with Filament Shield but not required, Configure Icons and Labels
 
 ### v2
 
-Multipanel support, Multitenant Support, Presets hub, 
+Adapt Action Names to the Shortcut Initials, Multipanel support, Multitenant Support, Presets hub, Resources Initials, Highlight of Shortcuts in UI, Tutorial on missed Shortcuts, Statistics on avoided clicks, Let Users share Presets, Open Filters Panel, Open Column Selector, 
 
 ## Configure
 
@@ -55,6 +55,8 @@ If you don't want users to customize their own shortcuts (and don't want to run 
 ```
 
 This hides the `/my-shortcuts` page and removes its user-menu link. Shortcuts still work — everyone just rides on the configured default preset.
+
+For unattended installs, `php artisan mouseless:install --stateless` skips the migration prompt entirely.
 
 ### Hide Overlay
 

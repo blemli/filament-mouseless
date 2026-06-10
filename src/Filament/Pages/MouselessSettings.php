@@ -18,6 +18,7 @@ use Filament\Pages\Page;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
+use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Support\Facades\Gate;
 
 class MouselessSettings extends Page implements HasForms
@@ -26,7 +27,7 @@ class MouselessSettings extends Page implements HasForms
 
     protected static ?string $slug = 'mouseless-settings';
 
-    public static function getNavigationIcon(): string|\BackedEnum|\Illuminate\Contracts\Support\Htmlable|null
+    public static function getNavigationIcon(): string | \BackedEnum | Htmlable | null
     {
         return FilamentMouselessPlugin::safeGet()?->getIcon()
             ?? FilamentMouselessPlugin::DEFAULT_ICON;

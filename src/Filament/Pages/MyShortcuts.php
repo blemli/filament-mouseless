@@ -5,6 +5,7 @@ namespace Blemli\FilamentMouseless\Filament\Pages;
 use Blemli\FilamentMouseless\FilamentMouselessPlugin;
 use Blemli\FilamentMouseless\Support\Shield;
 use Filament\Pages\Page;
+use Illuminate\Contracts\Support\Htmlable;
 
 class MyShortcuts extends Page
 {
@@ -12,7 +13,7 @@ class MyShortcuts extends Page
 
     protected string $view = 'filament-mouseless::pages.my-shortcuts';
 
-    public static function getNavigationIcon(): string|\BackedEnum|\Illuminate\Contracts\Support\Htmlable|null
+    public static function getNavigationIcon(): string | \BackedEnum | Htmlable | null
     {
         return FilamentMouselessPlugin::safeGet()?->getIcon()
             ?? FilamentMouselessPlugin::DEFAULT_ICON;
