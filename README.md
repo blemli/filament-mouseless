@@ -35,11 +35,11 @@ Go to any page and press <kbd>?</kbd> outside a textfield to show all the availa
 
 ## Features Overview
 
-Dark-Mode Support, Language Adaptive: DE (**N**eu) & EN (**C**reate),  Filament Native Style (no custom theme needed), Mobile Friendly, Stateless mode available (without migrations), Show a Shortcuts Overlay with <kbd>?</kbd>, Convenient `mouseless:install` command, Let Users Register custom Combinations, Hidden on Devices without Keyboard, Compatible with Filament Shield but not required, Configure everything like Icons and Labels, Printable CheatSheat
+Dark-Mode Support, Language Adaptive: DE (**N**eu) & EN (**C**reate),  Filament Native Style (no custom theme needed), Mobile Friendly, Stateless mode available (without migrations), Show a Shortcuts Overlay with <kbd>?</kbd>, Convenient `mouseless:install` command, Let Users Register custom Combinations, Hidden on Devices without Keyboard, Compatible with Filament Shield but not required, Configure everything like Icons and Labels, Printable CheatSheat, Choose the Position in the User Menu, 
 
 ### v2
 
-Prohibit some Shortcuts (Browser/OS), Jump to Resources with Shortcuts, Specify Position in Profile Dropdown, Adapt Action Names to the Shortcut Initials, Multipanel support, Multitenant Support, Resources Initials, Highlight of Shortcuts in UI, Tutorial on missed Shortcuts, Statistics on avoided clicks, Let Users share Presets with eachother, Let Admins Moderate Shared Presets (remove unused ones), see which action is the most overwritten, Open Filters Panel, Open Column Selector, `shorcuts:list` command, Detect already existing shortcuts of actions (artisan?), singleton preset, translate to many languages, support advanced tables, opt-in to global search, vimperator mode, AskPhil, Kanban, ActivityLog, and probably even more!
+Opt-in to global search, Prohibit some Shortcuts (Browser/OS), Jump to Resources with Shortcuts, Action Names to the Shortcut Initials, Multipanel support, Multitenant Support, Resources Initials, Highlight of Shortcuts in UI, Tutorial on missed Shortcuts, Statistics on avoided clicks, Let Users share Presets with eachother, Let Admins Moderate Shared Presets (remove unused ones &see which action is the most overwritten), Open Filters Panel, Open Column Selector, `shorcuts:list` command, Detect already existing shortcuts of actions (artisan?), singleton preset, translate to many languages, support advanced tables, vimperator mode, AskPhil, Kanban, ActivityLog, and probably even more!
 
 ### Languages
 
@@ -123,6 +123,8 @@ FilamentMouselessPlugin::make()
     ->settingsPageLabel('Keyboard')
     ->shortcutsLabel(fn () => __('app.my_shortcuts'))
 ```
+
+
 
 #### Navigation Group
 
@@ -229,6 +231,21 @@ If the auto-reveal heuristic ever misbehaves, you can switch it off:
 ```
 
 With the probe disabled, mobile users must use `->showShortcutsOnMobile()` to see the link.
+
+#### Position in the User Menu
+
+The "My Shortcuts" link normally sits with the other user-menu items, right above logout. To pin it to the profile entry instead, hand it a render hook:
+
+```php
+use Filament\View\PanelsRenderHook;
+
+FilamentMouselessPlugin::make()
+    ->shortcutsPosition(PanelsRenderHook::USER_MENU_PROFILE_AFTER)
+```
+
+`USER_MENU_PROFILE_AFTER` places the link directly below the profile entry, `USER_MENU_PROFILE_BEFORE` directly above it. Mobile hiding and Shield permissions apply as usual.
+
+
 
 ### Go Home
 

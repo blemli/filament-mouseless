@@ -42,6 +42,8 @@ class FilamentMouselessPlugin implements Plugin
 
     protected string | Closure | null $shortcutsLabel = null;
 
+    protected ?string $shortcutsPosition = null;
+
     public function getId(): string
     {
         return 'filament-mouseless';
@@ -205,6 +207,19 @@ class FilamentMouselessPlugin implements Plugin
         return $this;
     }
 
+    /**
+     * Pin the my-shortcuts link to a render hook instead of listing it with
+     * the other user-menu items (where it sorts in above logout). Meant for
+     * PanelsRenderHook::USER_MENU_PROFILE_BEFORE / USER_MENU_PROFILE_AFTER,
+     * which place it directly above/below the profile entry.
+     */
+    public function shortcutsPosition(?string $renderHook): static
+    {
+        $this->shortcutsPosition = $renderHook;
+
+        return $this;
+    }
+
     public function getIcon(): string
     {
         return $this->evaluate($this->icon) ?? self::DEFAULT_ICON;
@@ -254,7 +269,7 @@ class FilamentMouselessPlugin implements Plugin
 
         $panel->pages($pages);
 
-        if ($this->stateless) {
+        if ($this->stateless || $this->shortcutsPosition !== null) {
             return;
         }
 
@@ -285,6 +300,19 @@ class FilamentMouselessPlugin implements Plugin
             'panels::body.start',
             fn (): string => Shield::userMayUse() ? $this->renderBootScript() : '',
         );
+
+        if (! $this->stateless && $this->shortcutsPosition !== null) {
+            FilamentView::registerRenderHook(
+                $this->shortcutsPosition,
+                fn (): string => Shield::userMayUse()
+                    ? view('filament-mouseless::components.user-menu-item', [
+                        'label' => $this->getShortcutsLabel(),
+                        'icon' => $this->getIcon(),
+                        'url' => MyShortcuts::getUrl(),
+                    ])->render()
+                    : '',
+            );
+        }
     }
 
     /**
