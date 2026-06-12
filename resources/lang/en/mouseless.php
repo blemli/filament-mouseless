@@ -15,7 +15,6 @@ return [
         'crud' => 'CRUD',
         'list' => 'List',
         'record' => 'Record',
-        'bulk' => 'Bulk',
         'nav' => 'Navigation',
         'ui' => 'UI',
     ],
@@ -52,8 +51,6 @@ return [
             'archive' => 'Archive',
             'approve' => 'Approve',
             'reject' => 'Reject',
-        ],
-        'bulk' => [
             'merge' => 'Merge',
         ],
         'nav' => [

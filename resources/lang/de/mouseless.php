@@ -15,7 +15,6 @@ return [
         'crud' => 'CRUD',
         'list' => 'Liste',
         'record' => 'Datensatz',
-        'bulk' => 'Mehrfachauswahl',
         'nav' => 'Navigation',
         'ui' => 'Oberfläche',
     ],
@@ -51,8 +50,6 @@ return [
             'archive' => 'Archivieren',
             'approve' => 'Genehmigen',
             'reject' => 'Ablehnen',
-        ],
-        'bulk' => [
             'merge' => 'Zusammenführen',
         ],
         'nav' => [

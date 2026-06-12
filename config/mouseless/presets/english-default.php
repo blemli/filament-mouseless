@@ -40,9 +40,7 @@ return [
         'record.archive' => 'alt+shift+a',
         'record.approve' => 'alt+g',
         'record.reject' => 'alt+shift+x',
-
-        // Bulk
-        'bulk.merge' => 'alt+m',
+        'record.merge' => 'alt+m',
 
         // Navigation
         'nav.dashboard' => 'alt+ArrowUp', // first sidebar nav item

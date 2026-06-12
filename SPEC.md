@@ -26,8 +26,8 @@ Action IDs are language-independent and namespaced:
 crud.*    create, edit, delete, save, cancel, view, duplicate
 list.*    search, filter, refresh, export, import, select-all, bulk-action,
           next-page, prev-page
-record.*  print, history, comment, archive, restore, approve, reject, publish
-bulk.*    merge, archive, print, approve, reject
+record.*  print, history, comment, archive, restore, approve, reject, publish,
+          merge
 nav.*     dashboard, profile, logout, command-palette, recently-viewed,
           notifications, resource.{slug}
 ui.*      help, close, next-tab, prev-tab
@@ -108,7 +108,7 @@ Modal listing the effective binding map, grouped by namespace. Footer shows sour
 
 - "Current record" = the record on edit/view pages, or the j/k-focused row on list pages.
 - No focused record + shortcut needs one → no-op + toast.
-- Context-aware shortcuts (e.g. `bulk.merge`) are always bound; they just no-op + toast when their action isn't on the page.
+- Context-aware shortcuts (e.g. `record.merge`) are always bound; they just no-op + toast when their action isn't on the page.
 
 ## Resource-initial collisions
 

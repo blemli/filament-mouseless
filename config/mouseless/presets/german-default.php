@@ -39,9 +39,7 @@ return [
         'record.archive' => 'alt+r',  // Archivieren
         'record.approve' => 'alt+g',  // Genehmigen
         'record.reject' => 'alt+shift+r', // Ablehnen (no good DE letter)
-
-        // Bulk
-        'bulk.merge' => 'alt+z',  // Zusammenführen
+        'record.merge' => 'alt+z',  // Zusammenführen
 
         // Navigation
         'nav.dashboard' => 'alt+ArrowUp', // Erstes Nav-Item (Dashboard / Startseite)

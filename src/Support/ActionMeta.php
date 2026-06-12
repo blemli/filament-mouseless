@@ -32,7 +32,7 @@ class ActionMeta
         'record.archive' => 'heroicon-o-archive-box',
         'record.approve' => 'heroicon-o-hand-thumb-up',
         'record.reject' => 'heroicon-o-hand-thumb-down',
-        'bulk.merge' => 'heroicon-o-arrows-pointing-in',
+        'record.merge' => 'heroicon-o-arrows-pointing-in',
         'nav.dashboard' => 'heroicon-o-home',
         'nav.profile' => 'heroicon-o-user-circle',
         'nav.logout' => 'heroicon-o-arrow-right-start-on-rectangle',
@@ -49,13 +49,12 @@ class ActionMeta
         'crud' => 'heroicon-o-document-text',
         'list' => 'heroicon-o-table-cells',
         'record' => 'heroicon-o-document-text',
-        'bulk' => 'heroicon-o-square-3-stack-3d',
         'nav' => 'heroicon-o-rectangle-stack',
         'ui' => 'heroicon-o-window',
     ];
 
     /** Fixed category order used for table grouping/sorting. */
-    public const CATEGORY_ORDER = ['crud', 'list', 'record', 'bulk', 'nav', 'ui'];
+    public const CATEGORY_ORDER = ['crud', 'list', 'record', 'nav', 'ui'];
 
     /**
      * Bindings that must never be taken away (action id => required combo).

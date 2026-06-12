@@ -444,7 +444,7 @@ function bootMouseless() {
             'record.archive':  ['archive'],
             'record.approve':  ['approve'],
             'record.reject':   ['reject'],
-            'bulk.merge':      ['merge'],
+            'record.merge':    ['merge'],
         };
         return map[actionId] ?? [];
     }
