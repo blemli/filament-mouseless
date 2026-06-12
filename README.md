@@ -6,7 +6,7 @@ Use filament without a mouse. For Real.
 
 ## Installation
 
-You can install the package in only three simple steps
+You can install the package in only 2-3 simple steps:
 
 1. install via composer:
 
@@ -35,15 +35,23 @@ Go to any page and press <kbd>?</kbd> outside a textfield to show all the availa
 
 ## Features Overview
 
-Dark-Mode Support, Language Adaptive: DE (**N**eu) & EN (**C**reate),  Filament Native Style (no custom theme needed), Mobile Friendly, Stateless mode available (without migrations), Show a Shortcuts Overlay with <kbd>?</kbd>,  Convenient `mouseless:install` command, Let Users Register custom Combinations, Hidden on Devices without Keyboard, Compatible with Filament Shield but not required, Configure Icons and Labels
+Dark-Mode Support, Language Adaptive: DE (**N**eu) & EN (**C**reate),  Filament Native Style (no custom theme needed), Mobile Friendly, Stateless mode available (without migrations), Show a Shortcuts Overlay with <kbd>?</kbd>, Convenient `mouseless:install` command, Let Users Register custom Combinations, Hidden on Devices without Keyboard, Compatible with Filament Shield but not required, Configure everything like Icons and Labels, 
 
 ### v2
 
-Adapt Action Names to the Shortcut Initials, Multipanel support, Multitenant Support, Presets hub, Resources Initials, Highlight of Shortcuts in UI, Tutorial on missed Shortcuts, Statistics on avoided clicks, Let Users share Presets, Open Filters Panel, Open Column Selector, 
+Printable CheatSheat, Specify Position in Profile Dropdown, Adapt Action Names to the Shortcut Initials, Multipanel support, Multitenant Support, Resources Initials, Highlight of Shortcuts in UI, Tutorial on missed Shortcuts, Statistics on avoided clicks, Let Users share Presets with eachother, Let Admins Moderate Shared Presets (remove unused ones), see which action is the most overwritten, Open Filters Panel, Open Column Selector, `shorcuts:list` command, Detect already existing shortcuts of actions (artisan?), singleton preset, translate to many languages, support advanced tables, opt-in to global search, vimperator mode, AskPhil, Kanban, and probably even more!
+
+### Languages
+
+DE, EN
 
 ## Configure
 
-### Stateless Mode
+Everything works great with zero configuration, but everything is still configurable. Milk and Honey! 
+
+### Basic Configuration
+
+#### Stateless Mode
 
 If you don't want users to customize their own shortcuts (and don't want to run the package migrations), turn the plugin stateless:
 
@@ -58,9 +66,9 @@ This hides the `/my-shortcuts` page and removes its user-menu link. Shortcuts st
 
 For unattended installs, `php artisan mouseless:install --stateless` skips the migration prompt entirely.
 
-### Hide Overlay
+#### Hide Overlay
 
-If for some reason you don't want the help overlay you can disable it:
+If for some obscure reason you don't want the help overlay, you can disable it:
 
 ```php
 ->plugins([
@@ -71,37 +79,7 @@ If for some reason you don't want the help overlay you can disable it:
 
 Shortcuts still work, only the overlay popup is suppressed.
 
-### Shortcuts on Mobile
-
-The user-menu link to "My Shortcuts" is hidden on phones and tablets by default — keyboards usually aren't a thing there. Detection is User-Agent based, so a narrow window on a real desktop browser still shows the link.
-
-**Keyboard on a phone?** No config needed. The link is rendered server-side but CSS-hidden on mobile UAs. The first time a real hardware key is pressed, the JS engine writes `localStorage.mouseless_kbd = '1'` and adds a class to `<body>` — the link appears instantly. On the next page load, a tiny inline script reads localStorage and reapplies the class before paint, so there's no flash. Soft keyboards don't trigger it (filtered via IME signals).
-
-To force-show the link everywhere, skipping the heuristic:
-
-```php
-->plugins([
-  FilamentMouselessPlugin::make()
-      ->showShortcutsOnMobile(),
-])
-```
-
-The page itself stays reachable by direct URL regardless.
-
-#### Disabling the probe
-
-If the auto-reveal heuristic ever misbehaves, you can switch it off:
-
-```php
-->plugins([
-  FilamentMouselessPlugin::make()
-      ->disableProbe(),
-])
-```
-
-With the probe disabled, mobile users must use `->showShortcutsOnMobile()` to see the link.
-
-### Show the Admin page
+#### Show the Admin page
 
 The `/mouseless-settings` page (default preset, disabled actions, resource letters, moderation queue) is off by default. Opt in:
 
@@ -112,7 +90,7 @@ The `/mouseless-settings` page (default preset, disabled actions, resource lette
 ])
 ```
 
-### Custom Icon
+#### Custom Icon
 
 Used by the admin page nav and the user-menu link.
 
@@ -121,7 +99,7 @@ FilamentMouselessPlugin::make()
     ->icon('heroicon-o-cog-6-tooth')
 ```
 
-### Custom Label
+#### Custom Label
 
 ```php
 FilamentMouselessPlugin::make()
@@ -129,7 +107,7 @@ FilamentMouselessPlugin::make()
     ->shortcutsLabel(fn () => __('app.my_shortcuts'))
 ```
 
-### Navigation Group
+#### Navigation Group
 
 Defaults to a translated "System". Pass `null` to drop the group.
 
@@ -138,7 +116,28 @@ FilamentMouselessPlugin::make()
     ->settingsPageNavigationGroup('Settings')
 ```
 
-## Permission
+### User Presets
+
+#### Personal layouts
+
+Users customize shortcuts by creating their own layout — built-in presets are read-only, the first change forks them automatically. If you don't want per-user layouts at all, run the plugin in stateless mode (see above).
+
+#### Let users publish layouts
+
+Off by default. Enable it per panel:
+
+```php
+->plugins([
+  FilamentMouselessPlugin::make()
+      ->publishable(),
+])
+```
+
+Published layouts appear in every user's layout dropdown (with the author's name appended). Moderation and a permission gate are configurable via `mouseless.publishing` in the config.
+
+You can also restrict shortcuts for specific users, using permissions:
+
+### Permissions
 
 By default everyone gets shortcuts. With [Filament Shield](https://github.com/bezhanSalleh/filament-shield) installed, mouseless registers three permissions so they appear in the role-edit UI, but they're only enforced when you opt in:
 
@@ -168,11 +167,57 @@ Spatie\Permission\Models\Role::firstWhere('name', 'panel_user')
     ?->givePermissionTo(['MouselessUse', 'View:MyShortcuts']);
 ```
 
+> [!IMPORTANT]
+>
+> The Installer will remind you to activate ->strictPermissions() if it detects shield. However if you install shield after mouseless you have to remember yourself.
 
+
+
+### Miscellanious
+
+The configurations never end...
+
+#### Shortcuts on Mobile
+
+The user-menu link to "My Shortcuts" is hidden on phones and tablets by default — keyboards usually aren't a thing there. Detection is User-Agent based, so a narrow window on a real desktop browser still shows the link.
+
+**Keyboard on a phone?** No config needed. Mouseless automagically detects hardware keyboards (including bluetooth ones) and shows the my-shortcuts page.
+
+To force-show the link everywhere, skipping the heuristic:
+
+```php
+->plugins([
+  FilamentMouselessPlugin::make()
+      ->showShortcutsOnMobile(),
+])
+```
+
+The page itself stays reachable by direct URL regardless.
+
+> [!NOTE]
+>
+> The link is rendered server-side but CSS-hidden on mobile UAs. The first time a real hardware key is pressed, the JS engine writes `localStorage.mouseless_kbd = '1'` and adds a class to `<body>` — the link appears instantly. On the next page load, a tiny inline script reads localStorage and reapplies the class before paint, so there's no flash. Soft keyboards don't trigger it (filtered via IME signals).
+
+
+
+##### Disabling the probe
+
+If the auto-reveal heuristic ever misbehaves, you can switch it off:
+
+```php
+->plugins([
+  FilamentMouselessPlugin::make()
+      ->disableProbe(),
+])
+```
+
+With the probe disabled, mobile users must use `->showShortcutsOnMobile()` to see the link.
 
 ### Go Home
 
 By default <kbd>option</kbd>+<kbd>↑</kbd>  brings you home. 
+
+//todo
 
 ## Testing
 

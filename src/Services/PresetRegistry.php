@@ -6,6 +6,17 @@ use Blemli\FilamentMouseless\Models\Preset;
 
 class PresetRegistry
 {
+    /** @var ?array<string, array> Built-ins come from config files — immutable per request. */
+    private ?array $builtInCache = null;
+
+    /** @var array<int, array<string, array>> Request-scoped memo — flushed after layout mutations. */
+    private array $allCache = [];
+
+    public function flush(): void
+    {
+        $this->allCache = [];
+    }
+
     /**
      * Return every preset visible to the given user: built-ins,
      * the user's personal presets, and installation-published ones.
@@ -13,6 +24,14 @@ class PresetRegistry
      * @return array<string, array> Keyed by slug.
      */
     public function all(?int $userId = null): array
+    {
+        return $this->allCache[$userId ?? 0] ??= $this->load($userId);
+    }
+
+    /**
+     * @return array<string, array>
+     */
+    protected function load(?int $userId): array
     {
         $presets = $this->builtIn();
 
@@ -22,7 +41,7 @@ class PresetRegistry
             }
         }
 
-        if (config('mouseless.publishing.enabled')) {
+        if (\Blemli\FilamentMouseless\FilamentMouselessPlugin::publishingEnabled()) {
             foreach (Preset::query()->where('is_published', true)->get() as $p) {
                 if (! $this->isApprovedIfRequired($p)) {
                     continue;
@@ -43,11 +62,27 @@ class PresetRegistry
         return $this->all($userId)[$slug] ?? null;
     }
 
+    /** The built-in preset matching the given locale (e.g. 'de' → german-default). */
+    public function builtInForLocale(string $locale): ?array
+    {
+        foreach ($this->builtIn() as $preset) {
+            if (($preset['locale'] ?? null) === $locale) {
+                return $preset;
+            }
+        }
+
+        return null;
+    }
+
     /**
      * @return array<string, array>
      */
     public function builtIn(): array
     {
+        if ($this->builtInCache !== null) {
+            return $this->builtInCache;
+        }
+
         $presets = [];
 
         // Always scan the package's bundled presets (lives next to this file).
@@ -60,7 +95,7 @@ class PresetRegistry
             $this->loadInto($presets, $userPath);
         }
 
-        return $presets;
+        return $this->builtInCache = $presets;
     }
 
     protected function loadInto(array &$presets, string $path): void
@@ -83,10 +118,14 @@ class PresetRegistry
         return [
             'slug' => $p->slug,
             'name' => $p->name,
+            'description' => $p->description,
             'locale' => $p->locale,
             'version' => $p->version,
             'author' => $p->owner_user_id ? "user:{$p->owner_user_id}" : 'installation',
+            'owner_user_id' => $p->owner_user_id,
+            'parent_slug' => $p->parent_slug,
             'bindings' => $p->bindings ?? [],
+            'disabled_actions' => $p->disabled_actions ?? [],
             'panels' => $p->panels,
             'source' => $p->source,
         ];

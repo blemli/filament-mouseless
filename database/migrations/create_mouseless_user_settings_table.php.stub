@@ -11,8 +11,7 @@ return new class extends Migration
         Schema::create('mouseless_user_settings', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->unique();
-            $table->string('active_preset_slug')->nullable();
-            $table->json('overrides')->nullable(); // sparse: action_id => key
+            $table->string('active_preset_slug')->nullable(); // null = follow the UI locale's default preset
             $table->timestamps();
         });
     }

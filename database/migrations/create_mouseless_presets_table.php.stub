@@ -12,12 +12,14 @@ return new class extends Migration
             $table->id();
             $table->string('slug')->unique();
             $table->string('name');
+            $table->string('description', 500)->nullable();
             $table->string('locale', 8)->default('en');
             $table->string('version')->default('1.0');
             $table->foreignId('owner_user_id')->nullable()->index();
             $table->string('source')->default('user'); // 'user' | 'imported'
             $table->string('parent_slug')->nullable();
             $table->json('bindings');
+            $table->json('disabled_actions')->nullable();
             $table->json('panels')->nullable(); // null = all
             $table->boolean('is_published')->default(false)->index();
             $table->timestamp('published_at')->nullable();

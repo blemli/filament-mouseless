@@ -3,6 +3,7 @@
 return [
     'slug' => 'german-default',
     'name' => 'Deutsch (Standard)',
+    'description' => 'Aktionen auf ihren deutschen Anfangsbuchstaben (Alt+N = Neu)',
     'locale' => 'de',
     'version' => '1.0',
     'author' => 'blemli/filament-mouseless',

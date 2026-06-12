@@ -33,7 +33,7 @@
                             @foreach ($actions as $actionId => $key)
                                 <li class="fi-mouseless-help-item">
                                     <span>{{ __('filament-mouseless::mouseless.action.' . $actionId) }}</span>
-                                    <kbd class="fi-mouseless-help-kbd">{{ $key }}</kbd>
+                                    <kbd class="fi-mouseless-help-kbd">{{ \Blemli\FilamentMouseless\Support\Keys::display($key) }}</kbd>
                                 </li>
                             @endforeach
                         </ul>
@@ -44,8 +44,7 @@
             <footer class="fi-mouseless-help-footer">
                 @if ($preset)
                     {{ __('filament-mouseless::mouseless.help.source', [
-                        'preset'    => $preset['name'] ?? $preset['slug'] ?? '',
-                        'overrides' => count(array_filter($overrides ?? [])),
+                        'preset' => $preset['name'] ?? $preset['slug'] ?? '',
                     ]) }}
                 @endif
             </footer>

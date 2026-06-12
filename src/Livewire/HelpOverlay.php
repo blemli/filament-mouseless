@@ -21,7 +21,6 @@ class HelpOverlay extends Component
         return view('filament-mouseless::livewire.help-overlay', [
             'groups' => $groups,
             'preset' => $resolved['preset'],
-            'overrides' => $resolved['overrides'],
         ]);
     }
 }

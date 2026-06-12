@@ -3,6 +3,7 @@
 return [
     'slug' => 'english-default',
     'name' => 'English (default)',
+    'description' => 'Actions on their English initials (Alt+C = Create)',
     'locale' => 'en',
     'version' => '1.0',
     'author' => 'blemli/filament-mouseless',

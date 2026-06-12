@@ -230,41 +230,125 @@ body.fi-mouseless-mobile:not(.fi-mouseless-kbd) .fi-mouseless-shortcuts-link {
     gap: 0.5rem;
 }
 
-/* ---------- bindings table (profile shortcuts tab) ---------- */
+/* ---------- my-shortcuts page layout: table 2/3, widgets aside 1/3 ---------- */
 
-.fi-mouseless-bindings {
-    width: 100%;
-    font-size: 0.875rem;
-    border-collapse: collapse;
+.fi-mouseless-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+    gap: 1.5rem;
+    align-items: start;
 }
 
-.fi-mouseless-bindings tr {
-    border-bottom: 1px solid var(--mouseless-help-border);
+.fi-mouseless-layout-aside {
+    grid-column: 1;
+    grid-row: 1;
+    min-width: 0;
 }
 
-.fi-mouseless-bindings td {
-    padding: 0.5rem 0;
+.fi-mouseless-layout-main {
+    grid-column: 2;
+    grid-row: 1;
+    min-width: 0;
 }
 
-.fi-mouseless-bindings-cell-key {
-    text-align: right;
+@media (max-width: 64rem) {
+    .fi-mouseless-layout {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    /* Aside first in the DOM, so the preset selector stacks above the table. */
+    .fi-mouseless-layout-aside,
+    .fi-mouseless-layout-main {
+        grid-column: 1;
+        grid-row: auto;
+    }
 }
 
-.fi-mouseless-bindings-cell-action {
-    text-align: right;
-    padding-left: 0.5rem !important;
+.fi-mouseless-widget-stack {
+    gap: 0.75rem;
+}
+
+.fi-mouseless-select-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.fi-mouseless-select-field {
+    flex: 1;
+    min-width: 0;
+}
+
+/* Preset option with subtitle (rendered via the Select's allowHtml). */
+.fi-mouseless-option-title {
+    font-weight: 500;
+}
+
+.fi-mouseless-option-sub {
+    font-size: 0.75rem;
+    color: var(--mouseless-help-muted);
+}
+
+/* In the closed select control, show only the title — the subtitle
+ * belongs to the dropdown list. */
+.fi-select-input-value-ctn .fi-mouseless-option-sub {
+    display: none;
+}
+
+/* ---------- shortcuts table (my-shortcuts page) ---------- */
+
+.fi-mouseless-combo-cell {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.fi-mouseless-kbd-group {
+    display: inline-flex;
+    gap: 0.25rem;
+}
+
+.fi-mouseless-kbd {
+    background: var(--mouseless-help-kbd-bg);
+    border: 1px solid var(--mouseless-help-border);
+    padding: 0.125rem 0.5rem;
+    border-radius: 0.25rem;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 0.75rem;
     white-space: nowrap;
 }
 
-/* ---------- import textarea ---------- */
-
-.fi-mouseless-import-textarea {
-    width: 100%;
-    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-    font-size: 0.75rem;
-    resize: vertical;
+.fi-mouseless-combo-empty {
+    color: var(--mouseless-help-muted);
 }
 
-.fi-mouseless-import-submit {
-    margin-top: 0.5rem;
+/* Disabled action: greyed out (the trailing actions cell keeps its
+ * buttons fully visible so re-enabling stays obvious). */
+.fi-mouseless-row-disabled > td:not(:last-child),
+.fi-mouseless-row-disabled .fi-ta-cell:not(:last-child) {
+    opacity: 0.45;
+}
+
+/* Key-search icon: push to the far right of the toolbar actions, next to
+ * the search field. */
+.fi-mouseless-layout-main .fi-ta-header-toolbar > .fi-ta-actions {
+    flex: 1;
+}
+
+.fi-mouseless-layout-main .fi-ta-header-toolbar .fi-mouseless-key-search-btn {
+    margin-left: auto;
+}
+
+.fi-mouseless-key-search-modal {
+    display: flex;
+    justify-content: center;
+    padding: 1rem 0;
+}
+
+/* Modal text must wrap even when an ancestor (e.g. a table actions cell or
+ * an app theme) forces white-space: nowrap — otherwise the heading,
+ * description and footer buttons overflow the modal window. */
+.fi-modal-window {
+    white-space: normal;
 }

@@ -28,6 +28,8 @@ class FilamentMouselessPlugin implements Plugin
 
     protected bool $strictPermissions = false;
 
+    protected ?bool $publishable = null;
+
     protected string | Closure | null $icon = null;
 
     protected string | Closure | null $settingsPageLabel = null;
@@ -77,6 +79,30 @@ class FilamentMouselessPlugin implements Plugin
     public function isStrict(): bool
     {
         return $this->strictPermissions;
+    }
+
+    /**
+     * Let users publish their layouts to everyone (and make them private
+     * again). Equivalent to setting `mouseless.publishing.enabled`; the
+     * `mouseless.publishing.gate` (when non-null) still controls who may.
+     */
+    public function publishable(bool $enabled = true): static
+    {
+        $this->publishable = $enabled;
+
+        return $this;
+    }
+
+    public function isPublishable(): ?bool
+    {
+        return $this->publishable;
+    }
+
+    /** Current panel's flag when set, else the config default. */
+    public static function publishingEnabled(): bool
+    {
+        return static::safeGet()?->isPublishable()
+            ?? (bool) config('mouseless.publishing.enabled');
     }
 
     /**

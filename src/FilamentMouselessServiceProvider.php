@@ -3,7 +3,6 @@
 namespace Blemli\FilamentMouseless;
 
 use Blemli\FilamentMouseless\Livewire\HelpOverlay;
-use Blemli\FilamentMouseless\Livewire\ShortcutsProfileTab;
 use Blemli\FilamentMouseless\Services\BindingResolver;
 use Blemli\FilamentMouseless\Services\PresetRegistry;
 use Blemli\FilamentMouseless\Support\Shield;
@@ -158,8 +157,10 @@ class FilamentMouselessServiceProvider extends PackageServiceProvider
 
     public function packageRegistered(): void
     {
-        $this->app->singleton(PresetRegistry::class);
-        $this->app->singleton(BindingResolver::class);
+        // Scoped (not singleton): the memo caches inside must reset per
+        // request under Octane.
+        $this->app->scoped(PresetRegistry::class);
+        $this->app->scoped(BindingResolver::class);
     }
 
     public function packageBooted(): void
@@ -179,7 +180,7 @@ class FilamentMouselessServiceProvider extends PackageServiceProvider
         FilamentIcon::register($this->getIcons());
 
         Livewire::component('mouseless-help-overlay', HelpOverlay::class);
-        Livewire::component('mouseless-shortcuts-tab', ShortcutsProfileTab::class);
+        Livewire::component('mouseless-preset-selector', \Blemli\FilamentMouseless\Filament\Widgets\PresetSelector::class);
 
         if (app()->runningInConsole()) {
             foreach (app(Filesystem::class)->files(__DIR__ . '/../stubs/') as $file) {
@@ -511,7 +512,7 @@ class FilamentMouselessServiceProvider extends PackageServiceProvider
         try {
             $resolved = app(BindingResolver::class)->forUser(auth()->id());
         } catch (\Throwable) {
-            $resolved = ['bindings' => [], 'preset' => null, 'overrides' => [], 'disabled' => []];
+            $resolved = ['bindings' => [], 'preset' => null, 'disabled' => []];
         }
 
         return [

@@ -11,45 +11,61 @@ class BindingResolver
 {
     private static bool $loggedMissingTable = false;
 
+    /** @var array<int, array> Request-scoped memo — flushed after every layout mutation. */
+    private array $resolved = [];
+
     public function __construct(protected PresetRegistry $registry) {}
 
+    public function flush(): void
+    {
+        $this->resolved = [];
+    }
+
     /**
-     * Build the effective binding map for a user.
+     * Build the effective binding map for a user. The user's whole layout
+     * lives in their preset — a `null` binding means "unbound", and the
+     * preset's own `disabled_actions` (plus config) are excluded entirely.
+     *
+     * Memoized per user: the table evaluates dozens of closures per render
+     * that all start from this resolution.
      *
      * @return array{
      *   bindings: array<string, string>,
      *   preset: ?array,
-     *   overrides: array<string, string>,
      *   disabled: array<int, string>,
      * }
      */
     public function forUser(?int $userId): array
     {
+        return $this->resolved[$userId ?? 0] ??= $this->resolveForUser($userId);
+    }
+
+    protected function resolveForUser(?int $userId): array
+    {
         // Shield master switch: when the user lacks `mouseless_use`, hand back
         // an empty binding map so the JS engine and help overlay no-op.
         if ($userId && ! Shield::userMayUse()) {
-            return ['bindings' => [], 'preset' => null, 'overrides' => [], 'disabled' => []];
+            return ['bindings' => [], 'preset' => null, 'disabled' => []];
         }
-
-        $disabled = (array) config('mouseless.disabled_actions', []);
 
         $settings = $userId ? $this->loadSettings($userId) : null;
         $configDefault = config('mouseless.default_preset') ?: 'english-default';
 
-        // If the user hasn't picked a preset and the configured default doesn't
-        // match the current UI locale, prefer a locale-matched built-in preset.
-        $localeDefault = $this->presetForLocale(app()->getLocale()) ?? $configDefault;
-        $fallbackSlug = $configDefault;
+        // No explicit selection → follow the UI locale; switching the app
+        // language switches the default preset automatically.
+        $localeDefault = $this->registry->builtInForLocale(app()->getLocale())['slug'] ?? $configDefault;
         $activeSlug = $settings?->active_preset_slug ?: $localeDefault;
 
         $preset = $this->registry->find($activeSlug, $userId)
             ?? $this->registry->find($localeDefault, $userId)
-            ?? $this->registry->find($fallbackSlug, $userId);
+            ?? $this->registry->find($configDefault, $userId);
 
-        $base = $preset['bindings'] ?? [];
-        $overrides = $settings?->overrides ?? [];
+        $disabled = array_values(array_unique(array_merge(
+            (array) ($preset['disabled_actions'] ?? []),
+            (array) config('mouseless.disabled_actions', []),
+        )));
 
-        $bindings = array_merge($base, array_filter($overrides, fn ($v) => $v !== null));
+        $bindings = array_filter($preset['bindings'] ?? [], fn ($v) => $v !== null);
 
         foreach ($disabled as $actionId) {
             unset($bindings[$actionId]);
@@ -58,8 +74,7 @@ class BindingResolver
         return [
             'bindings' => $bindings,
             'preset' => $preset,
-            'overrides' => $overrides,
-            'disabled' => array_values($disabled),
+            'disabled' => $disabled,
         ];
     }
 
@@ -98,20 +113,6 @@ class BindingResolver
 
         return str_contains($e->getMessage(), 'no such table')
             || str_contains($e->getMessage(), 'does not exist');
-    }
-
-    /**
-     * Find a built-in preset matching the given locale (e.g. 'de' → 'german-default').
-     */
-    protected function presetForLocale(string $locale): ?string
-    {
-        foreach ($this->registry->builtIn() as $slug => $preset) {
-            if (($preset['locale'] ?? null) === $locale) {
-                return $slug;
-            }
-        }
-
-        return null;
     }
 
     public function reservedKeys(): array

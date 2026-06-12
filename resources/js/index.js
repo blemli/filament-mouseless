@@ -61,11 +61,19 @@ function bootMouseless() {
     console.log(TAG, 'attaching keydown listener (capture)');
 
     document.addEventListener('keydown', onKeydown, true);
+
+    // Shared with the Blade key-capture snippets (recording cell, key-search
+    // modal) so combo normalization can never drift from the engine's.
+    window.mouselessEventToKey = eventToKey;
     console.log(TAG, '=== boot complete ===');
 
     function onKeydown(e) {
         // Skip pure-modifier keys without spamming the log.
         if (['Control', 'Alt', 'Shift', 'Meta'].includes(e.key)) return;
+
+        // The my-shortcuts page is capturing a combo (recording / key search)
+        // — stay out of the way so the captured key never triggers an action.
+        if (document.querySelector('[data-mouseless-recording]')) return;
 
         const pressed = eventToKey(e);
         const inInput = isTextInputFocus(e.target);

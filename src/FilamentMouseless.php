@@ -21,4 +21,11 @@ class FilamentMouseless
     {
         return $this->resolver()->forUser(auth()->id());
     }
+
+    /** Drop the request-scoped resolution memos after a layout mutation. */
+    public function flush(): void
+    {
+        $this->resolver()->flush();
+        $this->registry()->flush();
+    }
 }
