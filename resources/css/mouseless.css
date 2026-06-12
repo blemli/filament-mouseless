@@ -162,11 +162,152 @@ body.fi-mouseless-mobile:not(.fi-mouseless-kbd) .fi-mouseless-shortcuts-link {
 }
 
 .fi-mouseless-help-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
     margin-top: 1.5rem;
     border-top: 1px solid var(--mouseless-help-border);
     padding-top: 0.75rem;
     font-size: 0.75rem;
     color: var(--mouseless-help-muted);
+}
+
+.fi-mouseless-help-print {
+    background: transparent;
+    border: 1px solid var(--mouseless-help-border);
+    border-radius: 0.375rem;
+    padding: 0.25rem 0.75rem;
+    font-size: 0.75rem;
+    color: var(--mouseless-help-fg);
+    cursor: pointer;
+}
+
+.fi-mouseless-help-print:hover {
+    background: var(--mouseless-help-kbd-bg);
+}
+
+/* ---------- printable cheatsheet ----------
+ * The letterhead (app name + slogan) only exists on paper. All print rules
+ * are scoped under body.fi-mouseless-help-open, which the overlay toggles
+ * via x-effect — and only when the plugin's printableCheatsheet() is on, so
+ * disabling it makes Cmd+P print the page normally again.
+ */
+
+.fi-mouseless-help-footer-meta {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    white-space: nowrap;
+}
+
+.fi-mouseless-cheatsheet-brand,
+.fi-mouseless-cheatsheet-date {
+    display: none;
+}
+
+@media print {
+    body.fi-mouseless-help-open {
+        height: auto !important;
+        overflow: visible !important;
+    }
+
+    /* Remove the page behind the overlay from flow — avoids blank pages. */
+    body.fi-mouseless-help-open .fi-layout {
+        display: none !important;
+    }
+
+    body.fi-mouseless-help-open * {
+        visibility: hidden;
+    }
+
+    body.fi-mouseless-help-open .fi-mouseless-help-overlay,
+    body.fi-mouseless-help-open .fi-mouseless-help-overlay * {
+        visibility: visible;
+    }
+
+    body.fi-mouseless-help-open .fi-mouseless-help-overlay {
+        display: block;
+        position: absolute;
+        inset: 0 0 auto 0;
+        padding: 0;
+        background: none;
+    }
+
+    body.fi-mouseless-help-open .fi-mouseless-help-panel {
+        /* Force the light palette — dark mode must still print black-on-white. */
+        --mouseless-help-bg: #ffffff;
+        --mouseless-help-fg: #000000;
+        --mouseless-help-muted: #374151;
+        --mouseless-help-border: rgba(0, 0, 0, 0.25);
+        --mouseless-help-kbd-bg: transparent;
+        max-width: none;
+        max-height: none;
+        overflow: visible;
+        box-shadow: none;
+        border: 0;
+        border-radius: 0;
+    }
+
+    body.fi-mouseless-help-open .fi-mouseless-cheatsheet-brand {
+        display: block;
+        margin-bottom: 1rem;
+    }
+
+    body.fi-mouseless-help-open .fi-mouseless-cheatsheet-app {
+        font-size: 1.5rem;
+        font-weight: 700;
+    }
+
+    body.fi-mouseless-help-open .fi-mouseless-cheatsheet-slogan {
+        font-size: 0.875rem;
+        color: var(--mouseless-help-muted);
+    }
+
+    body.fi-mouseless-help-open .fi-mouseless-cheatsheet-date {
+        display: inline;
+    }
+
+    /* The letterhead already carries "<app> <title>" — drop the screen header. */
+    body.fi-mouseless-help-open .fi-mouseless-help-header,
+    body.fi-mouseless-help-open .fi-mouseless-help-print {
+        display: none;
+    }
+
+    /* Newspaper flow: groups fill three columns across the page. */
+    body.fi-mouseless-help-open .fi-mouseless-help-body {
+        display: block;
+        column-count: 3;
+        column-gap: 2rem;
+        column-rule: 1px solid rgba(0, 0, 0, 0.15);
+    }
+
+    body.fi-mouseless-help-open .fi-mouseless-help-body section {
+        margin-bottom: 1.25rem;
+    }
+
+    /* One action per row — a print column is too narrow for the 2-up grid.
+     * Slightly smaller type leaves room for long combos (alt+shift+…). */
+    body.fi-mouseless-help-open .fi-mouseless-help-list {
+        grid-template-columns: minmax(0, 1fr);
+        font-size: 0.75rem;
+    }
+
+    body.fi-mouseless-help-open .fi-mouseless-help-group-heading {
+        font-size: 0.65rem;
+    }
+
+    body.fi-mouseless-help-open .fi-mouseless-help-kbd {
+        border: 1px solid rgba(0, 0, 0, 0.35);
+        font-size: 0.65rem;
+        padding: 0.0625rem 0.375rem;
+        white-space: nowrap;
+    }
+
+    body.fi-mouseless-help-open .fi-mouseless-help-body section,
+    body.fi-mouseless-help-open .fi-mouseless-help-item {
+        break-inside: avoid;
+    }
 }
 
 /* ---------- shared layout primitives used by admin / profile pages ---------- */

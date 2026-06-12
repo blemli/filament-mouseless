@@ -35,11 +35,11 @@ Go to any page and press <kbd>?</kbd> outside a textfield to show all the availa
 
 ## Features Overview
 
-Dark-Mode Support, Language Adaptive: DE (**N**eu) & EN (**C**reate),  Filament Native Style (no custom theme needed), Mobile Friendly, Stateless mode available (without migrations), Show a Shortcuts Overlay with <kbd>?</kbd>, Convenient `mouseless:install` command, Let Users Register custom Combinations, Hidden on Devices without Keyboard, Compatible with Filament Shield but not required, Configure everything like Icons and Labels, 
+Dark-Mode Support, Language Adaptive: DE (**N**eu) & EN (**C**reate),  Filament Native Style (no custom theme needed), Mobile Friendly, Stateless mode available (without migrations), Show a Shortcuts Overlay with <kbd>?</kbd>, Convenient `mouseless:install` command, Let Users Register custom Combinations, Hidden on Devices without Keyboard, Compatible with Filament Shield but not required, Configure everything like Icons and Labels, Printable CheatSheat
 
 ### v2
 
-Printable CheatSheat, Specify Position in Profile Dropdown, Adapt Action Names to the Shortcut Initials, Multipanel support, Multitenant Support, Resources Initials, Highlight of Shortcuts in UI, Tutorial on missed Shortcuts, Statistics on avoided clicks, Let Users share Presets with eachother, Let Admins Moderate Shared Presets (remove unused ones), see which action is the most overwritten, Open Filters Panel, Open Column Selector, `shorcuts:list` command, Detect already existing shortcuts of actions (artisan?), singleton preset, translate to many languages, support advanced tables, opt-in to global search, vimperator mode, AskPhil, Kanban, and probably even more!
+Prohibit some Shortcuts (Browser/OS), Jump to Resources with Shortcuts, Specify Position in Profile Dropdown, Adapt Action Names to the Shortcut Initials, Multipanel support, Multitenant Support, Resources Initials, Highlight of Shortcuts in UI, Tutorial on missed Shortcuts, Statistics on avoided clicks, Let Users share Presets with eachother, Let Admins Moderate Shared Presets (remove unused ones), see which action is the most overwritten, Open Filters Panel, Open Column Selector, `shorcuts:list` command, Detect already existing shortcuts of actions (artisan?), singleton preset, translate to many languages, support advanced tables, opt-in to global search, vimperator mode, AskPhil, Kanban, ActivityLog, and probably even more!
 
 ### Languages
 
@@ -78,6 +78,23 @@ If for some obscure reason you don't want the help overlay, you can disable it:
 ```
 
 Shortcuts still work, only the overlay popup is suppressed.
+
+#### Printable cheatsheet
+
+The help overlay doubles as a printable cheatsheet: a print button in its footer (or Cmd/Ctrl+P while it's open) prints just the shortcut list, headed by your app's name.
+
+A slogan under the app name comes from `config/app.php` when present:
+
+```php
+'slogan' => 'Ship faster, click less',
+```
+
+Turn printing off entirely (no print button, no print styles):
+
+```php
+FilamentMouselessPlugin::make()
+    ->disableCheatsheetPrinting()
+```
 
 #### Show the Admin page
 

@@ -1,6 +1,10 @@
 <div
     x-data="{ open: false }"
     @mouseless-help.window="open = ! open"
+    @if ($printable)
+        {{-- Body class scopes the print stylesheet: without it, Cmd+P prints the page normally. --}}
+        x-effect="document.body.classList.toggle('fi-mouseless-help-open', open)"
+    @endif
 >
     <div
         x-show="open"
@@ -11,6 +15,14 @@
         class="fi-mouseless-help-overlay"
     >
         <div @click.stop class="fi-mouseless-help-panel">
+            {{-- Print-only cheatsheet letterhead. --}}
+            <div class="fi-mouseless-cheatsheet-brand">
+                <div class="fi-mouseless-cheatsheet-app">{{ $brandName }} {{ __('filament-mouseless::mouseless.help.title') }}</div>
+                @if ($slogan)
+                    <div class="fi-mouseless-cheatsheet-slogan">{{ $slogan }}</div>
+                @endif
+            </div>
+
             <div class="fi-mouseless-help-header">
                 <h2 class="fi-mouseless-help-title">
                     {{ __('filament-mouseless::mouseless.help.title') }}
@@ -42,11 +54,32 @@
             </div>
 
             <footer class="fi-mouseless-help-footer">
-                @if ($preset)
-                    {{ __('filament-mouseless::mouseless.help.source', [
-                        'preset' => $preset['name'] ?? $preset['slug'] ?? '',
-                    ]) }}
-                @endif
+                <span>
+                    @if ($preset)
+                        {{ __('filament-mouseless::mouseless.help.source', [
+                            'preset' => $preset['name'] ?? $preset['slug'] ?? '',
+                        ]) }}
+                    @endif
+                </span>
+
+                <span class="fi-mouseless-help-footer-meta">
+                    @if ($appVersion)
+                        <span>v{{ $appVersion }}</span>
+                    @endif
+
+                    {{-- Print-only: the date lets paper copies reveal their age. --}}
+                    <span class="fi-mouseless-cheatsheet-date">{{ $printedAt }}</span>
+
+                    @if ($printable)
+                        <button
+                            type="button"
+                            @click="window.print()"
+                            class="fi-mouseless-help-print"
+                        >
+                            {{ __('filament-mouseless::mouseless.help.print') }}
+                        </button>
+                    @endif
+                </span>
             </footer>
         </div>
     </div>

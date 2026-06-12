@@ -7,6 +7,7 @@ return [
     'help' => [
         'title' => 'Tastenkürzel',
         'close' => 'Schliessen',
+        'print' => 'Drucken',
         'source' => 'Preset: :preset',
         'no_match' => 'Keine passende Aktion auf dieser Seite.',
     ],

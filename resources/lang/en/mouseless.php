@@ -7,6 +7,7 @@ return [
     'help' => [
         'title' => 'Keyboard shortcuts',
         'close' => 'Close',
+        'print' => 'Print',
         'source' => 'Preset: :preset',
         'no_match' => 'No matching action on this page.',
     ],

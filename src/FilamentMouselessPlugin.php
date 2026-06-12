@@ -30,6 +30,8 @@ class FilamentMouselessPlugin implements Plugin
 
     protected ?bool $publishable = null;
 
+    protected bool $printableCheatsheet = true;
+
     protected string | Closure | null $icon = null;
 
     protected string | Closure | null $settingsPageLabel = null;
@@ -129,6 +131,27 @@ class FilamentMouselessPlugin implements Plugin
     public function disableHelpOverlay(): static
     {
         return $this->helpOverlay(false);
+    }
+
+    /**
+     * The help overlay doubles as a printable cheatsheet (print button in
+     * the footer + print stylesheet). Pass false to disable both.
+     */
+    public function printableCheatsheet(bool $enabled = true): static
+    {
+        $this->printableCheatsheet = $enabled;
+
+        return $this;
+    }
+
+    public function disableCheatsheetPrinting(): static
+    {
+        return $this->printableCheatsheet(false);
+    }
+
+    public function isCheatsheetPrintable(): bool
+    {
+        return $this->printableCheatsheet;
     }
 
     public function showShortcutsOnMobile(bool $enabled = true): static
