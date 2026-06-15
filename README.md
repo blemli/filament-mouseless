@@ -35,11 +35,11 @@ Go to any page and press <kbd>?</kbd> outside a textfield to show all the availa
 
 ## Features Overview
 
-Dark-Mode Support, Language Adaptive: DE (**N**eu) & EN (**C**reate),  Filament Native Style (no custom theme needed), Mobile Friendly, Stateless mode available (without migrations), Show a Shortcuts Overlay with <kbd>?</kbd>, Convenient `mouseless:install` command, Let Users Register custom Combinations, Hidden on Devices without Keyboard, Compatible with Filament Shield but not required, Configure everything like Icons and Labels, Printable CheatSheat, Choose the Position in the User Menu, 
+Dark-Mode Support, Language Adaptive: DE (**N**eu) & EN (**C**reate),  Filament Native Style (no custom theme needed), Mobile Friendly, Respects your Theme & Font & Color, Stateless mode available (without migrations), Show a Shortcuts Overlay with <kbd>?</kbd>, Convenient `mouseless:install` command, Let Users Register custom Combinations, Hidden on Devices without Keyboard, Compatible with Filament Shield but not required, Configure everything like Icons &  Labels & Positions, Printable CheatSheat, 
 
 ### v2
 
-Opt-in to global search, Prohibit some Shortcuts (Browser/OS), Jump to Resources with Shortcuts, Action Names to the Shortcut Initials, Multipanel support, Multitenant Support, Resources Initials, Highlight of Shortcuts in UI, Tutorial on missed Shortcuts, Statistics on avoided clicks, Let Users share Presets with eachother, Let Admins Moderate Shared Presets (remove unused ones &see which action is the most overwritten), Open Filters Panel, Open Column Selector, `shorcuts:list` command, Detect already existing shortcuts of actions (artisan?), singleton preset, translate to many languages, support advanced tables, vimperator mode, AskPhil, Kanban, ActivityLog, and probably even more!
+Prohibit some Shortcuts (Browser/OS), Jump to Resources with Shortcuts, Action Names to the Shortcut Initials, Multipanel support, Multitenant Support, Resources Initials, Highlight of Shortcuts in UI, Tutorial on missed Shortcuts, Statistics on avoided clicks, Let Users share Presets with eachother, Default Resource Creation, Let Admins Moderate Shared Presets (remove unused ones &see which action is the most overwritten, most used), Open Filters Panel, Open Column Selector, uninstall command, `shorcuts:list` command, Detect already existing shortcuts of actions (artisan?), singleton preset, translate to many languages, support advanced tables, vimperator mode to jump to fields, Opt-in to global search, Integrate with Spotlight to directyl run relevant actions, AskPhil, Kanban, ActivityLog, and probably even more!
 
 ### Languages
 
@@ -154,6 +154,68 @@ Off by default. Enable it per panel:
 
 Published layouts appear in every user's layout dropdown (with the author's name appended). Moderation and a permission gate are configurable via `mouseless.publishing` in the config.
 
+### Custom Actions
+
+Your own Filament actions can join the keyboard layer too. Use Filament's native `->keyBindings()` as usual:
+
+```php
+use Filament\Actions\Action;
+
+Action::make('approve')
+    ->keyBindings(['mod+shift+a'])
+    ->action(fn () => /* … */);
+```
+
+Mouseless discovers these automatically and lists them in the <kbd>?</kbd> overlay and the `/my-shortcuts` page, under a **Custom actions** group. Actions that aren't available on the current page are greyed out.
+
+#### Let users rebind them
+
+By default a discovered action is **read-only**: it keeps Filament's own key handling and shows up for reference only. Add the `MouselessKeyBindings` trait to the page (or resource page) that renders the action, and Mouseless takes over its key handling — now users can rebind or disable it from `/my-shortcuts`:
+
+```php
+use Blemli\FilamentMouseless\Filament\Concerns\MouselessKeyBindings;
+
+class EditOrder extends EditRecord
+{
+    use MouselessKeyBindings;
+
+    // Optional: keep specific actions on their native binding.
+    public function mouselessExcludedActions(): array
+    {
+        return ['print'];
+    }
+}
+```
+
+You keep writing `->keyBindings()` exactly the same way — the trait only changes *who* handles the key. To apply the takeover everywhere without touching each page, set `mouseless.manage_all_keybindings` to `true`.
+
+> A page without the trait that uses `->keyBindings()` logs a one-time hint pointing you here, so read-only actions never go unnoticed.
+
+#### The scan command
+
+Discovery at render time only sees the page you're on. To make every custom action show up everywhere (including greyed-out on other pages), run:
+
+```bash
+php artisan mouseless:scan
+```
+
+It statically scans `mouseless.scan_paths` (defaults to `app/Filament`) for `->keyBindings()` calls and writes a manifest to `config/mouseless/actions.php`. `mouseless:install` runs it for you once.
+
+The manifest is yours to edit. Entries with `'scanned' => true` are rewritten on every scan; add your own with `'scanned' => false` (e.g. for actions defined with dynamic key bindings the scanner can't read) and they're preserved:
+
+```php
+// config/mouseless/actions.php
+return [
+    'custom.export-pdf' => [
+        'label' => 'Export PDF',
+        'keyBindings' => ['mod+e'],
+        'managed' => true,
+        'source' => null,
+        'scanned' => false, // hand-added — never touched by the scanner
+    ],
+];
+```
+
 You can also restrict shortcuts for specific users, using permissions:
 
 ### Permissions
@@ -252,6 +314,14 @@ FilamentMouselessPlugin::make()
 By default <kbd>option</kbd>+<kbd>↑</kbd>  brings you home. 
 
 //todo
+
+## Tiers
+
+59$ Single Project
+
+199$ Unlimited Projects forever
+
+399$ Premium Support: Implementation of any Feature within the scope of the package within 5 business days. 
 
 ## Testing
 

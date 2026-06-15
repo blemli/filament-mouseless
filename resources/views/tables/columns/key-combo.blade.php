@@ -77,5 +77,11 @@
                 {{ __('filament-mouseless::mouseless.table.duplicate') }}
             </x-filament::badge>
         @endif
+
+        @if ($record['readonly'] ?? false)
+            <x-filament::badge color="gray" icon="heroicon-m-code-bracket">
+                {{ __('filament-mouseless::mouseless.table.code_defined') }}
+            </x-filament::badge>
+        @endif
     @endif
 </div>

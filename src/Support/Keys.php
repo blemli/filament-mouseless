@@ -40,9 +40,69 @@ class Keys
         'pagedown' => 'PgDn',
     ];
 
+    /**
+     * Mousetrap/Filament combo aliases → our canonical parts. Filament's
+     * ->keyBindings() use Mousetrap syntax ('mod+s', 'option+up'); the engine
+     * speaks the lowercase event.key form ('cmd+s', 'alt+arrowup').
+     */
+    protected const MOUSETRAP_ALIASES = [
+        'command' => 'cmd',
+        'meta' => 'cmd',
+        'super' => 'cmd',
+        'control' => 'ctrl',
+        'option' => 'alt',
+        'return' => 'enter',
+        'esc' => 'escape',
+        'del' => 'delete',
+        'ins' => 'insert',
+        'spacebar' => 'space',
+        'up' => 'arrowup',
+        'down' => 'arrowdown',
+        'left' => 'arrowleft',
+        'right' => 'arrowright',
+    ];
+
     public static function isMac(): bool
     {
         return str_contains(request()->userAgent() ?? '', 'Mac');
+    }
+
+    /**
+     * Translate a Mousetrap-style combo (as written in Filament's
+     * ->keyBindings()) into the engine's canonical form. `mod` resolves to
+     * ⌘ on macOS and Ctrl elsewhere. Returns null for empty/sequence combos.
+     */
+    public static function fromMousetrap(?string $combo, ?bool $mac = null): ?string
+    {
+        if ($combo === null || trim($combo) === '') {
+            return null;
+        }
+
+        // Mousetrap sequences ("g i") are space-separated; the engine only
+        // understands single chords, so skip anything with whitespace.
+        if (preg_match('/\s/', trim($combo)) === 1) {
+            return null;
+        }
+
+        $mac ??= static::isMac();
+        $translated = [];
+
+        foreach (explode('+', $combo) as $part) {
+            $part = strtolower(trim($part));
+            if ($part === '') {
+                continue;
+            }
+
+            if ($part === 'mod') {
+                $translated[] = $mac ? 'cmd' : 'ctrl';
+
+                continue;
+            }
+
+            $translated[] = self::MOUSETRAP_ALIASES[$part] ?? $part;
+        }
+
+        return static::normalize(implode('+', $translated));
     }
 
     /**

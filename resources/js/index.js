@@ -62,10 +62,62 @@ function bootMouseless() {
 
     document.addEventListener('keydown', onKeydown, true);
 
+    // When the help overlay opens, grey out shortcuts whose target isn't on the
+    // current page. The server pre-marks custom rows via their onPage flag; this
+    // re-checks live so it stays correct after Livewire updates / SPA nav.
+    window.addEventListener('mouseless-help', () => {
+        setTimeout(() => {
+            const overlay = document.querySelector('[data-mouseless-overlay]');
+            if (overlay && isVisible(overlay)) probeHelpAvailability();
+        }, 60);
+    });
+
     // Shared with the Blade key-capture snippets (recording cell, key-search
     // modal) so combo normalization can never drift from the engine's.
     window.mouselessEventToKey = eventToKey;
     console.log(TAG, '=== boot complete ===');
+
+    // Toggle the "unavailable" class on every help row whose action can't be
+    // resolved on the current page. Conservative: only greys out when we are
+    // confident the target is absent, so an available action is never dimmed.
+    function probeHelpAvailability() {
+        const rows = document.querySelectorAll('[data-mouseless-help-item]');
+        rows.forEach(row => {
+            // Read-only (native) rows keep the server-rendered availability —
+            // their buttons carry no data-mouseless hook to probe.
+            if (row.hasAttribute('data-mouseless-help-readonly')) return;
+            const id = row.getAttribute('data-mouseless-help-item');
+            row.classList.toggle('fi-mouseless-help-item-unavailable', !probeAvailable(id));
+        });
+    }
+
+    function probeAvailable(id) {
+        // UI and navigation actions are always reachable.
+        if (id.startsWith('ui.') || id.startsWith('nav.')) return true;
+
+        // Managed custom actions expose a data-mouseless hook on their button.
+        if (id.startsWith('custom.')) {
+            const el = document.querySelector(`[data-mouseless="${id}"]`);
+            return !!(el && isVisible(el));
+        }
+
+        if (id === 'crud.create') {
+            if (document.querySelector('a[href$="/create"]')) return true;
+            if (/^(\/[^\/]+\/[^\/]+)\/(create|\d+(\/(edit|view))?)$/.test(window.location.pathname)) return true;
+            return !!cfg.rootResource;
+        }
+
+        if (id === 'list.next-row' || id === 'list.prev-row' || id === 'list.toggle-row') {
+            return !!document.querySelector('.fi-ta-row, .fi-ta-record');
+        }
+
+        const names = filamentActionNames(id);
+        if (!names.length) return true; // Unknown action type — never dim.
+        for (const name of names) {
+            if (findActionButton(name, document, true)) return true;
+        }
+        return false;
+    }
 
     function onKeydown(e) {
         // Skip pure-modifier keys without spamming the log.
@@ -332,7 +384,9 @@ function bootMouseless() {
 
     const ROW_LEVEL_ACTIONS = new Set(['crud.edit', 'crud.delete', 'crud.view', 'crud.duplicate']);
 
-    function findActionButton(actionName, scope = document) {
+    function findActionButton(actionName, scope = document, quiet = false) {
+        const log = (...args) => { if (!quiet) console.log(...args); };
+
         // Strategy 1: wire:click="mountAction('name'…)" — modal/method actions
         const wireSelectors = [
             `[wire\\:click^="mountAction('${actionName}'"]`,
@@ -342,7 +396,7 @@ function bootMouseless() {
         ];
         for (const sel of wireSelectors) {
             const all = scope.querySelectorAll(sel);
-            if (all.length) console.log(TAG, '    [wire] selector matched', all.length, 'el(s):', sel);
+            if (all.length) log(TAG, '    [wire] selector matched', all.length, 'el(s):', sel);
             for (const el of all) {
                 if (isVisible(el) && !el.disabled) return el;
             }
@@ -352,7 +406,7 @@ function bootMouseless() {
         // Most common: create → /resources/{slug}/create
         if (actionName === 'create') {
             const links = scope.querySelectorAll('a.fi-ac-btn-action[href*="/create"], a.fi-btn[href*="/create"], header a[href$="/create"]');
-            console.log(TAG, '    [href] create link matches:', links.length);
+            log(TAG, '    [href] create link matches:', links.length);
             for (const el of links) {
                 if (isVisible(el)) return el;
             }
@@ -361,7 +415,7 @@ function bootMouseless() {
         // Row-scoped href fallback: each row often has /{id}/edit, /{id}/view links.
         if (scope !== document && (actionName === 'edit' || actionName === 'view')) {
             const links = scope.querySelectorAll(`a[href$="/${actionName}"]`);
-            console.log(TAG, '    [row-href] /' + actionName + ' link matches:', links.length);
+            log(TAG, '    [row-href] /' + actionName + ' link matches:', links.length);
             for (const el of links) {
                 if (isVisible(el)) return el;
             }
@@ -370,21 +424,21 @@ function bootMouseless() {
         // Strategy 3: form submit button for save (edit/create pages)
         if (actionName === 'save') {
             const submit = scope.querySelector('form[wire\\:submit] button[type="submit"], form[wire\\:submit="save"] button[type="submit"]');
-            console.log(TAG, '    [form] submit button match:', submit);
+            log(TAG, '    [form] submit button match:', submit);
             if (submit && isVisible(submit) && !submit.disabled) return submit;
         }
 
         // Strategy 4: localized label text matching, scoped to Filament action elements
         const labels = (window.filamentData?.mouseless?.actionLabels || {})[actionName] || [];
         if (labels.length) {
-            console.log(TAG, '    [label] trying labels:', labels);
+            log(TAG, '    [label] trying labels:', labels);
             const candidates = scope.querySelectorAll('.fi-ac-btn-action, .fi-ac-link-action, .fi-ac-icon-btn-action, .fi-ac-badge-action');
             for (const el of candidates) {
                 if (!isVisible(el) || el.disabled) continue;
                 const text = (el.textContent || '').replace(/\s+/g, ' ').trim();
                 for (const label of labels) {
                     if (text.toLowerCase() === label.toLowerCase()) {
-                        console.log(TAG, '    [label] matched on text:', text);
+                        log(TAG, '    [label] matched on text:', text);
                         return el;
                     }
                 }

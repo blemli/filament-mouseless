@@ -2,6 +2,7 @@
 
 namespace Blemli\FilamentMouseless\Support;
 
+use Blemli\FilamentMouseless\Services\CustomActionRegistry;
 use Illuminate\Support\Str;
 
 class ActionMeta
@@ -51,10 +52,11 @@ class ActionMeta
         'record' => 'heroicon-o-document-text',
         'nav' => 'heroicon-o-rectangle-stack',
         'ui' => 'heroicon-o-window',
+        'custom' => 'heroicon-o-puzzle-piece',
     ];
 
     /** Fixed category order used for table grouping/sorting. */
-    public const CATEGORY_ORDER = ['crud', 'list', 'record', 'nav', 'ui'];
+    public const CATEGORY_ORDER = ['crud', 'list', 'record', 'nav', 'ui', 'custom'];
 
     /**
      * Bindings that must never be taken away (action id => required combo).
@@ -82,6 +84,12 @@ class ActionMeta
 
     public static function label(string $actionId): string
     {
+        // Custom (app-defined) actions carry their real label in the registry.
+        if (str_starts_with($actionId, 'custom.')) {
+            return static::customLabel($actionId)
+                ?? Str::headline(Str::after($actionId, 'custom.'));
+        }
+
         $key = 'filament-mouseless::mouseless.action.' . $actionId;
         $label = __($key);
 
@@ -95,6 +103,19 @@ class ActionMeta
         }
 
         return Str::headline(Str::afterLast($actionId, '.'));
+    }
+
+    protected static function customLabel(string $actionId): ?string
+    {
+        try {
+            $meta = app(CustomActionRegistry::class)->all()[$actionId] ?? null;
+        } catch (\Throwable) {
+            return null;
+        }
+
+        $label = $meta['label'] ?? null;
+
+        return (is_string($label) && $label !== '') ? $label : null;
     }
 
     public static function icon(string $actionId): string

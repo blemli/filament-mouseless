@@ -10,6 +10,7 @@ return [
         'print' => 'Print',
         'source' => 'Preset: :preset',
         'no_match' => 'No matching action on this page.',
+        'code_defined' => 'Defined in code — not user-customizable',
     ],
 
     'ns' => [
@@ -18,6 +19,7 @@ return [
         'record' => 'Record',
         'nav' => 'Navigation',
         'ui' => 'UI',
+        'custom' => 'Custom actions',
     ],
 
     // Nested so Laravel's translator (which uses dots as separators) finds them.
@@ -139,6 +141,7 @@ return [
             'protected' => '“:key” belongs to “:action” and cannot be taken away.',
         ],
         'duplicate' => 'Duplicate',
+        'code_defined' => 'In code',
         'unbound' => 'No shortcut assigned',
         'unbound_warning' => 'Unassigned',
         'export' => [

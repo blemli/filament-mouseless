@@ -14,7 +14,10 @@ class BindingResolver
     /** @var array<int, array> Request-scoped memo — flushed after every layout mutation. */
     private array $resolved = [];
 
-    public function __construct(protected PresetRegistry $registry) {}
+    public function __construct(
+        protected PresetRegistry $registry,
+        protected CustomActionRegistry $customActions,
+    ) {}
 
     public function flush(): void
     {
@@ -65,7 +68,18 @@ class BindingResolver
             (array) config('mouseless.disabled_actions', []),
         )));
 
-        $bindings = array_filter($preset['bindings'] ?? [], fn ($v) => $v !== null);
+        $presetBindings = (array) ($preset['bindings'] ?? []);
+        $bindings = array_filter($presetBindings, fn ($v) => $v !== null);
+
+        // Managed custom actions fall back to their code-defined combo, but
+        // only when the preset says nothing about them. An explicit null in the
+        // preset means the user unbound it — leave it unbound. A non-null value
+        // is an override and already sits in $bindings above.
+        foreach ($this->customActions->managedDefaults() as $id => $combo) {
+            if (! array_key_exists($id, $presetBindings)) {
+                $bindings[$id] = $combo;
+            }
+        }
 
         foreach ($disabled as $actionId) {
             unset($bindings[$actionId]);

@@ -153,6 +153,19 @@ body.fi-mouseless-mobile:not(.fi-mouseless-kbd) .fi-mouseless-shortcuts-link {
     gap: 0.75rem;
 }
 
+/* Action exists in the layout but isn't reachable on the current page. */
+.fi-mouseless-help-item-unavailable {
+    opacity: 0.4;
+}
+
+/* "Defined in code" marker on read-only custom actions. */
+.fi-mouseless-help-readonly {
+    margin-inline-start: 0.25rem;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 0.7rem;
+    color: var(--mouseless-help-muted);
+}
+
 .fi-mouseless-help-kbd {
     background: var(--mouseless-help-kbd-bg);
     padding: 0.125rem 0.5rem;

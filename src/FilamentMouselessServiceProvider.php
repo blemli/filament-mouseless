@@ -2,9 +2,14 @@
 
 namespace Blemli\FilamentMouseless;
 
+use Blemli\FilamentMouseless\Commands\ScanActionsCommand;
+use Blemli\FilamentMouseless\Filament\Widgets\PresetSelector;
 use Blemli\FilamentMouseless\Livewire\HelpOverlay;
+use Blemli\FilamentMouseless\Services\ActionDiscovery;
 use Blemli\FilamentMouseless\Services\BindingResolver;
+use Blemli\FilamentMouseless\Services\CustomActionRegistry;
 use Blemli\FilamentMouseless\Services\PresetRegistry;
+use Blemli\FilamentMouseless\Support\ScriptData;
 use Blemli\FilamentMouseless\Support\Shield;
 use Blemli\FilamentMouseless\Testing\TestsFilamentMouseless;
 use Filament\Facades\Filament;
@@ -42,6 +47,7 @@ class FilamentMouselessServiceProvider extends PackageServiceProvider
     public function configurePackage(Package $package): void
     {
         $package->name(static::$name)
+            ->hasCommand(ScanActionsCommand::class)
             ->hasInstallCommand(function (InstallCommand $command) {
                 $command->setName('mouseless:install');
                 $command->addOption('stateless', null, InputOption::VALUE_NONE, 'Install in stateless mode (skip the per-user shortcuts migrations)');
@@ -126,6 +132,12 @@ class FilamentMouselessServiceProvider extends PackageServiceProvider
                             warning("Couldn't run filament:assets — run it manually so the mouseless JS/CSS get published.");
                         }
 
+                        try {
+                            spin(fn () => $command->callSilent('mouseless:scan'), 'Scanning for custom action shortcuts...');
+                        } catch (\Throwable) {
+                            // Non-fatal: the scan can be run later with `php artisan mouseless:scan`.
+                        }
+
                         note(implode("\n", array_filter([
                             'Press ? on any Filament page to open the shortcut overlay.',
                             'Esc closes modals and menus, Option+↑ goes home.',
@@ -161,6 +173,8 @@ class FilamentMouselessServiceProvider extends PackageServiceProvider
         // request under Octane.
         $this->app->scoped(PresetRegistry::class);
         $this->app->scoped(BindingResolver::class);
+        $this->app->scoped(CustomActionRegistry::class);
+        $this->app->scoped(ActionDiscovery::class);
     }
 
     public function packageBooted(): void
@@ -180,7 +194,15 @@ class FilamentMouselessServiceProvider extends PackageServiceProvider
         FilamentIcon::register($this->getIcons());
 
         Livewire::component('mouseless-help-overlay', HelpOverlay::class);
-        Livewire::component('mouseless-preset-selector', \Blemli\FilamentMouseless\Filament\Widgets\PresetSelector::class);
+        Livewire::component('mouseless-preset-selector', PresetSelector::class);
+
+        // Discover (and, on opted-in pages, take over) custom actions' key
+        // bindings as each Filament page renders. The render event fires before
+        // the page's blade view is rendered, so disarming a native binding here
+        // prevents Filament from emitting its x-mousetrap attribute.
+        Livewire::listen('render', function (object $component): void {
+            app(ActionDiscovery::class)->discover($component);
+        });
 
         if (app()->runningInConsole()) {
             foreach (app(Filesystem::class)->files(__DIR__ . '/../stubs/') as $file) {
@@ -503,33 +525,17 @@ class FilamentMouselessServiceProvider extends PackageServiceProvider
     }
 
     /**
+     * The mouseless payload is resolved lazily (see {@see ScriptData}): the
+     * binding map and discovered custom actions are only final once the page
+     * has rendered, which happens after this boot-time registration but before
+     * `@filamentScripts` serializes the data.
+     *
      * @return array<string, mixed>
      */
     protected function getScriptData(): array
     {
-        // Only meaningful when there is a current request with an authenticated user;
-        // the resolver tolerates a null user and falls back to config defaults.
-        try {
-            $resolved = app(BindingResolver::class)->forUser(auth()->id());
-        } catch (\Throwable) {
-            $resolved = ['bindings' => [], 'preset' => null, 'disabled' => []];
-        }
-
         return [
-            'mouseless' => [
-                'bindings' => $resolved['bindings'],
-                'reserved' => (array) config('mouseless.reserved_keys', []),
-                'listModeIgnore' => (array) config('mouseless.list_mode.ignore_in', []),
-                'debug' => (bool) config('mouseless.debug', false),
-                'actionLabels' => $this->getActionLabels(),
-                // crud.create on a non-resource page (dashboard, custom page) creates
-                // a record of this resource. Slug ("categories"), path ("/admin/categories"),
-                // or full create URL ("/admin/categories/create") all accepted.
-                'rootResource' => config('app.root_resource'),
-                'strings' => [
-                    'no_match' => __('filament-mouseless::mouseless.help.no_match'),
-                ],
-            ],
+            'mouseless' => new ScriptData($this->getActionLabels()),
         ];
     }
 

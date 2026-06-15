@@ -3,6 +3,8 @@
 namespace Blemli\FilamentMouseless\Filament\Concerns;
 
 use Blemli\FilamentMouseless\Facades\FilamentMouseless;
+use Blemli\FilamentMouseless\Models\Preset;
+use Blemli\FilamentMouseless\Services\CustomActionRegistry;
 use Blemli\FilamentMouseless\Support\ActionMeta;
 use Blemli\FilamentMouseless\Support\Keys;
 use Filament\Actions\Action;
@@ -157,7 +159,7 @@ trait InteractsWithShortcutsTable
                             ? __('filament-mouseless::mouseless.table.actions.record_unbound')
                             : __('filament-mouseless::mouseless.table.actions.record'))
                         ->icon('heroicon-m-key')
-                        ->visible(fn (array $record): bool => ! $record['disabled'] && ! $this->isProtectedShortcut($record['id']))
+                        ->visible(fn (array $record): bool => ! $record['disabled'] && ! ($record['readonly'] ?? false) && ! $this->isProtectedShortcut($record['id']))
                         ->action(function (array $record): void {
                             $this->ensureEditableShortcutsPreset();
                             $this->startRecording($record['id']);
@@ -168,18 +170,18 @@ trait InteractsWithShortcutsTable
                         ->label(__('filament-mouseless::mouseless.table.actions.remove'))
                         ->icon('heroicon-m-minus-circle')
                         ->color('gray')
-                        ->visible(fn (array $record): bool => $record['combo'] !== null && ! $record['disabled'] && ! $this->isProtectedShortcut($record['id']))
+                        ->visible(fn (array $record): bool => $record['combo'] !== null && ! $record['disabled'] && ! ($record['readonly'] ?? false) && ! $this->isProtectedShortcut($record['id']))
                         ->action(fn (array $record) => $this->removeShortcut($record['id'])),
                 ),
                 Action::make('resetShortcut')
                     ->label(__('filament-mouseless::mouseless.table.actions.reset'))
                     ->icon('heroicon-m-arrow-uturn-left')
                     ->color('gray')
-                    ->visible(fn (array $record): bool => $record['changed'])
+                    ->visible(fn (array $record): bool => $record['changed'] && ! ($record['readonly'] ?? false))
                     ->action(fn (array $record) => $this->resetShortcut($record['id'])),
                 $this->configureShortcutsForkConfirmation(
                     Action::make('toggleShortcutDisabled')
-                        ->visible(fn (array $record): bool => ! $this->isProtectedShortcut($record['id']))
+                        ->visible(fn (array $record): bool => ! ($record['readonly'] ?? false) && ! $this->isProtectedShortcut($record['id']))
                         ->label(fn (array $record): string => $record['disabled']
                             ? __('filament-mouseless::mouseless.table.actions.enable')
                             : __('filament-mouseless::mouseless.table.actions.disable'))
@@ -269,7 +271,7 @@ trait InteractsWithShortcutsTable
     /** Proposed name for the auto-created personal layout. */
     public function shortcutsForkName(): string
     {
-        return \Blemli\FilamentMouseless\Models\Preset::defaultLayoutName();
+        return Preset::defaultLayoutName();
     }
 
     // ------------------------------------------------------------------
@@ -366,46 +368,145 @@ trait InteractsWithShortcutsTable
         $parentDisabled = (array) ($parent['disabled_actions'] ?? []);
 
         // Include disabled-only ids: a disabled action without any binding
-        // entry must still get a row, or it could never be re-enabled.
-        $ids = array_values(array_unique([...array_keys($bindings), ...array_keys($parentBindings), ...array_values($disabled)]));
+        // entry must still get a row, or it could never be re-enabled. Custom
+        // ids are handled separately (their default is the code-defined combo,
+        // not a parent-preset value) — drop them here to avoid duplicate rows.
+        $ids = array_values(array_filter(
+            array_unique([...array_keys($bindings), ...array_keys($parentBindings), ...array_values($disabled)]),
+            fn (string $id): bool => ! str_starts_with($id, 'custom.'),
+        ));
 
+        $rows = array_map(
+            fn (string $id): array => $this->coreShortcutRow($id, $bindings, $disabled, $parent, $parentBindings, $parentDisabled),
+            $ids,
+        );
+
+        $rows = [...$rows, ...$this->customShortcutRows($bindings, $disabled)];
+
+        // Duplicate detection runs across every effective combo (core + custom)
+        // so a preset key colliding with a code-defined one is flagged too.
         $comboCounts = [];
-        foreach ($ids as $id) {
-            if (in_array($id, $disabled, true)) {
+        foreach ($rows as $row) {
+            if ($row['disabled'] || $row['normalized'] === null) {
                 continue;
             }
 
-            $normalized = Keys::normalize($bindings[$id] ?? null);
-            if ($normalized !== null) {
-                $comboCounts[$normalized] = ($comboCounts[$normalized] ?? 0) + 1;
-            }
+            $comboCounts[$row['normalized']] = ($comboCounts[$row['normalized']] ?? 0) + 1;
         }
 
-        return array_map(function (string $id) use ($bindings, $disabled, $parent, $parentBindings, $parentDisabled, $comboCounts): array {
-            $combo = $bindings[$id] ?? null;
+        foreach ($rows as $index => $row) {
+            $rows[$index]['duplicate'] = ! $row['disabled']
+                && $row['normalized'] !== null
+                && ($comboCounts[$row['normalized']] ?? 0) > 1;
+        }
+
+        return $rows;
+    }
+
+    /**
+     * @param  array<string, ?string>  $bindings
+     * @param  array<int, string>  $disabled
+     * @param  array<string, mixed>|null  $parent
+     * @param  array<string, ?string>  $parentBindings
+     * @param  array<int, string>  $parentDisabled
+     * @return array<string, mixed>
+     */
+    protected function coreShortcutRow(string $id, array $bindings, array $disabled, ?array $parent, array $parentBindings, array $parentDisabled): array
+    {
+        $combo = $bindings[$id] ?? null;
+        $normalized = Keys::normalize($combo);
+        $isDisabled = in_array($id, $disabled, true);
+        $parentCombo = $parentBindings[$id] ?? null;
+
+        $changed = $parent !== null && (
+            $normalized !== Keys::normalize($parentCombo)
+            || $isDisabled !== in_array($id, $parentDisabled, true)
+        );
+
+        return [
+            '__key' => $id,
+            'id' => $id,
+            'label' => ActionMeta::label($id),
+            'category' => ActionMeta::category($id),
+            'icon' => ActionMeta::icon($id),
+            'combo' => $combo,
+            'normalized' => $normalized,
+            'default' => $parentCombo,
+            'changed' => $changed,
+            'disabled' => $isDisabled,
+            'duplicate' => false,
+            'readonly' => false,
+        ];
+    }
+
+    /**
+     * Rows for the host app's custom actions. Managed actions behave like core
+     * rows — their "default" is the code-defined combo, and a preset entry
+     * overrides it. Read-only actions (page without the MouselessKeyBindings
+     * trait) are shown for reference but cannot be rebound.
+     *
+     * @param  array<string, ?string>  $bindings
+     * @param  array<int, string>  $disabled
+     * @return array<int, array<string, mixed>>
+     */
+    protected function customShortcutRows(array $bindings, array $disabled): array
+    {
+        try {
+            $actions = app(CustomActionRegistry::class)->all();
+        } catch (\Throwable) {
+            return [];
+        }
+
+        $rows = [];
+
+        foreach ($actions as $id => $meta) {
+            $codeCombo = Keys::normalize($meta['combos'][0] ?? null);
+            $label = (is_string($meta['label'] ?? null) && $meta['label'] !== '')
+                ? $meta['label']
+                : ActionMeta::label($id);
+
+            if (! ($meta['managed'] ?? false)) {
+                $rows[] = [
+                    '__key' => $id,
+                    'id' => $id,
+                    'label' => $label,
+                    'category' => 'custom',
+                    'icon' => ActionMeta::icon($id),
+                    'combo' => $codeCombo,
+                    'normalized' => $codeCombo,
+                    'default' => $codeCombo,
+                    'changed' => false,
+                    'disabled' => false,
+                    'duplicate' => false,
+                    'readonly' => true,
+                ];
+
+                continue;
+            }
+
+            $hasOverride = array_key_exists($id, $bindings);
+            $combo = $hasOverride ? $bindings[$id] : $codeCombo;
             $normalized = Keys::normalize($combo);
             $isDisabled = in_array($id, $disabled, true);
-            $parentCombo = $parentBindings[$id] ?? null;
+            $changed = ($hasOverride && $normalized !== $codeCombo) || $isDisabled;
 
-            $changed = $parent !== null && (
-                $normalized !== Keys::normalize($parentCombo)
-                || $isDisabled !== in_array($id, $parentDisabled, true)
-            );
-
-            return [
+            $rows[] = [
                 '__key' => $id,
                 'id' => $id,
-                'label' => ActionMeta::label($id),
-                'category' => ActionMeta::category($id),
+                'label' => $label,
+                'category' => 'custom',
                 'icon' => ActionMeta::icon($id),
                 'combo' => $combo,
                 'normalized' => $normalized,
-                'default' => $parentCombo,
+                'default' => $codeCombo,
                 'changed' => $changed,
                 'disabled' => $isDisabled,
-                'duplicate' => ! $isDisabled && $normalized !== null && ($comboCounts[$normalized] ?? 0) > 1,
+                'duplicate' => false,
+                'readonly' => false,
             ];
-        }, $ids);
+        }
+
+        return $rows;
     }
 
     /** Called by the key-search modal once a combo was captured. */
@@ -765,5 +866,4 @@ trait InteractsWithShortcutsTable
             ->title(__('filament-mouseless::mouseless.table.reset_all.done'))
             ->success()->send();
     }
-
 }

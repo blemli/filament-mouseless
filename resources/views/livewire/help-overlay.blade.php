@@ -43,7 +43,7 @@
                         </h3>
                         <ul class="fi-mouseless-help-list">
                             @foreach ($actions as $actionId => $key)
-                                <li class="fi-mouseless-help-item">
+                                <li class="fi-mouseless-help-item" data-mouseless-help-item="{{ $actionId }}">
                                     <span>{{ __('filament-mouseless::mouseless.action.' . $actionId) }}</span>
                                     <kbd class="fi-mouseless-help-kbd">{{ \Blemli\FilamentMouseless\Support\Keys::display($key) }}</kbd>
                                 </li>
@@ -51,6 +51,37 @@
                         </ul>
                     </section>
                 @endforeach
+
+                @if (! empty($customRows))
+                    <section>
+                        <h3 class="fi-mouseless-help-group-heading">
+                            {{ __('filament-mouseless::mouseless.ns.custom') }}
+                        </h3>
+                        <ul class="fi-mouseless-help-list">
+                            @foreach ($customRows as $row)
+                                <li
+                                    @class([
+                                        'fi-mouseless-help-item',
+                                        'fi-mouseless-help-item-unavailable' => ! $row['onPage'],
+                                    ])
+                                    data-mouseless-help-item="{{ $row['id'] }}"
+                                    @if ($row['readonly']) data-mouseless-help-readonly @endif
+                                >
+                                    <span>
+                                        {{ $row['label'] }}
+                                        @if ($row['readonly'])
+                                            <span
+                                                class="fi-mouseless-help-readonly"
+                                                title="{{ __('filament-mouseless::mouseless.help.code_defined') }}"
+                                            >&lt;/&gt;</span>
+                                        @endif
+                                    </span>
+                                    <kbd class="fi-mouseless-help-kbd">{{ \Blemli\FilamentMouseless\Support\Keys::display($row['combo']) }}</kbd>
+                                </li>
+                            @endforeach
+                        </ul>
+                    </section>
+                @endif
             </div>
 
             <footer class="fi-mouseless-help-footer">

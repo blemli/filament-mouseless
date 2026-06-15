@@ -94,4 +94,26 @@ return [
     | (without extension) becomes the preset slug.
     */
     'presets_path' => __DIR__ . '/mouseless/presets',
+
+    /*
+    |--------------------------------------------------------------------------
+    | Custom action discovery
+    |--------------------------------------------------------------------------
+    | Your own Filament actions that carry ->keyBindings() are surfaced in the
+    | help overlay and the my-shortcuts page. `php artisan mouseless:scan`
+    | writes the manifest below — it is developer-editable, and manual entries
+    | (those with 'scanned' => false) are preserved across re-scans.
+    |
+    | Add the MouselessKeyBindings trait to a page so the package takes over its
+    | actions' key handling (users can then rebind them). Set
+    | manage_all_keybindings => true to apply that takeover to every page.
+    */
+    'custom_actions_path' => config_path('mouseless/actions.php'),
+
+    // Directories scanned by `mouseless:scan` for ->keyBindings() calls.
+    'scan_paths' => [
+        app_path('Filament'),
+    ],
+
+    'manage_all_keybindings' => false,
 ];

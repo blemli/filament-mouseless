@@ -10,6 +10,7 @@ return [
         'print' => 'Drucken',
         'source' => 'Preset: :preset',
         'no_match' => 'Keine passende Aktion auf dieser Seite.',
+        'code_defined' => 'Im Code definiert – nicht anpassbar',
     ],
 
     'ns' => [
@@ -18,6 +19,7 @@ return [
         'record' => 'Datensatz',
         'nav' => 'Navigation',
         'ui' => 'Oberfläche',
+        'custom' => 'Eigene Aktionen',
     ],
 
     'action' => [
@@ -138,6 +140,7 @@ return [
             'protected' => '„:key" gehört zu „:action" und kann nicht weggenommen werden.',
         ],
         'duplicate' => 'Mehrfach belegt',
+        'code_defined' => 'Im Code',
         'unbound' => 'Kein Kürzel zugewiesen',
         'unbound_warning' => 'Nicht belegt',
         'export' => [
