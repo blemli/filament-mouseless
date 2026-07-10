@@ -37,6 +37,10 @@ class ScriptData implements JsonSerializable
             'listModeIgnore' => (array) config('mouseless.list_mode.ignore_in', []),
             'debug' => (bool) config('mouseless.debug', false),
             'actionLabels' => $this->actionLabels,
+            // The panel's post-login landing page (configured home URL, or the
+            // panel root). nav.dashboard navigates here instead of a hardcoded
+            // "/admin", so it works for panels on any path.
+            'homeUrl' => $this->homeUrl(),
             // crud.create on a non-resource page (dashboard, custom page) creates
             // a record of this resource. Slug ("categories"), path ("/admin/categories"),
             // or full create URL ("/admin/categories/create") all accepted.
@@ -46,6 +50,19 @@ class ScriptData implements JsonSerializable
                 'no_match' => __('filament-mouseless::mouseless.help.no_match'),
             ],
         ];
+    }
+
+    /**
+     * The panel's home URL — where Filament sends a user after login. Falls
+     * back to the panel root when no explicit home URL is configured.
+     */
+    protected function homeUrl(): ?string
+    {
+        try {
+            return \Filament\Facades\Filament::getHomeUrl();
+        } catch (\Throwable) {
+            return null;
+        }
     }
 
     /**

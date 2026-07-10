@@ -233,6 +233,12 @@ function bootMouseless() {
             }
             if (actionId === 'nav.profile')   { console.log(TAG, 'dispatch -> /admin/my-shortcuts'); return goUrl('/admin/my-shortcuts'); }
             if (actionId === 'nav.dashboard') {
+                // Prefer the panel's real home URL (where Filament lands you
+                // after login). It need not be "/admin" — any panel path works.
+                if (cfg.homeUrl) {
+                    console.log(TAG, 'dispatch -> nav.dashboard: home URL', cfg.homeUrl);
+                    return goUrl(cfg.homeUrl);
+                }
                 const navLinks = document.querySelectorAll('.fi-sidebar-nav a.fi-sidebar-item-button, .fi-sidebar a.fi-sidebar-item-button');
                 console.log(TAG, 'dispatch -> nav.dashboard: found', navLinks.length, 'sidebar link(s)');
                 for (const link of navLinks) {
