@@ -104,6 +104,10 @@ function bootMouseless() {
     }
 
     function probeAvailable(id) {
+        // The command palette maps to Filament's global search — available only
+        // when that field is actually rendered on the current page.
+        if (id === 'nav.command-palette') return !!findGlobalSearchInput(document);
+
         // UI and navigation actions are always reachable.
         if (id.startsWith('ui.') || id.startsWith('nav.')) return true;
 
@@ -249,6 +253,22 @@ function bootMouseless() {
         // Navigation actions
         if (actionId.startsWith('nav.')) {
             if (actionId === 'nav.goto') { openGoto(); return; }
+            // The command palette IS Filament's top-bar global search. Its input
+            // focuses itself via x-mousetrap on cmd/ctrl+k, but mouseless owns that
+            // combo in capture phase (preventDefault + stopPropagation), so we must
+            // focus the field ourselves — otherwise cmd+k just gets swallowed.
+            if (actionId === 'nav.command-palette') {
+                const input = findGlobalSearchInput(document);
+                if (input) {
+                    console.log(TAG, 'dispatch -> nav.command-palette: focusing global search');
+                    input.focus();
+                    input.select?.();
+                    return;
+                }
+                console.warn(TAG, 'nav.command-palette: no global search field on this page');
+                toast(strings.no_match);
+                return;
+            }
             if (clickByData(actionId, false)) {
                 console.log(TAG, 'dispatch -> nav via [data-mouseless="' + actionId + '"]');
                 return;
@@ -579,6 +599,24 @@ function bootMouseless() {
         for (const el of scope.querySelectorAll('input[type="search"], input[type="text"]')) {
             for (const attr of el.attributes) {
                 if (attr.name.startsWith('wire:model') && attr.value === 'tableSearch' && isVisible(el)) {
+                    return el;
+                }
+            }
+        }
+        return null;
+    }
+
+    // Filament's top-bar global search input lives in .fi-global-search-field and
+    // binds to $wire.search (distinct from the per-table `tableSearch`). This is
+    // the target for nav.command-palette / cmd+k.
+    function findGlobalSearchInput(scope = document) {
+        const field = scope.querySelector('.fi-global-search-field');
+        const input = field?.querySelector('input');
+        if (input && isVisible(input)) return input;
+        // Fallback: match the wire:model="search" binding directly.
+        for (const el of scope.querySelectorAll('input[type="search"]')) {
+            for (const attr of el.attributes) {
+                if (attr.name.startsWith('wire:model') && attr.value === 'search' && isVisible(el)) {
                     return el;
                 }
             }
