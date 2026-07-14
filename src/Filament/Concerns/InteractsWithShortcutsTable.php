@@ -688,6 +688,10 @@ trait InteractsWithShortcutsTable
     /** Unbind the key without disabling the action. */
     public function removeShortcut(string $actionId): void
     {
+        // Acting on a row ends any in-progress recording — otherwise the cell
+        // stays stuck in "press a key…"/steal mode after the row changed.
+        $this->cancelRecording();
+
         if ($this->isProtectedShortcut($actionId)) {
             return;
         }
@@ -709,6 +713,8 @@ trait InteractsWithShortcutsTable
 
     public function resetShortcut(string $actionId): void
     {
+        $this->cancelRecording();
+
         // Resetting only restores parent values — never worth forking a layout.
         if ($this->isShortcutsLocked()) {
             return;
@@ -743,6 +749,8 @@ trait InteractsWithShortcutsTable
 
     public function toggleShortcutDisabled(string $actionId): void
     {
+        $this->cancelRecording();
+
         if ($this->isProtectedShortcut($actionId)) {
             return;
         }
