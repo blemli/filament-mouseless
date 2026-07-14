@@ -11,7 +11,6 @@ use Filament\Actions\Action;
 use Filament\Actions\Concerns\InteractsWithActions;
 use Filament\Actions\Contracts\HasActions;
 use Filament\Forms\Components\FileUpload;
-use Filament\Forms\Components\Radio;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
@@ -34,6 +33,9 @@ class PresetSelector extends Widget implements HasActions, HasForms
     protected string $view = 'filament-mouseless::widgets.preset-selector';
 
     public ?array $data = [];
+
+    /** Validated import payload carried from the import modal to the conflict prompt. */
+    public ?array $pendingImport = null;
 
     /** Per-request memo for ownActivePreset() — reset on every sync. */
     private ?Preset $ownPresetMemo = null;
@@ -395,13 +397,6 @@ class PresetSelector extends Widget implements HasActions, HasForms
                 Textarea::make('json')
                     ->label(__('filament-mouseless::mouseless.table.import.paste'))
                     ->rows(5),
-                Radio::make('mode')
-                    ->label(__('filament-mouseless::mouseless.table.import.mode'))
-                    ->options([
-                        'duplicate' => __('filament-mouseless::mouseless.table.import.mode_duplicate'),
-                        'override' => __('filament-mouseless::mouseless.table.import.mode_override'),
-                    ])
-                    ->default('duplicate'),
             ])
             ->action(function (array $data, Action $action): void {
                 $json = filled($data['file'] ?? null)
@@ -427,48 +422,117 @@ class PresetSelector extends Widget implements HasActions, HasForms
                     $action->halt();
                 }
 
-                $existing = Preset::query()
-                    ->where('owner_user_id', auth()->id())
-                    ->where('name', trim($payload['name']))
-                    ->first();
-
-                if ($existing && ($data['mode'] ?? 'duplicate') === 'override') {
-                    $existing->update([
-                        'description' => $payload['description'] ?? null,
-                        'locale' => $payload['locale'] ?? $existing->locale,
-                        'version' => $payload['version'] ?? $existing->version,
-                        'source' => 'imported',
-                        'bindings' => $payload['bindings'],
-                        'disabled_actions' => array_values((array) ($payload['disabled_actions'] ?? [])),
-                    ]);
-
-                    $this->switchTo($existing->slug);
-
-                    Notification::make()
-                        ->title(__('filament-mouseless::mouseless.table.import.overridden', ['name' => $existing->name]))
-                        ->success()->send();
+                // Same layout coming back in (matched on its Laravel id, carried
+                // in the export)? Don't silently fork or clobber — hand off to a
+                // tiny confirm modal that asks overwrite-vs-duplicate. A brand new
+                // layout has nothing to resolve, so it imports straight away.
+                if ($this->ownedPresetById($payload['id'] ?? null)) {
+                    $this->pendingImport = $payload;
+                    $this->replaceMountedAction('resolveImportConflict');
 
                     return;
                 }
 
-                $preset = Preset::forkFrom(
-                    ['slug' => null] + $payload,
-                    $payload['name'],
-                    $payload['description'] ?? null,
-                    origin: 'imported',
-                );
-
-                $this->switchTo($preset->slug);
-
-                Notification::make()
-                    ->title(__('filament-mouseless::mouseless.table.import.done'))
-                    ->success()->send();
+                $this->pendingImport = $payload;
+                $this->completeImport(overwrite: false);
             });
+    }
+
+    /**
+     * Second step of an import that hit an existing layout: ask whether to
+     * overwrite it or keep both. Duplicate is the primary (default) button so a
+     * plain Enter never destroys the existing layout; overwrite is the explicit,
+     * dangerous opt-in. No radio — the two buttons *are* the choice.
+     */
+    public function resolveImportConflictAction(): Action
+    {
+        return Action::make('resolveImportConflict')
+            ->modalHeading(__('filament-mouseless::mouseless.table.import.conflict.heading'))
+            ->modalDescription(fn (): string => __('filament-mouseless::mouseless.table.import.conflict.body', [
+                'name' => (string) ($this->pendingImport['name'] ?? ''),
+            ]))
+            ->modalIcon('heroicon-o-document-duplicate')
+            ->modalIconColor('warning')
+            ->modalSubmitActionLabel(__('filament-mouseless::mouseless.table.import.conflict.duplicate'))
+            ->extraModalFooterActions([
+                Action::make('overwrite')
+                    ->label(__('filament-mouseless::mouseless.table.import.conflict.overwrite'))
+                    ->color('danger')
+                    ->action(fn () => $this->completeImport(overwrite: true))
+                    // Without this the footer action unmounts back to its parent
+                    // (this modal), which would re-open with pendingImport already
+                    // cleared — an empty-named "layout already exists" prompt.
+                    ->cancelParentActions(),
+            ])
+            ->action(fn () => $this->completeImport(overwrite: false));
     }
 
     // ------------------------------------------------------------------
     // Helpers
     // ------------------------------------------------------------------
+
+    /** The user's own layout carrying this Laravel id, or null (built-ins/foreign ids never match). */
+    protected function ownedPresetById(mixed $id): ?Preset
+    {
+        if (! is_int($id) && ! (is_string($id) && ctype_digit($id))) {
+            return null;
+        }
+
+        return Preset::query()
+            ->where('owner_user_id', auth()->id())
+            ->whereKey((int) $id)
+            ->first();
+    }
+
+    /**
+     * Persist the stashed import payload, either overwriting the matched layout
+     * in place or forking it into a fresh one. Shared by the straight-through
+     * import and both branches of the conflict prompt.
+     */
+    protected function completeImport(bool $overwrite): void
+    {
+        $payload = $this->pendingImport;
+        $this->pendingImport = null;
+
+        if ($payload === null) {
+            return;
+        }
+
+        $existing = $overwrite ? $this->ownedPresetById($payload['id'] ?? null) : null;
+
+        if ($existing) {
+            $existing->update([
+                'name' => trim($payload['name']),
+                'description' => $payload['description'] ?? null,
+                'locale' => $payload['locale'] ?? $existing->locale,
+                'version' => $payload['version'] ?? $existing->version,
+                'source' => 'imported',
+                'bindings' => $payload['bindings'],
+                'disabled_actions' => array_values((array) ($payload['disabled_actions'] ?? [])),
+            ]);
+
+            $this->switchTo($existing->slug);
+
+            Notification::make()
+                ->title(__('filament-mouseless::mouseless.table.import.overridden', ['name' => $existing->name]))
+                ->success()->send();
+
+            return;
+        }
+
+        $preset = Preset::forkFrom(
+            ['slug' => null] + $payload,
+            $payload['name'],
+            $payload['description'] ?? null,
+            origin: 'imported',
+        );
+
+        $this->switchTo($preset->slug);
+
+        Notification::make()
+            ->title(__('filament-mouseless::mouseless.table.import.done'))
+            ->success()->send();
+    }
 
     protected function switchTo(?string $slug): void
     {

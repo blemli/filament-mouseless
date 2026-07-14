@@ -12,6 +12,10 @@ class PresetTransfer
     public static function exportJson(array $preset): string
     {
         return json_encode([
+            // Round-trip identity: lets a re-import recognise "this is the same
+            // layout" and offer overwrite instead of blindly duplicating.
+            // Null for built-in presets (they aren't a user's own layout).
+            'id' => $preset['id'] ?? null,
             'name' => $preset['name'] ?? 'mouseless',
             'description' => $preset['description'] ?? null,
             'locale' => $preset['locale'] ?? app()->getLocale(),
@@ -41,6 +45,7 @@ class PresetTransfer
         }
 
         $validator = Validator::make($decoded, [
+            'id' => ['nullable', 'integer'],
             'name' => ['required', 'string', 'max:100'],
             'description' => ['nullable', 'string', 'max:500'],
             'locale' => ['nullable', 'string', 'min:2', 'max:8'],

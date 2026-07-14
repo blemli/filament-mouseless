@@ -2,6 +2,7 @@
 
 namespace Blemli\FilamentMouseless\Services;
 
+use Blemli\FilamentMouseless\FilamentMouselessPlugin;
 use Blemli\FilamentMouseless\Models\Preset;
 
 class PresetRegistry
@@ -41,7 +42,7 @@ class PresetRegistry
             }
         }
 
-        if (\Blemli\FilamentMouseless\FilamentMouselessPlugin::publishingEnabled()) {
+        if (FilamentMouselessPlugin::publishingEnabled()) {
             foreach (Preset::query()->where('is_published', true)->get() as $p) {
                 if (! $this->isApprovedIfRequired($p)) {
                     continue;
@@ -116,6 +117,7 @@ class PresetRegistry
     protected function modelToArray(Preset $p): array
     {
         return [
+            'id' => $p->getKey(),
             'slug' => $p->slug,
             'name' => $p->name,
             'description' => $p->description,
