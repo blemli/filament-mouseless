@@ -124,6 +124,10 @@ function bootMouseless() {
             return !!document.querySelector('.fi-ta-row, .fi-ta-record');
         }
 
+        if (id === 'list.search') {
+            return !!findTableSearchInput(document);
+        }
+
         const names = filamentActionNames(id);
         if (!names.length) return true; // Unknown action type — never dim.
         for (const name of names) {
@@ -353,6 +357,24 @@ function bootMouseless() {
             return;
         }
 
+        // list.search — the table search is an <input>, not a button, so the
+        // generic action finder never reaches it. Focus it directly (preferring
+        // the table the cursor is in when several are on the page) and select
+        // any existing text so the next keystroke replaces the query.
+        if (actionId === 'list.search') {
+            const focusedTable = document.activeElement?.closest?.('[x-data*="filamentTable"]');
+            const input = (focusedTable && findTableSearchInput(focusedTable)) || findTableSearchInput(document);
+            console.log(TAG, 'dispatch -> list.search, input=', input);
+            if (input) {
+                input.focus();
+                input.select?.();
+                return;
+            }
+            console.warn(TAG, 'list.search: no table search input on this page');
+            toast(strings.no_match);
+            return;
+        }
+
         // list.filter — Filament v5 renders the filter trigger as an Alpine-bound
         // button (x-on:click="toggleFiltersDropdown"), not as a mountAction wire-click,
         // so the generic action finder misses it. Click the trigger directly.
@@ -547,6 +569,21 @@ function bootMouseless() {
         if (focusable) return focusable;
         if (!row.hasAttribute('tabindex')) row.setAttribute('tabindex', '-1');
         return row;
+    }
+
+    // The Filament table search box binds to $wire.tableSearch (the global
+    // top-bar search binds to `search` — deliberately not matched here). The
+    // attribute may be `wire:model` or a debounced variant, so match on the
+    // bound property value rather than the exact attribute name.
+    function findTableSearchInput(scope = document) {
+        for (const el of scope.querySelectorAll('input[type="search"], input[type="text"]')) {
+            for (const attr of el.attributes) {
+                if (attr.name.startsWith('wire:model') && attr.value === 'tableSearch' && isVisible(el)) {
+                    return el;
+                }
+            }
+        }
+        return null;
     }
 
     function filamentActionNames(actionId) {
