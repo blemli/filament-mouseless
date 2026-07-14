@@ -560,6 +560,16 @@ trait InteractsWithShortcutsTable
         $this->pendingSteal = null;
     }
 
+    /**
+     * Dismiss the steal prompt but stay in recording mode, so a collision isn't
+     * a dead end: the cell drops back to "press a key…" and the user can try a
+     * different combo without restarting.
+     */
+    public function retryRecording(): void
+    {
+        $this->pendingSteal = null;
+    }
+
     public function recordKey(string $key): void
     {
         if (! $this->recordingActionId) {

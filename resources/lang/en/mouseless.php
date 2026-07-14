@@ -140,6 +140,7 @@ return [
         'steal' => [
             'taken' => '“:key” is already used by :action',
             'confirm' => 'Take it over',
+            'retry' => 'Try another',
             'done' => 'Shortcut taken over — “:action” is now unbound.',
             'protected' => '“:key” belongs to “:action” and cannot be taken away.',
         ],

@@ -19,6 +19,9 @@
         <x-filament::link tag="button" size="sm" color="danger" wire:click="confirmSteal">
             {{ __('filament-mouseless::mouseless.table.steal.confirm') }}
         </x-filament::link>
+        <x-filament::link tag="button" size="sm" color="primary" wire:click="retryRecording">
+            {{ __('filament-mouseless::mouseless.table.steal.retry') }}
+        </x-filament::link>
         <x-filament::link tag="button" size="sm" color="gray" wire:click="cancelRecording">
             {{ __('filament-mouseless::mouseless.table.recording.cancel') }}
         </x-filament::link>

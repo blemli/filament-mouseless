@@ -139,6 +139,7 @@ return [
         'steal' => [
             'taken' => '„:key" ist bereits durch :action belegt',
             'confirm' => 'Wegnehmen',
+            'retry' => 'Andere probieren',
             'done' => 'Kürzel weggenommen — „:action" ist jetzt ohne Belegung.',
             'protected' => '„:key" gehört zu „:action" und kann nicht weggenommen werden.',
         ],
