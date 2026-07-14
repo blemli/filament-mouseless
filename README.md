@@ -31,15 +31,15 @@ php artisan mouseless:install
 
 ## Usage
 
-Go to any page and press <kbd>?</kbd> outside a textfield to show all the available shortcuts.
+Open your App on any page you like and disconnect your Mouse. Now press <kbd>?</kbd> outside a textfield to show all the available shortcuts.
 
 ## Features Overview
 
-Dark-Mode Support, Language Adaptive: DE (**N**eu) & EN (**C**reate),  Filament Native Style (no custom theme needed), Mobile Friendly, Respects your Theme & Font & Color, Stateless mode available (without migrations), Show a Shortcuts Overlay with <kbd>?</kbd>, Convenient `mouseless:install` command, Let Users Register custom Combinations, Hidden on Devices without Keyboard, Compatible with Filament Shield but not required, Configure everything like Icons &  Labels & Positions, Printable CheatSheat, 
+Dark-Mode Support, Language Adaptive: DE (**N**eu) & EN (**C**reate),  Filament Native Style (no custom theme needed), Mobile Friendly, Respects your Theme & Font & Color, Stateless mode available (without migrations), Show a Shortcuts Overlay with <kbd>?</kbd>, Convenient `mouseless:install` command, Let Users Register custom Combinations, Hidden on Devices without Keyboard, Compatible with Filament Shield but not required, Configure everything like Icons &  Labels & Positions, Printable CheatSheat, Jump to Resources with Shortcuts
 
 ### v2
 
-Prohibit some Shortcuts (Browser/OS), Jump to Resources with Shortcuts, Action Names to the Shortcut Initials, Multipanel support, Multitenant Support, Resources Initials, Highlight of Shortcuts in UI, Tutorial on missed Shortcuts, Statistics on avoided clicks, Let Users share Presets with eachother, Default Resource Creation, Let Admins Moderate Shared Presets (remove unused ones &see which action is the most overwritten, most used), Open Filters Panel, Open Column Selector, uninstall command, `shorcuts:list` command, Detect already existing shortcuts of actions (artisan?), singleton preset, translate to many languages, support advanced tables, vimperator mode to jump to fields, Opt-in to global search, Integrate with Spotlight to directyl run relevant actions, AskPhil, Kanban, ActivityLog, and probably even more!
+Prohibit some Shortcuts (Browser/OS), , Action Names to the Shortcut Initials, Escape to Dashboard, Multipanel support, Multitenant Support, Resources Initials, Highlight of Shortcuts in UI, Tutorial on missed Shortcuts, Statistics on avoided clicks, Let Users share Presets with eachother, Default Resource Creation, Let Admins Moderate Shared Presets (remove unused ones &see which action is the most overwritten, most used), Open Filters Panel, Open Column Selector, uninstall command, `shorcuts:list` command, Detect already existing shortcuts of actions (artisan?), singleton preset, translate to many languages, support advanced tables, vimperator mode to jump to fields, Opt-in to global search, Integrate with Spotlight to directyl run relevant actions, AskPhil, Kanban, ActivityLog, and probably even more!
 
 ### Languages
 
@@ -66,6 +66,8 @@ This hides the `/my-shortcuts` page and removes its user-menu link. Shortcuts st
 
 For unattended installs, `php artisan mouseless:install --stateless` skips the migration prompt entirely.
 
+### Overlay
+
 #### Hide Overlay
 
 If for some obscure reason you don't want the help overlay, you can disable it:
@@ -78,6 +80,11 @@ If for some obscure reason you don't want the help overlay, you can disable it:
 ```
 
 Shortcuts still work, only the overlay popup is suppressed.
+
+#### Change the overlay Shortcut
+
+If you like the Overlay but with a different shortcut you can chang it:
+//todo: 
 
 #### Printable cheatsheet
 
@@ -96,9 +103,11 @@ FilamentMouselessPlugin::make()
     ->disableCheatsheetPrinting()
 ```
 
+### Admin Page
+
 #### Show the Admin page
 
-The `/mouseless-settings` page (default preset, disabled actions, resource letters, moderation queue) is off by default. Opt in:
+The `/mouseless-settings` page (default preset, disabled actions, moderation queue) is off by default. Opt in:
 
 ```php
 ->plugins([
@@ -218,9 +227,13 @@ return [
 
 You can also restrict shortcuts for specific users, using permissions:
 
+//todo: treat missing 'scanned' as false
+
 ### Permissions
 
 By default everyone gets shortcuts. With [Filament Shield](https://github.com/bezhanSalleh/filament-shield) installed, mouseless registers three permissions so they appear in the role-edit UI, but they're only enforced when you opt in:
+
+//todo: shouldn't they also not show up if strictPermissions isn't enabled?
 
 ```php
 ->plugins([
@@ -321,7 +334,7 @@ By default <kbd>option</kbd>+<kbd>↑</kbd>  brings you home.
 
 199$ Unlimited Projects forever
 
-399$ Premium Support: Implementation of any Feature within the scope of the package within 5 business days. 
+399$ Premium Support: Implementation of any Feature (or Bugfix) within the scope of the package within 7 business days. 
 
 ## Testing
 

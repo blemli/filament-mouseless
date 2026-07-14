@@ -42,6 +42,7 @@ return [
         'record.merge' => 'alt+z',  // Zusammenführen
 
         // Navigation
+        'nav.goto' => 'g', // Leader: öffnet die „Springe zu"-Palette (Name eines Nav-Eintrags tippen)
         'nav.dashboard' => 'alt+ArrowUp', // Erstes Nav-Item (Dashboard / Startseite)
         'nav.profile' => 'alt+shift+p', // Profil
         'nav.logout' => 'alt+shift+q',

@@ -4,6 +4,7 @@ namespace Blemli\FilamentMouseless;
 
 use Blemli\FilamentMouseless\Commands\ScanActionsCommand;
 use Blemli\FilamentMouseless\Filament\Widgets\PresetSelector;
+use Blemli\FilamentMouseless\Livewire\GotoPalette;
 use Blemli\FilamentMouseless\Livewire\HelpOverlay;
 use Blemli\FilamentMouseless\Services\ActionDiscovery;
 use Blemli\FilamentMouseless\Services\BindingResolver;
@@ -194,6 +195,7 @@ class FilamentMouselessServiceProvider extends PackageServiceProvider
         FilamentIcon::register($this->getIcons());
 
         Livewire::component('mouseless-help-overlay', HelpOverlay::class);
+        Livewire::component('mouseless-goto-palette', GotoPalette::class);
         Livewire::component('mouseless-preset-selector', PresetSelector::class);
 
         // Discover (and, on opted-in pages, take over) custom actions' key

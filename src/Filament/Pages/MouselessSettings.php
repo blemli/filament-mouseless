@@ -6,17 +6,13 @@ use Blemli\FilamentMouseless\Facades\FilamentMouseless;
 use Blemli\FilamentMouseless\FilamentMouselessPlugin;
 use Blemli\FilamentMouseless\Models\Preset;
 use Blemli\FilamentMouseless\Support\Shield;
-use Filament\Facades\Filament;
 use Filament\Forms\Components\CheckboxList;
-use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
-use Filament\Forms\Components\TextInput;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Schemas\Components\Section;
-use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Support\Facades\Gate;
@@ -87,59 +83,10 @@ class MouselessSettings extends Page implements HasForms
 
     public function mount(): void
     {
-        $resourceLetters = collect(config('mouseless.resource_letters', []))
-            ->map(fn ($letter, $class) => ['resource' => $class, 'letter' => $letter])
-            ->values()
-            ->all();
-
         $this->form->fill([
             'default_preset' => config('mouseless.default_preset'),
             'disabled_actions' => config('mouseless.disabled_actions', []),
-            'resource_letters' => $resourceLetters,
         ]);
-    }
-
-    /**
-     * @return array<string, string>
-     */
-    protected function getResourceOptions(): array
-    {
-        $panel = Filament::getCurrentPanel();
-        if (! $panel) {
-            return [];
-        }
-
-        $options = [];
-        foreach ($panel->getResources() as $resourceClass) {
-            $options[$resourceClass] = $this->resourceLabel($resourceClass);
-        }
-        asort($options);
-
-        return $options;
-    }
-
-    /**
-     * Best-effort translated, pluralized label for a Filament resource. Falls
-     * back gracefully if any of the resource's label methods aren't defined.
-     */
-    protected function resourceLabel(string $resourceClass): string
-    {
-        foreach (['getNavigationLabel', 'getPluralModelLabel', 'getModelLabel'] as $method) {
-            if (! method_exists($resourceClass, $method)) {
-                continue;
-            }
-
-            try {
-                $label = $resourceClass::{$method}();
-                if (is_string($label) && $label !== '') {
-                    return ucfirst($label);
-                }
-            } catch (\Throwable) {
-                // Resource may require a panel/container context we don't have — skip.
-            }
-        }
-
-        return class_basename($resourceClass);
     }
 
     public function form(Schema $schema): Schema
@@ -178,41 +125,6 @@ class MouselessSettings extends Page implements HasForms
                             ->columns(2)
                             ->searchable(),
                     ]),
-
-                Section::make(__('filament-mouseless::mouseless.admin.resource_letters'))
-                    ->visible((bool) config('mouseless.admin.resource_letters', true))
-                    ->components([
-                        Repeater::make('resource_letters')
-                            ->label(__('filament-mouseless::mouseless.admin.resource_letters'))
-                            ->hiddenLabel()
-                            ->schema([
-                                Select::make('resource')
-                                    ->label(__('filament-mouseless::mouseless.admin.resource_class'))
-                                    ->options(function (Get $get) {
-                                        $all = $get('../../resource_letters') ?? [];
-                                        $current = $get('resource');
-                                        $usedElsewhere = collect($all)
-                                            ->pluck('resource')
-                                            ->filter()
-                                            ->reject(fn ($r) => $r === $current)
-                                            ->all();
-
-                                        return collect($this->getResourceOptions())
-                                            ->reject(fn ($label, $class) => in_array($class, $usedElsewhere, true))
-                                            ->all();
-                                    })
-                                    ->live()
-                                    ->searchable()
-                                    ->required(),
-                                TextInput::make('letter')
-                                    ->label(__('filament-mouseless::mouseless.admin.letter'))
-                                    ->maxLength(1)
-                                    ->required(),
-                            ])
-                            ->columns(2)
-                            ->reorderable(false)
-                            ->addActionLabel(__('filament-mouseless::mouseless.admin.add_override')),
-                    ]),
             ])
             ->statePath('data');
     }
@@ -222,12 +134,6 @@ class MouselessSettings extends Page implements HasForms
         abort_unless(static::userMayModerate(), 403);
 
         $payload = $this->form->getState();
-
-        // Flatten repeater rows back to class => letter for storage / consumer code.
-        $payload['resource_letters'] = collect($payload['resource_letters'] ?? [])
-            ->filter(fn ($row) => ! empty($row['resource']) && ! empty($row['letter']))
-            ->mapWithKeys(fn ($row) => [$row['resource'] => $row['letter']])
-            ->all();
 
         cache()->forever('mouseless.admin_overlay', $payload);
 

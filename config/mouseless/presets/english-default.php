@@ -43,6 +43,7 @@ return [
         'record.merge' => 'alt+m',
 
         // Navigation
+        'nav.goto' => 'g', // leader: opens the "go to" palette (type a nav item's name)
         'nav.dashboard' => 'alt+ArrowUp', // first sidebar nav item
         'nav.profile' => 'alt+shift+u',
         'nav.logout' => 'alt+shift+q',

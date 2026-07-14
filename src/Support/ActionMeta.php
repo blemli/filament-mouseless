@@ -34,6 +34,7 @@ class ActionMeta
         'record.approve' => 'heroicon-o-hand-thumb-up',
         'record.reject' => 'heroicon-o-hand-thumb-down',
         'record.merge' => 'heroicon-o-arrows-pointing-in',
+        'nav.goto' => 'heroicon-o-arrow-right-circle',
         'nav.dashboard' => 'heroicon-o-home',
         'nav.profile' => 'heroicon-o-user-circle',
         'nav.logout' => 'heroicon-o-arrow-right-start-on-rectangle',

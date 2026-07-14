@@ -110,9 +110,9 @@ Modal listing the effective binding map, grouped by namespace. Footer shows sour
 - No focused record + shortcut needs one → no-op + toast.
 - Context-aware shortcuts (e.g. `record.merge`) are always bound; they just no-op + toast when their action isn't on the page.
 
-## Resource-initial collisions
+## Go-to palette
 
-First-registered wins. Admin overrides per-resource in the SuperAdmin page (mirrored in `mouseless.resource_letters` config for code-as-config setups). Boot-time log warning lists shadowed resources.
+Leader key `nav.goto` (default `g`) opens a type-to-filter overlay over the current panel's navigation tree (`$panel->getNavigation()` — already auth-filtered, grouped, labelled, icon'd, with resolved URLs). Matching is JetBrains-style: each item gets a camelCase **chord** — the first letter of every word, grown left-to-right only when an earlier item already claimed that chord (so "Product Categories" → `pc`, a clashing "Post Categories" → `poc`). Typing the chord (or any label prefix) filters; a unique match auto-commits, ties resolve with ↑/↓/Enter. The chord letters are highlighted in each row to teach muscle memory. Read-only: auto-generated, never stored in presets.
 
 ## Reserved keys
 
@@ -130,7 +130,6 @@ return [
         'enabled'           => true,
         'default_preset'    => true,
         'disabled_actions'  => true,
-        'resource_letters'  => true,
         'moderation_queue'  => true,
     ],
     'publishing' => [
@@ -140,7 +139,6 @@ return [
     ],
     'default_preset'   => 'english-default',
     'disabled_actions' => [],
-    'resource_letters' => [],
     'reserved_keys'    => ['Escape', 'Tab', 'Enter', 'cmd+r', 'cmd+w', 'cmd+t', 'cmd+l', '?'],
     'list_mode' => [
         'ignore_in' => ['input', 'textarea', '[contenteditable]'],

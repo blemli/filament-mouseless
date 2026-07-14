@@ -13,6 +13,12 @@ return [
         'code_defined' => 'Im Code definiert – nicht anpassbar',
     ],
 
+    'goto' => [
+        'placeholder' => 'Tippen, um zu springen…',
+        'hint' => 'Tippen zum Filtern · ↵ öffnen · ↑↓ wählen · Esc schliessen',
+        'empty' => 'Nichts zum Hinspringen.',
+    ],
+
     'ns' => [
         'crud' => 'CRUD',
         'list' => 'Liste',
@@ -56,6 +62,7 @@ return [
             'merge' => 'Zusammenführen',
         ],
         'nav' => [
+            'goto' => 'Springe zu…',
             'dashboard' => 'Startseite',
             'profile' => 'Profil',
             'logout' => 'Abmelden',
@@ -77,10 +84,6 @@ return [
         'nav_group' => 'System',
         'default_preset' => 'Standard-Preset',
         'disabled_actions' => 'Deaktivierte Aktionen',
-        'resource_letters' => 'Resource-Buchstaben überschreiben',
-        'resource_class' => 'Resource-Klasse',
-        'letter' => 'Buchstabe',
-        'add_override' => 'Überschreibung hinzufügen',
         'moderation_queue' => 'Moderationsschlange',
         'queue_empty' => 'Keine Presets warten auf Freigabe.',
         'approve' => 'Freigeben',

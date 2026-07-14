@@ -14,7 +14,6 @@ return [
         'enabled' => true,
         'default_preset' => true,
         'disabled_actions' => true,
-        'resource_letters' => true,
         'moderation_queue' => true,
 
         // Authorization gate for the SuperAdmin page (view + save + approve + reject).
@@ -48,10 +47,6 @@ return [
 
     // Action IDs hidden entirely from the help overlay and never bound.
     'disabled_actions' => [],
-
-    // Override the auto-picked alt+shift+<letter> for a resource.
-    //   \App\Filament\Resources\Products::class => 'r',
-    'resource_letters' => [],
 
     /*
     |--------------------------------------------------------------------------

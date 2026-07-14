@@ -20,6 +20,8 @@ class FilamentMouselessPlugin implements Plugin
 
     protected bool $renderHelpOverlay = true;
 
+    protected bool $renderGoto = true;
+
     protected bool $showShortcutsOnMobile = false;
 
     protected bool $keyboardProbeEnabled = true;
@@ -111,7 +113,7 @@ class FilamentMouselessPlugin implements Plugin
 
     /**
      * Opt in to the `/mouseless-settings` admin page (default presets,
-     * disabled actions, resource letters, moderation queue). Off by default
+     * disabled actions, moderation queue). Off by default
      * — the plugin runs perfectly well without it. Enable it when you want
      * admins to tune mouseless from inside Filament instead of editing the
      * config file.
@@ -133,6 +135,30 @@ class FilamentMouselessPlugin implements Plugin
     public function disableHelpOverlay(): static
     {
         return $this->helpOverlay(false);
+    }
+
+    /**
+     * The "go to" palette — a leader-key overlay (default `g`) that jumps to
+     * any navigation target by typing its name (JetBrains-style camel-hump
+     * chords: "Product Categories" → type `pc`). On by default; the leader key
+     * itself is the `nav.goto` binding, so users rebind it on /my-shortcuts
+     * like any other shortcut. Pass false to drop the overlay entirely.
+     */
+    public function goto(bool $enabled = true): static
+    {
+        $this->renderGoto = $enabled;
+
+        return $this;
+    }
+
+    public function disableGoto(): static
+    {
+        return $this->goto(false);
+    }
+
+    public function isGotoEnabled(): bool
+    {
+        return $this->renderGoto;
     }
 
     /**
@@ -292,6 +318,15 @@ class FilamentMouselessPlugin implements Plugin
                 'panels::body.end',
                 fn (): string => Shield::userMayUse()
                     ? Blade::render('@livewire(\Blemli\FilamentMouseless\Livewire\HelpOverlay::class)')
+                    : '',
+            );
+        }
+
+        if ($this->renderGoto) {
+            FilamentView::registerRenderHook(
+                'panels::body.end',
+                fn (): string => Shield::userMayUse()
+                    ? Blade::render('@livewire(\Blemli\FilamentMouseless\Livewire\GotoPalette::class)')
                     : '',
             );
         }

@@ -13,6 +13,12 @@ return [
         'code_defined' => 'Defined in code — not user-customizable',
     ],
 
+    'goto' => [
+        'placeholder' => 'Type to jump to…',
+        'hint' => 'Type to filter · ↵ open · ↑↓ move · Esc close',
+        'empty' => 'Nothing to jump to here.',
+    ],
+
     'ns' => [
         'crud' => 'CRUD',
         'list' => 'List',
@@ -57,6 +63,7 @@ return [
             'merge' => 'Merge',
         ],
         'nav' => [
+            'goto' => 'Go to…',
             'dashboard' => 'Dashboard',
             'profile' => 'Profile',
             'logout' => 'Logout',
@@ -78,10 +85,6 @@ return [
         'nav_group' => 'System',
         'default_preset' => 'Default preset',
         'disabled_actions' => 'Disabled actions',
-        'resource_letters' => 'Resource letter overrides',
-        'resource_class' => 'Resource class',
-        'letter' => 'Letter',
-        'add_override' => 'Add override',
         'moderation_queue' => 'Moderation queue',
         'queue_empty' => 'No presets awaiting approval.',
         'approve' => 'Approve',

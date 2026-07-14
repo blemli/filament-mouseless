@@ -30,6 +30,13 @@ function bootMouseless() {
     const ignoreSel = ignoreList.join(',');
     const strings = cfg.strings || {};
 
+    // ---- "go to" palette state (nav.goto leader-key overlay) ----
+    let gotoOpen = false;
+    let gotoQuery = '';
+    let gotoItems = [];   // current <a data-mouseless-goto-item> nodes
+    let gotoActive = -1;  // index into gotoItems of the highlighted row
+    let gotoEl = null;    // the [data-mouseless-goto] wrapper element
+
     console.log(TAG, 'bindings count=', Object.keys(bindings).length);
     console.log(TAG, 'bindings=', bindings);
     console.log(TAG, 'reserved=', [...reserved]);
@@ -122,6 +129,9 @@ function bootMouseless() {
     function onKeydown(e) {
         // Skip pure-modifier keys without spamming the log.
         if (['Control', 'Alt', 'Shift', 'Meta'].includes(e.key)) return;
+
+        // The "go to" palette owns every keystroke while it's open.
+        if (gotoOpen) { handleGotoKey(e); return; }
 
         // The my-shortcuts page is capturing a combo (recording / key search)
         // — stay out of the way so the captured key never triggers an action.
@@ -227,6 +237,7 @@ function bootMouseless() {
 
         // Navigation actions
         if (actionId.startsWith('nav.')) {
+            if (actionId === 'nav.goto') { openGoto(); return; }
             if (clickByData(actionId, false)) {
                 console.log(TAG, 'dispatch -> nav via [data-mouseless="' + actionId + '"]');
                 return;
@@ -526,6 +537,179 @@ function bootMouseless() {
         if (window.Livewire && window.Livewire.dispatch) {
             try { window.Livewire.dispatch('mouseless-toast', { message: msg }); return; } catch {}
         }
+    }
+
+    // ---------- "go to" palette ----------
+    // Opened by the nav.goto leader key. Filters navigation targets as you type
+    // (label prefix OR JetBrains-style camel-hump chord: "Product Categories" →
+    // "pc"), auto-commits when exactly one remains, and lets Enter/arrows resolve
+    // prefix ties (e.g. "Order" vs "Orders"). Rows are real
+    // <a> links, so committing just follows the href. The list is server-rendered
+    // once; all filtering happens here, client-side.
+
+    function openGoto() {
+        gotoEl = document.querySelector('[data-mouseless-goto]');
+        if (!gotoEl) {
+            console.warn(TAG, 'nav.goto: no palette on the page (disabled?)');
+            toast(strings.no_match);
+            return;
+        }
+
+        gotoItems = Array.from(gotoEl.querySelectorAll('[data-mouseless-goto-item]'));
+        if (!gotoItems.length) {
+            console.warn(TAG, 'nav.goto: palette has no navigation targets');
+            return;
+        }
+
+        // Backdrop click closes; clicks on the panel fall through to the links.
+        if (!gotoEl.dataset.wired) {
+            gotoEl.dataset.wired = '1';
+            gotoEl.addEventListener('click', (ev) => {
+                if (!ev.target.closest('.fi-mouseless-goto-panel')) closeGoto();
+            });
+        }
+
+        gotoQuery = '';
+        gotoActive = -1;
+        gotoOpen = true;
+        gotoEl.style.display = 'block';
+        filterGoto();
+        console.log(TAG, 'nav.goto: opened,', gotoItems.length, 'targets');
+    }
+
+    function closeGoto() {
+        gotoOpen = false;
+        setGotoActive(-1);
+        if (gotoEl) gotoEl.style.display = 'none';
+    }
+
+    function handleGotoKey(e) {
+        if (['Control', 'Alt', 'Shift', 'Meta'].includes(e.key)) return;
+        e.preventDefault();
+        e.stopPropagation();
+
+        const k = e.key;
+        if (k === 'Escape') { closeGoto(); return; }
+        if (k === 'Enter') { commitGoto(gotoActive); return; }
+        if (k === 'ArrowDown' || (k === 'Tab' && !e.shiftKey)) { moveGoto(1); return; }
+        if (k === 'ArrowUp' || (k === 'Tab' && e.shiftKey)) { moveGoto(-1); return; }
+        if (k === 'Backspace') {
+            if (gotoQuery) { gotoQuery = gotoQuery.slice(0, -1); filterGoto(); }
+            return;
+        }
+
+        // A printable character extends the query — but only if something still
+        // matches; otherwise reject it (shake) and keep the last good query.
+        if (k.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) {
+            const candidate = gotoQuery + k.toLowerCase();
+            if (gotoMatchCount(candidate) > 0) {
+                gotoQuery = candidate;
+                filterGoto();
+            } else {
+                shakeGoto();
+            }
+        }
+    }
+
+    function gotoMatches(item, q) {
+        if (!q) return true;
+        const label = item.dataset.gotoLabel || '';
+        const chord = item.dataset.gotoChord || '';
+        return label.startsWith(q) || (!!chord && chord.startsWith(q));
+    }
+
+    function gotoMatchCount(q) {
+        let n = 0;
+        for (const it of gotoItems) if (gotoMatches(it, q)) n++;
+        return n;
+    }
+
+    function filterGoto() {
+        updateGotoQuery();
+
+        let firstVisible = -1;
+        let visibleCount = 0;
+        gotoItems.forEach((el, i) => {
+            const on = gotoMatches(el, gotoQuery);
+            el.hidden = !on;
+            if (on) {
+                visibleCount++;
+                if (firstVisible === -1) firstVisible = i;
+            }
+        });
+
+        // Collapse group headings that have no visible items under them.
+        gotoEl.querySelectorAll('[data-mouseless-goto-group]').forEach((g) => {
+            g.hidden = !g.querySelector('[data-mouseless-goto-item]:not([hidden])');
+        });
+
+        // Exactly one target left → jump immediately. Guarded on a non-empty
+        // query so merely opening the palette never auto-navigates.
+        if (gotoQuery !== '' && visibleCount === 1) {
+            commitGoto(firstVisible);
+            return;
+        }
+
+        // Keep the highlight if it survived the filter, else fall to the first.
+        if (gotoActive < 0 || gotoItems[gotoActive].hidden) {
+            setGotoActive(firstVisible);
+        }
+    }
+
+    function setGotoActive(i) {
+        if (gotoActive >= 0 && gotoItems[gotoActive]) {
+            gotoItems[gotoActive].style.backgroundColor = '';
+            gotoItems[gotoActive].style.boxShadow = '';
+        }
+        gotoActive = i;
+        if (i < 0 || !gotoItems[i]) return;
+        const el = gotoItems[i];
+        // App primary colour, no stylesheet: a soft tint + a left accent bar,
+        // matching the table-row highlight elsewhere in the plugin.
+        el.style.backgroundColor = 'color-mix(in oklab, var(--primary-500) 15%, transparent)';
+        el.style.boxShadow = 'inset 3px 0 0 0 var(--primary-500)';
+        el.scrollIntoView({ block: 'nearest' });
+    }
+
+    function moveGoto(dir) {
+        const visible = [];
+        gotoItems.forEach((el, i) => { if (!el.hidden) visible.push(i); });
+        if (!visible.length) return;
+        let pos = visible.indexOf(gotoActive);
+        pos = pos === -1
+            ? (dir > 0 ? 0 : visible.length - 1)
+            : (pos + dir + visible.length) % visible.length;
+        setGotoActive(visible[pos]);
+    }
+
+    function commitGoto(i) {
+        const el = i >= 0 ? gotoItems[i] : null;
+        if (!el) return;
+        const url = el.dataset.gotoUrl;
+        console.log(TAG, 'nav.goto: commit ->', url);
+        closeGoto();
+        goUrl(url);
+    }
+
+    function updateGotoQuery() {
+        const textEl = gotoEl.querySelector('[data-mouseless-goto-text]');
+        if (textEl) textEl.textContent = gotoQuery;
+        const ph = gotoEl.querySelector('[data-mouseless-goto-placeholder]');
+        if (ph) ph.style.display = gotoQuery ? 'none' : '';
+    }
+
+    function shakeGoto() {
+        const box = gotoEl.querySelector('[data-mouseless-goto-query]');
+        if (!box || typeof box.animate !== 'function') return;
+        box.animate(
+            [
+                { transform: 'translateX(0)' },
+                { transform: 'translateX(-5px)' },
+                { transform: 'translateX(5px)' },
+                { transform: 'translateX(0)' },
+            ],
+            { duration: 160 },
+        );
     }
 
     function normalize(key) {
