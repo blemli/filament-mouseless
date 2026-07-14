@@ -38,24 +38,20 @@ body.fi-mouseless-mobile:not(.fi-mouseless-kbd) .fi-mouseless-shortcuts-link {
     display: none !important;
 }
 
-/* ---------- whole-row highlight ---------- */
+/* ---------- whole-row highlight ----------
+ * Panel's native primary colour (Filament's --primary-500) — the same soft-tint
+ * + left-accent-bar treatment as the go-to palette, so the j/k cursor follows
+ * whatever primary the panel is themed with instead of a hardcoded blue.
+ */
 
 .fi-ta-row:focus-within > td,
 .fi-ta-record:focus-within {
-    background-color: rgba(59, 130, 246, 0.12) !important;
+    background-color: color-mix(in oklab, var(--primary-500) 15%, transparent) !important;
 }
 
-.fi-ta-row:focus-within > td:first-child {
-    box-shadow: inset 3px 0 0 0 rgb(59, 130, 246) !important;
-}
-
+.fi-ta-row:focus-within > td:first-child,
 .fi-ta-record:focus-within {
-    box-shadow: inset 3px 0 0 0 rgb(59, 130, 246) !important;
-}
-
-.dark .fi-ta-row:focus-within > td,
-.dark .fi-ta-record:focus-within {
-    background-color: rgba(96, 165, 250, 0.18) !important;
+    box-shadow: inset 3px 0 0 0 var(--primary-500) !important;
 }
 
 .fi-ta-row:focus-within a:focus-visible,
