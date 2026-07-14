@@ -25,30 +25,26 @@
     @elseif ($isRecording)
         <span
             data-mouseless-recording
-            x-data
-            x-init="
-                $nextTick(() => {
-                    const handler = (e) => {
-                        if (! $el.isConnected) {
-                            window.removeEventListener('keydown', handler, true);
-                            return;
-                        }
-                        e.preventDefault();
-                        e.stopPropagation();
-                        if (e.key === 'Escape') {
-                            window.removeEventListener('keydown', handler, true);
-                            $wire.cancelRecording();
-                            return;
-                        }
-                        if (['Control','Alt','Shift','Meta'].includes(e.key)) return;
-                        const combo = window.mouselessEventToKey?.(e);
-                        if (! combo) return;
-                        window.removeEventListener('keydown', handler, true);
-                        $wire.recordKey(combo);
-                    };
-                    window.addEventListener('keydown', handler, true);
-                })
-            "
+            x-data="{
+                capture(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    if (e.key === 'Escape') return this.$wire.cancelRecording();
+                    if (['Control','Alt','Shift','Meta'].includes(e.key)) return;
+                    const combo = window.mouselessEventToKey?.(e);
+                    if (combo) this.$wire.recordKey(combo);
+                },
+            }"
+            {{--
+                Alpine owns this window listener: it's attached synchronously as
+                the badge initialises and torn down the moment the badge leaves
+                the DOM. That's deliberately different from a hand-rolled
+                addEventListener in x-init/$nextTick — the old approach deferred
+                attachment to an animation frame (which a backgrounded/blurred
+                tab never fires, so losing focus mid-rebind left the capture
+                dead) and leaked stale handlers across re-renders.
+            --}}
+            x-on:keydown.window.capture="capture($event)"
         >
             <x-filament::badge color="warning">
                 {{ __('filament-mouseless::mouseless.table.recording.press') }}
