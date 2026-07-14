@@ -68,7 +68,25 @@ class BindingResolver
             (array) config('mouseless.disabled_actions', []),
         )));
 
-        $presetBindings = (array) ($preset['bindings'] ?? []);
+        // Merge the parent-preset chain underneath this preset so bindings added
+        // to a built-in preset *after* a user forked it still reach the fork
+        // (forks snapshot the full binding set, so they miss later additions).
+        // Walk child → ancestor, letting nearer presets win; an explicit null
+        // (a user-unbound action) survives because nulls are filtered only after
+        // the merge is complete.
+        $presetBindings = [];
+        $cursor = $preset;
+        $seen = [];
+        while ($cursor !== null) {
+            $presetBindings = array_merge((array) ($cursor['bindings'] ?? []), $presetBindings);
+            $parentSlug = $cursor['parent_slug'] ?? null;
+            if ($parentSlug === null || isset($seen[$parentSlug])) {
+                break;
+            }
+            $seen[$parentSlug] = true;
+            $cursor = $this->registry->find($parentSlug, $userId);
+        }
+
         $bindings = array_filter($presetBindings, fn ($v) => $v !== null);
 
         // Managed custom actions fall back to their code-defined combo, but

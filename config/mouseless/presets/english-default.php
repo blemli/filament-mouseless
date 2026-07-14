@@ -32,6 +32,8 @@ return [
         'list.next-row' => 'j', // vim down
         'list.prev-row' => 'k', // vim up
         'list.toggle-row' => 'Space', // toggle checkbox on focused row
+        'list.select-next-row' => 'shift+j', // extend the row selection down
+        'list.select-prev-row' => 'shift+k', // extend the row selection up
 
         // Record
         'record.print' => 'alt+p',

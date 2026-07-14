@@ -51,6 +51,8 @@ return [
             'next-row' => 'Nächste Zeile',
             'prev-row' => 'Vorherige Zeile',
             'toggle-row' => 'Zeile aus-/abwählen',
+            'select-next-row' => 'Auswahl nach unten erweitern',
+            'select-prev-row' => 'Auswahl nach oben erweitern',
         ],
         'record' => [
             'print' => 'Drucken',

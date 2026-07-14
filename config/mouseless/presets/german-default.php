@@ -31,6 +31,8 @@ return [
         'list.next-row' => 'j', // vim runter
         'list.prev-row' => 'k', // vim hoch
         'list.toggle-row' => 'Space', // Checkbox der fokussierten Zeile umschalten
+        'list.select-next-row' => 'shift+j', // Auswahl nach unten erweitern
+        'list.select-prev-row' => 'shift+k', // Auswahl nach oben erweitern
 
         // Record
         'record.print' => 'alt+d',  // Drucken

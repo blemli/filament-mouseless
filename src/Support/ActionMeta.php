@@ -27,6 +27,8 @@ class ActionMeta
         'list.next-row' => 'heroicon-o-chevron-down',
         'list.prev-row' => 'heroicon-o-chevron-up',
         'list.toggle-row' => 'heroicon-o-stop',
+        'list.select-next-row' => 'heroicon-o-bars-arrow-down',
+        'list.select-prev-row' => 'heroicon-o-bars-arrow-up',
         'record.print' => 'heroicon-o-printer',
         'record.history' => 'heroicon-o-clock',
         'record.comment' => 'heroicon-o-chat-bubble-left-ellipsis',

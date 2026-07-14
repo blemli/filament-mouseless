@@ -37,6 +37,11 @@ function bootMouseless() {
     let gotoActive = -1;  // index into gotoItems of the highlighted row
     let gotoEl = null;    // the [data-mouseless-goto] wrapper element
 
+    // Anchor row for shift+j / shift+k range selection. A DOM node, not an
+    // index, because rows re-render on sort / filter / paginate. Null between
+    // gestures; a plain j/k, a Space-toggle, or an Escape-deselect resets it.
+    let selectAnchorRow = null;
+
     console.log(TAG, 'bindings count=', Object.keys(bindings).length);
     console.log(TAG, 'bindings=', bindings);
     console.log(TAG, 'reserved=', [...reserved]);
@@ -114,7 +119,8 @@ function bootMouseless() {
             return !!cfg.rootResource;
         }
 
-        if (id === 'list.next-row' || id === 'list.prev-row' || id === 'list.toggle-row') {
+        if (id === 'list.next-row' || id === 'list.prev-row' || id === 'list.toggle-row'
+            || id === 'list.select-next-row' || id === 'list.select-prev-row') {
             return !!document.querySelector('.fi-ta-row, .fi-ta-record');
         }
 
@@ -205,6 +211,7 @@ function bootMouseless() {
             }
             const selected = document.querySelectorAll('.fi-ta-row.fi-selected, .fi-ta-record.fi-selected');
             if (selected.length) {
+                selectAnchorRow = null; // clearing the selection ends any shift-select gesture
                 // Livewire.dispatch('deselectAllTableRecords') does NOT reach Filament's
                 // $wire.$on() listener for this event in Livewire 3 — call the Alpine
                 // method on each table component directly (handles N tables on one page).
@@ -279,6 +286,7 @@ function bootMouseless() {
         // We pick the best focusable per row and let Enter activate it natively.
         if (actionId === 'list.next-row' || actionId === 'list.prev-row') {
             const dir = actionId === 'list.next-row' ? 1 : -1;
+            selectAnchorRow = null; // a plain move ends any shift-select gesture
             const rowElements = Array.from(document.querySelectorAll('.fi-ta-row, .fi-ta-record')).filter(isVisible);
             console.log(TAG, 'dispatch -> list row nav', actionId, 'rows=', rowElements.length);
             if (!rowElements.length) {
@@ -298,6 +306,53 @@ function bootMouseless() {
             return;
         }
 
+        // list.select-next-row / list.select-prev-row — shift+j / shift+k grow or
+        // shrink a contiguous selection, spreadsheet-style. An anchor row is pinned
+        // on the first shift-move; each press moves the cursor one row (clamped —
+        // never wrapping) and selects exactly the rows between the anchor and the
+        // cursor, so shifting back past the anchor deselects again.
+        if (actionId === 'list.select-next-row' || actionId === 'list.select-prev-row') {
+            const dir = actionId === 'list.select-next-row' ? 1 : -1;
+            const rows = Array.from(document.querySelectorAll('.fi-ta-row, .fi-ta-record')).filter(isVisible);
+            console.log(TAG, 'dispatch -> row select', actionId, 'rows=', rows.length);
+            if (!rows.length) {
+                toast(strings.no_match);
+                return;
+            }
+
+            const focusedRow = document.activeElement?.closest?.('.fi-ta-row, .fi-ta-record');
+            let currentIdx = focusedRow ? rows.indexOf(focusedRow) : -1;
+
+            // (Re)establish the anchor when this is a fresh gesture or the pinned
+            // row has since left the DOM (re-sorted / filtered / paginated away).
+            let anchorIdx = selectAnchorRow ? rows.indexOf(selectAnchorRow) : -1;
+            if (anchorIdx === -1) {
+                anchorIdx = currentIdx === -1 ? (dir > 0 ? 0 : rows.length - 1) : currentIdx;
+                selectAnchorRow = rows[anchorIdx];
+                currentIdx = anchorIdx; // the first shift-move includes the anchor row itself
+            }
+
+            const nextIdx = Math.min(Math.max(currentIdx + dir, 0), rows.length - 1);
+            rowFocusTarget(rows[nextIdx]).focus();
+            rows[nextIdx].scrollIntoView({ block: 'nearest' });
+
+            // Drive selection to exactly [anchor, cursor]; flip only what differs
+            // so one step toggles one checkbox (one Livewire round-trip, not N).
+            const lo = Math.min(anchorIdx, nextIdx);
+            const hi = Math.max(anchorIdx, nextIdx);
+            let flipped = 0, withCheckbox = 0;
+            rows.forEach((row, i) => {
+                const cb = row.querySelector('.fi-ta-record-checkbox');
+                if (!cb) return;
+                withCheckbox++;
+                const desired = i >= lo && i <= hi;
+                if (cb.checked !== desired) { cb.click(); flipped++; }
+            });
+            console.log(TAG, '  select range', lo + '..' + hi, 'anchor=', anchorIdx, 'cursor=', nextIdx, 'flipped=', flipped);
+            if (!withCheckbox) console.warn(TAG, actionId, ': table has no selection checkboxes — moved cursor only');
+            return;
+        }
+
         // list.filter — Filament v5 renders the filter trigger as an Alpine-bound
         // button (x-on:click="toggleFiltersDropdown"), not as a mountAction wire-click,
         // so the generic action finder misses it. Click the trigger directly.
@@ -313,6 +368,7 @@ function bootMouseless() {
 
         // list.toggle-row — flip the focused row's selection checkbox.
         if (actionId === 'list.toggle-row') {
+            selectAnchorRow = null; // a manual toggle breaks the shift-select range
             const row = document.activeElement?.closest?.('.fi-ta-row, .fi-ta-record');
             console.log(TAG, 'dispatch -> list.toggle-row, row=', row);
             if (!row) {

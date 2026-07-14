@@ -52,6 +52,8 @@ return [
             'next-row' => 'Next row',
             'prev-row' => 'Previous row',
             'toggle-row' => 'Toggle row selection',
+            'select-next-row' => 'Extend selection down',
+            'select-prev-row' => 'Extend selection up',
         ],
         'record' => [
             'print' => 'Print',
