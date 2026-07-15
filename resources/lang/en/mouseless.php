@@ -220,6 +220,14 @@ return [
             'removed' => ':count shortcuts removed.',
             'reset_done' => ':count actions reset.',
         ],
+        'group' => [
+            'disable' => 'Disable group',
+            'enable' => 'Enable group',
+            'reset' => 'Reset group',
+            'disabled' => 'Group “:group” disabled (:count actions).',
+            'enabled' => 'Group “:group” enabled (:count actions).',
+            'reset_done' => 'Group “:group” reset (:count actions).',
+        ],
     ],
 
     'widget' => [

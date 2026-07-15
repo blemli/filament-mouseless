@@ -457,15 +457,29 @@ body.fi-mouseless-mobile:not(.fi-mouseless-kbd) .fi-mouseless-shortcuts-link {
 .fi-mouseless-kbd-group {
     display: inline-flex;
     gap: 0.25rem;
+    align-items: center;
 }
 
-.fi-mouseless-kbd {
+/* Scoped to the group wrapper on purpose: `.fi-mouseless-kbd` is ALSO a
+ * <body> flag class the keyboard probe adds (index.js), so an unscoped
+ * `.fi-mouseless-kbd` rule would paint keycap borders/monospace onto the whole
+ * page. Keycaps only ever live inside .fi-mouseless-kbd-group. */
+.fi-mouseless-kbd-group .fi-mouseless-kbd {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 1.55rem;
+    height: 1.55rem;
+    padding: 0 0.4rem;
     background: var(--mouseless-help-kbd-bg);
     border: 1px solid var(--mouseless-help-border);
-    padding: 0.125rem 0.5rem;
-    border-radius: 0.25rem;
-    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-    font-size: 0.75rem;
+    border-radius: 0.375rem;
+    /* System UI font, not monospace: renders the modifier glyphs (⇧ ⌥ ⌘ ⌃)
+     * at a legible size/weight instead of the thin, tiny monospace versions. */
+    font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    line-height: 1;
     white-space: nowrap;
 }
 
@@ -501,4 +515,44 @@ body.fi-mouseless-mobile:not(.fi-mouseless-kbd) .fi-mouseless-shortcuts-link {
  * description and footer buttons overflow the modal window. */
 .fi-modal-window {
     white-space: normal;
+}
+
+/* Group-level actions (disable/enable/reset a whole category) live in the
+ * group-header row, fed through the Group description slot (we're the only
+ * consumer of it on this table). The shortcuts table scrolls horizontally, so
+ * we lay the heading wrapper out as a full-width flex row and pin the actions
+ * to the *visible* right edge with position: sticky — pure right-alignment
+ * would land beyond the scroll width and disappear off-screen. */
+.fi-mouseless-layout-main .fi-ta-group-header > div {
+    display: flex;
+    align-items: center;
+    flex: 1;
+    min-width: 0;
+}
+
+.fi-mouseless-layout-main .fi-ta-group-header .fi-ta-group-description {
+    margin: 0;
+    margin-inline-start: auto;   /* push to the right of the full-width row */
+    position: sticky;
+    inset-inline-end: 2.75rem;   /* stay visible + clear of the collapse chevron */
+}
+
+.fi-mouseless-group-actions {
+    display: inline-flex;
+    align-items: center;
+    gap: 1.25rem;
+    white-space: nowrap;
+}
+
+/* Very narrow viewports: stack the actions under the group title rather than
+ * letting them overlap it. */
+@media (max-width: 40rem) {
+    .fi-mouseless-layout-main .fi-ta-group-header > div {
+        display: block;
+    }
+
+    .fi-mouseless-layout-main .fi-ta-group-header .fi-ta-group-description {
+        position: static;
+        margin: 0.5rem 0 0;
+    }
 }

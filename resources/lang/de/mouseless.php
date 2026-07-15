@@ -219,6 +219,14 @@ return [
             'removed' => ':count Kürzel entfernt.',
             'reset_done' => ':count Aktionen zurückgesetzt.',
         ],
+        'group' => [
+            'disable' => 'Gruppe deaktivieren',
+            'enable' => 'Gruppe aktivieren',
+            'reset' => 'Gruppe zurücksetzen',
+            'disabled' => 'Gruppe „:group" deaktiviert (:count Aktionen).',
+            'enabled' => 'Gruppe „:group" aktiviert (:count Aktionen).',
+            'reset_done' => 'Gruppe „:group" zurückgesetzt (:count Aktionen).',
+        ],
     ],
 
     'widget' => [

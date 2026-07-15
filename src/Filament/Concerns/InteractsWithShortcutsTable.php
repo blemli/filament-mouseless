@@ -7,6 +7,7 @@ use Blemli\FilamentMouseless\Models\Preset;
 use Blemli\FilamentMouseless\Services\CustomActionRegistry;
 use Blemli\FilamentMouseless\Support\ActionMeta;
 use Blemli\FilamentMouseless\Support\Keys;
+use Blemli\FilamentMouseless\Support\ShortcutConflicts;
 use Filament\Actions\Action;
 use Filament\Actions\BulkAction;
 use Filament\Actions\BulkActionGroup;
@@ -18,6 +19,7 @@ use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Grouping\Group;
 use Filament\Tables\Table;
 use Illuminate\Support\Collection;
+use Illuminate\Support\HtmlString;
 
 /**
  * Reusable shortcuts table: one row per action, grouped by category, with
@@ -89,11 +91,13 @@ trait InteractsWithShortcutsTable
             ->paginated(false)
             ->deferFilters(false)
             ->deferColumnManager(false)
+            ->reorderableColumns()
             ->defaultGroup(
                 Group::make('category')
                     ->label(__('filament-mouseless::mouseless.table.columns.category'))
                     ->getKeyFromRecordUsing(fn (array $record): string => $record['category'])
                     ->getTitleFromRecordUsing(fn (array $record): string => ActionMeta::categoryLabel($record['category']))
+                    ->getDescriptionFromRecordUsing(fn (array $record): ?HtmlString => $this->shortcutsGroupActionsHtml($record['category']))
                     ->titlePrefixedWithLabel(false)
                     ->collapsible()
             )
@@ -603,10 +607,11 @@ trait InteractsWithShortcutsTable
         }
 
         $preset = $this->getShortcutsPreset() ?? [];
+        $presetBindings = (array) ($preset['bindings'] ?? []);
 
         // Disabled actions still hold their key — stealing unbinds them, so
         // re-enabling later can never create a silent duplicate combo.
-        foreach ((array) ($preset['bindings'] ?? []) as $id => $existing) {
+        foreach ($presetBindings as $id => $existing) {
             if ($id === $this->recordingActionId) {
                 continue;
             }
@@ -626,6 +631,28 @@ trait InteractsWithShortcutsTable
                 $this->pendingSteal = ['combo' => $combo, 'otherActionId' => $id];
 
                 return;
+            }
+        }
+
+        // Custom actions on their code-defined combo aren't in the preset, so
+        // the loop above misses them. Their combo lives in code and can't be
+        // stolen (like a protected binding) — refuse and let the user pick
+        // another, instead of silently creating a duplicate. Overridden customs
+        // already sit in $presetBindings and were handled above.
+        foreach (ShortcutConflicts::customCombos() as $id => $custom) {
+            if ($id === $this->recordingActionId || array_key_exists($id, $presetBindings)) {
+                continue;
+            }
+
+            if ($custom['combo'] === $combo) {
+                Notification::make()
+                    ->title(__('filament-mouseless::mouseless.table.steal.protected', [
+                        'key' => Keys::display($combo),
+                        'action' => $custom['label'],
+                    ]))
+                    ->danger()->send();
+
+                return; // Recording stays active — try another combo.
             }
         }
 
@@ -882,6 +909,233 @@ trait InteractsWithShortcutsTable
 
         Notification::make()
             ->title(__('filament-mouseless::mouseless.table.reset_all.done'))
+            ->success()->send();
+    }
+
+    // ------------------------------------------------------------------
+    // Group (category) actions
+    // ------------------------------------------------------------------
+
+    /**
+     * Buttons injected into a category's group-header row: disable/enable the
+     * whole group and reset it to the parent preset. Returns null when nothing
+     * applies (the header then shows no description). Rendered raw through the
+     * Group description slot — see resources/views/tables/group-actions.blade.php.
+     */
+    protected function shortcutsGroupActionsHtml(string $category): ?HtmlString
+    {
+        $rows = array_values(array_filter(
+            $this->shortcutRows(),
+            fn (array $row): bool => $row['category'] === $category,
+        ));
+
+        if ($rows === []) {
+            return null;
+        }
+
+        $buttons = [];
+
+        // Reset mirrors the per-row reset: offered only on an editable preset
+        // that actually diverges from its parent somewhere in this group.
+        $hasChanges = false;
+        foreach ($rows as $row) {
+            if ($row['changed']) {
+                $hasChanges = true;
+
+                break;
+            }
+        }
+
+        if (! $this->isShortcutsLocked() && $hasChanges) {
+            $buttons[] = [
+                'method' => 'resetCategory',
+                'label' => __('filament-mouseless::mouseless.table.group.reset'),
+                'icon' => 'heroicon-m-arrow-uturn-left',
+                'color' => 'gray',
+            ];
+        }
+
+        // Disable/enable only touches non-protected, editable rows.
+        $toggleable = array_filter(
+            $rows,
+            fn (array $row): bool => ! ($row['readonly'] ?? false) && ! $this->isProtectedShortcut($row['id']),
+        );
+
+        if ($toggleable !== []) {
+            $allDisabled = true;
+            foreach ($toggleable as $row) {
+                if (! $row['disabled']) {
+                    $allDisabled = false;
+
+                    break;
+                }
+            }
+
+            $buttons[] = $allDisabled
+                ? [
+                    'method' => 'enableCategory',
+                    'label' => __('filament-mouseless::mouseless.table.group.enable'),
+                    'icon' => 'heroicon-m-play',
+                    'color' => 'success',
+                ]
+                : [
+                    'method' => 'disableCategory',
+                    'label' => __('filament-mouseless::mouseless.table.group.disable'),
+                    'icon' => 'heroicon-m-no-symbol',
+                    'color' => 'danger',
+                ];
+        }
+
+        if ($buttons === []) {
+            return null;
+        }
+
+        return new HtmlString(
+            view('filament-mouseless::tables.group-actions', [
+                'category' => $category,
+                'buttons' => $buttons,
+            ])->render(),
+        );
+    }
+
+    /**
+     * @return array<int, string> Every action ID belonging to the category.
+     */
+    protected function categoryIds(string $category): array
+    {
+        return array_values(array_map(
+            fn (array $row): string => $row['id'],
+            array_filter($this->shortcutRows(), fn (array $row): bool => $row['category'] === $category),
+        ));
+    }
+
+    /**
+     * @return array<int, string> Non-protected, editable action IDs in the category.
+     */
+    protected function toggleableCategoryIds(string $category): array
+    {
+        return array_values(array_map(
+            fn (array $row): string => $row['id'],
+            array_filter(
+                $this->shortcutRows(),
+                fn (array $row): bool => $row['category'] === $category
+                    && ! ($row['readonly'] ?? false)
+                    && ! $this->isProtectedShortcut($row['id']),
+            ),
+        ));
+    }
+
+    public function disableCategory(string $category): void
+    {
+        $this->cancelRecording();
+
+        $preset = $this->getShortcutsPreset() ?? [];
+        $ids = array_values(array_diff(
+            $this->toggleableCategoryIds($category),
+            (array) ($preset['disabled_actions'] ?? []),
+        ));
+
+        if ($ids === []) {
+            return;
+        }
+
+        // Fork first (on a locked preset), then re-read so we mutate the copy.
+        $this->ensureEditableShortcutsPreset();
+
+        $preset = $this->getShortcutsPreset() ?? [];
+        $disabled = array_values(array_unique([...(array) ($preset['disabled_actions'] ?? []), ...$ids]));
+
+        if (! $this->saveShortcuts((array) ($preset['bindings'] ?? []), $disabled)) {
+            return;
+        }
+
+        Notification::make()
+            ->title(__('filament-mouseless::mouseless.table.group.disabled', [
+                'count' => count($ids),
+                'group' => ActionMeta::categoryLabel($category),
+            ]))
+            ->success()->send();
+    }
+
+    public function enableCategory(string $category): void
+    {
+        $this->cancelRecording();
+
+        $preset = $this->getShortcutsPreset() ?? [];
+        $ids = array_values(array_intersect(
+            $this->toggleableCategoryIds($category),
+            (array) ($preset['disabled_actions'] ?? []),
+        ));
+
+        if ($ids === []) {
+            return;
+        }
+
+        $this->ensureEditableShortcutsPreset();
+
+        $preset = $this->getShortcutsPreset() ?? [];
+        $disabled = array_values(array_diff((array) ($preset['disabled_actions'] ?? []), $ids));
+
+        if (! $this->saveShortcuts((array) ($preset['bindings'] ?? []), $disabled)) {
+            return;
+        }
+
+        Notification::make()
+            ->title(__('filament-mouseless::mouseless.table.group.enabled', [
+                'count' => count($ids),
+                'group' => ActionMeta::categoryLabel($category),
+            ]))
+            ->success()->send();
+    }
+
+    public function resetCategory(string $category): void
+    {
+        $this->cancelRecording();
+
+        if ($this->isShortcutsLocked()) {
+            return;
+        }
+
+        $preset = $this->getShortcutsPreset() ?? [];
+        $parent = $this->getShortcutsParentPreset() ?? [];
+
+        $bindings = (array) ($preset['bindings'] ?? []);
+        $disabled = (array) ($preset['disabled_actions'] ?? []);
+        $parentBindings = (array) ($parent['bindings'] ?? []);
+        $parentDisabled = (array) ($parent['disabled_actions'] ?? []);
+
+        $count = 0;
+        foreach ($this->categoryIds($category) as $id) {
+            $before = [$bindings[$id] ?? null, in_array($id, $disabled, true)];
+
+            if (array_key_exists($id, $parentBindings)) {
+                $bindings[$id] = $parentBindings[$id];
+            } else {
+                unset($bindings[$id]);
+            }
+
+            $disabled = in_array($id, $parentDisabled, true)
+                ? array_values(array_unique([...$disabled, $id]))
+                : array_values(array_diff($disabled, [$id]));
+
+            if ($before !== [$bindings[$id] ?? null, in_array($id, $disabled, true)]) {
+                $count++;
+            }
+        }
+
+        if ($count === 0) {
+            return;
+        }
+
+        if (! $this->saveShortcuts($bindings, $disabled)) {
+            return;
+        }
+
+        Notification::make()
+            ->title(__('filament-mouseless::mouseless.table.group.reset_done', [
+                'count' => $count,
+                'group' => ActionMeta::categoryLabel($category),
+            ]))
             ->success()->send();
     }
 }

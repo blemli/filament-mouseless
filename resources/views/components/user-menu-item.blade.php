@@ -4,6 +4,8 @@
         tag="a"
         :href="$url"
         :icon="$icon"
+        :badge="($badge ?? null) ?: null"
+        badge-color="danger"
     >
         {{ $label }}
     </x-filament::dropdown.list.item>

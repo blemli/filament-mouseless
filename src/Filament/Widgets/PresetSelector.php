@@ -19,6 +19,7 @@ use Filament\Forms\Contracts\HasForms;
 use Filament\Notifications\Notification;
 use Filament\Schemas\Schema;
 use Filament\Widgets\Widget;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\On;
 
@@ -393,7 +394,22 @@ class PresetSelector extends Widget implements HasActions, HasForms
                     ->label(__('filament-mouseless::mouseless.table.import.file'))
                     ->acceptedFileTypes(['application/json', 'text/plain'])
                     ->storeFiles(false)
-                    ->previewable(false),
+                    ->previewable(false)
+                    // Auto-import the moment the upload finishes — no second click
+                    // on "submit" for the file path (the paste field still submits
+                    // via the button). An invalid file notifies and leaves the
+                    // modal open so the user can retry or paste instead.
+                    ->afterStateUpdated(function ($state): void {
+                        $file = is_array($state) ? Arr::first($state) : $state;
+
+                        if (! is_object($file) || ! method_exists($file, 'get')) {
+                            return; // file removed, or not a readable upload
+                        }
+
+                        if ($this->handleImportJson((string) $file->get()) === 'imported') {
+                            $this->unmountAction();
+                        }
+                    }),
                 Textarea::make('json')
                     ->label(__('filament-mouseless::mouseless.table.import.paste'))
                     ->rows(5),
@@ -403,39 +419,54 @@ class PresetSelector extends Widget implements HasActions, HasForms
                     ? (string) $data['file']->get()
                     : (string) ($data['json'] ?? '');
 
-                if (blank($json)) {
-                    Notification::make()
-                        ->title(__('filament-mouseless::mouseless.table.import.empty'))
-                        ->danger()->send();
-
+                if ($this->handleImportJson($json) === 'error') {
                     $action->halt();
                 }
-
-                $errors = PresetTransfer::validate($json, $payload);
-
-                if ($errors !== []) {
-                    Notification::make()
-                        ->title(__('filament-mouseless::mouseless.table.import.invalid'))
-                        ->body(implode("\n", array_slice($errors, 0, 5)))
-                        ->danger()->send();
-
-                    $action->halt();
-                }
-
-                // Same layout coming back in (matched on its Laravel id, carried
-                // in the export)? Don't silently fork or clobber — hand off to a
-                // tiny confirm modal that asks overwrite-vs-duplicate. A brand new
-                // layout has nothing to resolve, so it imports straight away.
-                if ($this->ownedPresetById($payload['id'] ?? null)) {
-                    $this->pendingImport = $payload;
-                    $this->replaceMountedAction('resolveImportConflict');
-
-                    return;
-                }
-
-                $this->pendingImport = $payload;
-                $this->completeImport(overwrite: false);
             });
+    }
+
+    /**
+     * Validate a pasted or uploaded JSON layout and act on it: import straight
+     * through, hand off to the overwrite-vs-duplicate prompt, or notify on a
+     * failure. Returns 'imported' | 'conflict' | 'error' so the caller decides
+     * whether to close the modal (button submit vs. the upload auto-trigger).
+     */
+    protected function handleImportJson(string $json): string
+    {
+        if (blank($json)) {
+            Notification::make()
+                ->title(__('filament-mouseless::mouseless.table.import.empty'))
+                ->danger()->send();
+
+            return 'error';
+        }
+
+        $errors = PresetTransfer::validate($json, $payload);
+
+        if ($errors !== []) {
+            Notification::make()
+                ->title(__('filament-mouseless::mouseless.table.import.invalid'))
+                ->body(implode("\n", array_slice($errors, 0, 5)))
+                ->danger()->send();
+
+            return 'error';
+        }
+
+        // Same layout coming back in (matched on its Laravel id, carried in the
+        // export)? Don't silently fork or clobber — hand off to a tiny confirm
+        // modal that asks overwrite-vs-duplicate. A brand new layout has nothing
+        // to resolve, so it imports straight away.
+        if ($this->ownedPresetById($payload['id'] ?? null)) {
+            $this->pendingImport = $payload;
+            $this->replaceMountedAction('resolveImportConflict');
+
+            return 'conflict';
+        }
+
+        $this->pendingImport = $payload;
+        $this->completeImport(overwrite: false);
+
+        return 'imported';
     }
 
     /**

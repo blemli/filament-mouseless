@@ -2,9 +2,11 @@
 
 namespace Blemli\FilamentMouseless;
 
+use Blemli\FilamentMouseless\Facades\FilamentMouseless;
 use Blemli\FilamentMouseless\Filament\Pages\MouselessSettings;
 use Blemli\FilamentMouseless\Filament\Pages\MyShortcuts;
 use Blemli\FilamentMouseless\Support\Shield;
+use Blemli\FilamentMouseless\Support\ShortcutConflicts;
 use Closure;
 use Filament\Actions\Action;
 use Filament\Contracts\Plugin;
@@ -306,9 +308,32 @@ class FilamentMouselessPlugin implements Plugin
                 ->label(fn (): string => $this->getShortcutsLabel())
                 ->icon(fn (): string => $this->getIcon())
                 ->url(fn () => MyShortcuts::getUrl())
+                ->badge(fn (): ?string => $this->shortcutsDuplicateBadge())
+                ->badgeColor('danger')
                 ->visible(fn (): bool => Shield::userMayUse())
                 ->extraAttributes(['class' => 'fi-mouseless-shortcuts-link']),
         ]);
+    }
+
+    /**
+     * Badge for the shortcuts menu item: the number of actions whose key combo
+     * collides with another (the same rows the table flags "Mehrfach belegt"),
+     * or null when there are none. Runs on every user-menu render, so it stays
+     * cheap and swallows failures rather than breaking the panel chrome.
+     */
+    public function shortcutsDuplicateBadge(): ?string
+    {
+        if ($this->stateless || ! Shield::userMayUse()) {
+            return null;
+        }
+
+        try {
+            $count = ShortcutConflicts::duplicateCount(FilamentMouseless::forCurrentUser()['preset'] ?? null);
+        } catch (\Throwable) {
+            return null;
+        }
+
+        return $count > 0 ? (string) $count : null;
     }
 
     public function boot(Panel $panel): void
@@ -344,6 +369,7 @@ class FilamentMouselessPlugin implements Plugin
                         'label' => $this->getShortcutsLabel(),
                         'icon' => $this->getIcon(),
                         'url' => MyShortcuts::getUrl(),
+                        'badge' => $this->shortcutsDuplicateBadge(),
                     ])->render()
                     : '',
             );
