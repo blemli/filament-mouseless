@@ -128,6 +128,12 @@ function bootMouseless() {
             return !!document.querySelector('.fi-ta-row, .fi-ta-record');
         }
 
+        if (id === 'list.next-page' || id === 'list.prev-page') {
+            const rel = id === 'list.next-page' ? 'next' : 'prev';
+            const sel = `.fi-pagination [rel="${rel}"], .fi-pagination-${rel === 'next' ? 'next' : 'previous'}-btn`;
+            return !!Array.from(document.querySelectorAll(sel)).find(isVisible);
+        }
+
         if (id === 'list.search') {
             return !!findTableSearchInput(document);
         }
@@ -374,6 +380,31 @@ function bootMouseless() {
             });
             console.log(TAG, '  select range', lo + '..' + hi, 'anchor=', anchorIdx, 'cursor=', nextIdx, 'flipped=', flipped);
             if (!withCheckbox) console.warn(TAG, actionId, ': table has no selection checkboxes — moved cursor only');
+            return;
+        }
+
+        // list.next-page / list.prev-page — step through Filament's paginator.
+        // Filament v5 marks every page-nav control with rel="next"/rel="prev":
+        // the labeled "Next"/"Previous" <button> (shown on narrow viewports) and
+        // the chevron <li> in the numbered list (shown on wide ones) both carry
+        // it, and a direction's control is only rendered when that page exists.
+        // So we match on rel, keep the one that's actually visible in the current
+        // layout, and prefer the table the cursor is in when several share a page.
+        if (actionId === 'list.next-page' || actionId === 'list.prev-page') {
+            const rel = actionId === 'list.next-page' ? 'next' : 'prev';
+            const sel = `.fi-pagination [rel="${rel}"], .fi-pagination-${rel === 'next' ? 'next' : 'previous'}-btn`;
+            const scope = document.activeElement?.closest?.('[x-data*="filamentTable"]');
+            const btn = (scope && Array.from(scope.querySelectorAll(sel)).find(isVisible))
+                || Array.from(document.querySelectorAll(sel)).find(isVisible);
+            console.log(TAG, 'dispatch -> list page nav', actionId, 'btn=', btn);
+            if (btn) {
+                btn.click();
+                return;
+            }
+            // No control in this direction = already on the first / last page
+            // (or pagination is disabled on this table).
+            console.warn(TAG, actionId, ': no pagination control (first/last page or pagination disabled)');
+            toast(strings.no_match);
             return;
         }
 
