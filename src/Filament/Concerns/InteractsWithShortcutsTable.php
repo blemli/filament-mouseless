@@ -3,6 +3,8 @@
 namespace Blemli\FilamentMouseless\Filament\Concerns;
 
 use Blemli\FilamentMouseless\Facades\FilamentMouseless;
+use Blemli\FilamentMouseless\FilamentMouselessPlugin;
+use Blemli\FilamentMouseless\Models\Nudge;
 use Blemli\FilamentMouseless\Models\Preset;
 use Blemli\FilamentMouseless\Services\CustomActionRegistry;
 use Blemli\FilamentMouseless\Support\ActionMeta;
@@ -19,6 +21,7 @@ use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Grouping\Group;
 use Filament\Tables\Table;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\HtmlString;
 
 /**
@@ -130,6 +133,28 @@ trait InteractsWithShortcutsTable
                         : __('filament-mouseless::mouseless.table.status.default'))
                     ->color(fn (bool $state): string => $state ? 'warning' : 'gray')
                     ->toggleable(isToggledHiddenByDefault: true),
+                // Teach state per action (plugin ->teach()): has the nudge
+                // taught this shortcut yet? Clicking a taught/dismissed badge
+                // clears the state so teaching starts over.
+                ...($this->shortcutsTeachEnabled() ? [
+                    TextColumn::make('teach')
+                        ->label(__('filament-mouseless::mouseless.table.columns.teach'))
+                        ->badge()
+                        ->formatStateUsing(fn (string $state, array $record): string => __("filament-mouseless::mouseless.teach.state.{$state}")
+                            . ($state === 'unused' && ($record['teach_streak'] ?? 0) > 0
+                                ? ' ' . $record['teach_streak'] . '/' . Nudge::TAUGHT_AFTER
+                                : ''))
+                        ->color(fn (string $state): string => match ($state) {
+                            'taught' => 'success',
+                            'dismissed' => 'warning',
+                            default => 'gray',
+                        })
+                        ->tooltip(fn (array $record): ?string => in_array($record['teach'] ?? 'unused', ['taught', 'dismissed'], true)
+                            ? __('filament-mouseless::mouseless.teach.clear_tooltip')
+                            : null)
+                        ->action(fn (array $record) => $this->clearShortcutTeach($record))
+                        ->toggleable(isToggledHiddenByDefault: true),
+                ] : []),
             ])
             ->filters([
                 TernaryFilter::make('changed')
@@ -205,6 +230,20 @@ trait InteractsWithShortcutsTable
                     ->modalHeading(__('filament-mouseless::mouseless.table.reset_all.heading'))
                     ->modalDescription(__('filament-mouseless::mouseless.table.reset_all.description'))
                     ->action(fn () => $this->resetAllShortcuts()),
+                // "Never notify" has to be reversible — this is its way back.
+                Action::make('unmuteTeach')
+                    ->label(__('filament-mouseless::mouseless.teach.unmute'))
+                    ->icon('heroicon-m-bell')
+                    ->color('gray')
+                    ->visible(fn (): bool => $this->shortcutsTeachEnabled() && Nudge::isMuted((int) auth()->id()))
+                    ->action(function (): void {
+                        Nudge::clear((int) auth()->id(), Nudge::MUTE_ALL);
+
+                        Notification::make()
+                            ->title(__('filament-mouseless::mouseless.teach.unmuted'))
+                            ->success()
+                            ->send();
+                    }),
                 Action::make('searchByKey')
                     ->label(__('filament-mouseless::mouseless.table.key_search.label'))
                     ->icon('heroicon-m-key')
@@ -251,6 +290,41 @@ trait InteractsWithShortcutsTable
             ]);
     }
 
+    /** Whether the teach column (and its states) should render at all. */
+    protected function shortcutsTeachEnabled(): bool
+    {
+        if (! FilamentMouselessPlugin::teachingEnabled() || ! auth()->check()) {
+            return false;
+        }
+
+        try {
+            return Schema::hasTable('mouseless_nudges');
+        } catch (\Throwable) {
+            return false;
+        }
+    }
+
+    /**
+     * Clicking a taught/dismissed teach badge forgets that state (streak,
+     * backoff and all) — the action gets nudged again like a fresh one.
+     */
+    public function clearShortcutTeach(array $record): void
+    {
+        if (! $this->shortcutsTeachEnabled() || ($record['teach'] ?? 'unused') === 'unused') {
+            return;
+        }
+
+        Nudge::clear((int) auth()->id(), $record['id']);
+        // The click resolved the records before the delete — flush, or the
+        // badge renders its stale state until the next full refresh.
+        $this->flushCachedTableRecords();
+
+        Notification::make()
+            ->title(__('filament-mouseless::mouseless.teach.cleared'))
+            ->success()
+            ->send();
+    }
+
     /**
      * Wraps modifying row actions: on a locked (not owned) preset, ask first —
      * confirming forks into a personal layout, then the action proceeds.
@@ -291,7 +365,11 @@ trait InteractsWithShortcutsTable
 
         if (filled($search)) {
             $needle = mb_strtolower(trim($search));
-            $comboNeedle = Keys::normalize($search) ?? $needle;
+            // Second try with spaces as separators: "?search=alt+e" URLs
+            // arrive with the + already decoded to a space.
+            $comboNeedle = Keys::normalize($search)
+                ?? Keys::normalize(str_replace(' ', '+', trim($search)))
+                ?? $needle;
 
             $rows = array_filter($rows, fn (array $r): bool => str_contains(mb_strtolower($r['label']), $needle)
                 || ($r['normalized'] !== null && str_contains($r['normalized'], $comboNeedle)));
@@ -386,6 +464,21 @@ trait InteractsWithShortcutsTable
         );
 
         $rows = [...$rows, ...$this->customShortcutRows($bindings, $disabled)];
+
+        if ($this->shortcutsTeachEnabled()) {
+            $states = Nudge::statesFor((int) auth()->id());
+
+            foreach ($rows as &$row) {
+                $state = $states[$row['id']] ?? null;
+                $row['teach'] = match (true) {
+                    (bool) ($state['dismissed'] ?? false) => 'dismissed',
+                    (bool) ($state['learned'] ?? false) => 'taught',
+                    default => 'unused',
+                };
+                $row['teach_streak'] = (int) ($state['streak'] ?? 0);
+            }
+            unset($row);
+        }
 
         // Duplicate detection runs across every effective combo (core + custom)
         // so a preset key colliding with a code-defined one is flagged too.
@@ -597,13 +690,21 @@ trait InteractsWithShortcutsTable
             return;
         }
 
-        $reserved = array_map(Keys::normalize(...), (array) config('mouseless.reserved_keys', []));
+        $reserved = array_map(Keys::normalize(...), Keys::reservedKeys());
         if (in_array($combo, $reserved, true)) {
-            Notification::make()
-                ->title(__('filament-mouseless::mouseless.profile.reserved_key', ['key' => Keys::display($combo)]))
-                ->danger()->send();
+            if (! FilamentMouselessPlugin::prohibitionsAreSoft()) {
+                Notification::make()
+                    ->title(__('filament-mouseless::mouseless.profile.reserved_key', ['key' => Keys::display($combo)]))
+                    ->danger()->send();
 
-            return; // Keep recording so the user can try another combo.
+                return; // Keep recording so the user can try another combo.
+            }
+
+            // ->onlyWarnOnProhibited(): accept the combo, but say why it may
+            // stay dead — the browser/OS usually wins these keys.
+            Notification::make()
+                ->title(__('filament-mouseless::mouseless.profile.reserved_key_warning', ['key' => Keys::display($combo)]))
+                ->warning()->send();
         }
 
         $preset = $this->getShortcutsPreset() ?? [];

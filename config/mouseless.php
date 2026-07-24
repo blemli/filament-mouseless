@@ -52,13 +52,33 @@ return [
     |--------------------------------------------------------------------------
     | Reserved keys (unbindable)
     |--------------------------------------------------------------------------
-    | Keys we leave to the browser. Do NOT add keys the package itself uses
-    | (Escape → ui.close, ? → ui.help) — they'd be silently dropped at
-    | binding-registration time and the corresponding actions would never fire.
+    | Combos the browser or OS wins regardless of preventDefault — the recorder
+    | refuses them and the engine never registers them. Keyed by platform
+    | (detected from the user agent); 'all' applies everywhere. A flat array
+    | (the pre-2.0 format) is still accepted and treated as 'all'.
+    |
+    | Do NOT add keys the package itself uses (Escape → ui.close, ? → ui.help)
+    | — they'd be silently dropped at binding-registration time and the
+    | corresponding actions would never fire.
     */
     'reserved_keys' => [
-        'Tab', 'Enter',
-        'cmd+r', 'cmd+w', 'cmd+t', 'cmd+l',
+        'all' => ['Tab', 'Enter'],
+        'mac' => [
+            'cmd+q', 'cmd+w', 'cmd+t', 'cmd+n', 'cmd+m', 'cmd+h',
+            'cmd+shift+w', 'cmd+shift+t', 'cmd+shift+n',
+        ],
+        'windows' => [
+            'ctrl+w', 'ctrl+t', 'ctrl+n', 'ctrl+f4',
+            'ctrl+shift+w', 'ctrl+shift+t', 'ctrl+shift+n',
+            'alt+f4', 'alt+tab', 'alt+space',
+        ],
+        'linux' => [
+            'ctrl+w', 'ctrl+t', 'ctrl+n',
+            'ctrl+shift+w', 'ctrl+shift+t', 'ctrl+shift+n',
+            'alt+f4', 'alt+tab', 'alt+space',
+            // Window-manager grabs (GNOME/KDE): terminal, lock screen.
+            'ctrl+alt+t', 'ctrl+alt+l',
+        ],
     ],
 
     /*

@@ -68,6 +68,20 @@ class MyShortcuts extends Page implements HasTable
         return __('filament-mouseless::mouseless.profile.title');
     }
 
+    /**
+     * Deep-link the table search: /my-shortcuts?search=alt+e lands with that
+     * combo (or label) already filtered in. The teach notification's "change
+     * shortcut" button uses it to jump straight to the clicked action's row.
+     */
+    public function mount(): void
+    {
+        $search = (string) request()->query('search', '');
+
+        if ($search !== '') {
+            $this->tableSearch = $search;
+        }
+    }
+
     public static function getNavigationLabel(): string
     {
         return FilamentMouselessPlugin::safeGet()?->getShortcutsLabel()

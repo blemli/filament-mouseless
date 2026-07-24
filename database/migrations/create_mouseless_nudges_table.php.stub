@@ -1,0 +1,30 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('mouseless_nudges', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('user_id');
+            $table->string('action_id'); // binding id ("crud.edit"), or '*' = user muted all teach notifications
+            $table->unsignedInteger('shown_count')->default(0);
+            $table->unsignedInteger('used_streak')->default(0); // consecutive keyboard uses; a mouse click resets it
+            $table->timestamp('last_shown_at')->nullable();
+            $table->timestamp('dismissed_at')->nullable(); // "don't notify again (this action)"
+            $table->timestamp('learned_at')->nullable();   // taught: shortcut used 3× in a row — never nudge again
+            $table->timestamps();
+
+            $table->unique(['user_id', 'action_id']);
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('mouseless_nudges');
+    }
+};

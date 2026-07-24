@@ -2,8 +2,13 @@
 
 namespace Blemli\FilamentMouseless\Support;
 
+use Blemli\FilamentMouseless\Filament\Pages\MyShortcuts;
+use Blemli\FilamentMouseless\FilamentMouselessPlugin;
+use Blemli\FilamentMouseless\Models\Nudge;
 use Blemli\FilamentMouseless\Services\BindingResolver;
 use Blemli\FilamentMouseless\Services\CustomActionRegistry;
+use Filament\Facades\Filament;
+use Illuminate\Support\Facades\Schema;
 use JsonSerializable;
 
 /**
@@ -33,9 +38,14 @@ class ScriptData implements JsonSerializable
 
         return [
             'bindings' => $resolved['bindings'],
-            'reserved' => (array) config('mouseless.reserved_keys', []),
+            'reserved' => Keys::reservedKeys(),
             'listModeIgnore' => (array) config('mouseless.list_mode.ignore_in', []),
             'debug' => (bool) config('mouseless.debug', false),
+            'underlines' => FilamentMouselessPlugin::underlinesEnabled(),
+            'hints' => FilamentMouselessPlugin::hintsEnabled(),
+            'softProhibitions' => FilamentMouselessPlugin::prohibitionsAreSoft(),
+            'escapeTo' => FilamentMouselessPlugin::escapeTarget(),
+            'teach' => $this->teach(),
             'actionLabels' => $this->actionLabels,
             // The panel's post-login landing page (configured home URL, or the
             // panel root). nav.dashboard navigates here instead of a hardcoded
@@ -48,8 +58,64 @@ class ScriptData implements JsonSerializable
             'customActions' => $this->customActions(),
             'strings' => [
                 'no_match' => __('filament-mouseless::mouseless.help.no_match'),
+                'copied' => __('filament-mouseless::mouseless.table.export.copied'),
             ],
         ];
+    }
+
+    /**
+     * The teach layer's payload: per-action nudge state (backoff deadline,
+     * dismissed, learned) plus the notification strings. Null when teaching
+     * is off, the user is a guest, or the nudges table hasn't been migrated
+     * — the JS engine treats null as "feature absent".
+     *
+     * @return array<string, mixed>|null
+     */
+    protected function teach(): ?array
+    {
+        if (! FilamentMouselessPlugin::teachingEnabled() || ! auth()->check()) {
+            return null;
+        }
+
+        try {
+            if (! Schema::hasTable('mouseless_nudges')) {
+                return null;
+            }
+
+            // ->deferDays(X): newcomers get X quiet days before any teaching.
+            $deferDays = FilamentMouselessPlugin::teachDeferredDays();
+            $createdAt = auth()->user()?->created_at;
+            if ($deferDays > 0 && $createdAt && $createdAt->addDays($deferDays)->isFuture()) {
+                return null;
+            }
+
+            $userId = (int) auth()->id();
+
+            return [
+                'muted' => Nudge::isMuted($userId),
+                'states' => Nudge::statesFor($userId),
+                'shortcutsUrl' => $this->shortcutsUrl(),
+                'strings' => [
+                    'title' => __('filament-mouseless::mouseless.teach.title'),
+                    'body' => __('filament-mouseless::mouseless.teach.body'),
+                    'change' => __('filament-mouseless::mouseless.teach.change'),
+                    'dismiss' => __('filament-mouseless::mouseless.teach.dismiss'),
+                    'mute' => __('filament-mouseless::mouseless.teach.mute'),
+                ],
+            ];
+        } catch (\Throwable) {
+            return null;
+        }
+    }
+
+    /** The my-shortcuts page URL ("change shortcut" deep-link), when registered. */
+    protected function shortcutsUrl(): ?string
+    {
+        try {
+            return MyShortcuts::getUrl();
+        } catch (\Throwable) {
+            return null;
+        }
     }
 
     /**
@@ -59,7 +125,7 @@ class ScriptData implements JsonSerializable
     protected function homeUrl(): ?string
     {
         try {
-            return \Filament\Facades\Filament::getHomeUrl();
+            return Filament::getHomeUrl();
         } catch (\Throwable) {
             return null;
         }

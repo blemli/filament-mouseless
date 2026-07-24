@@ -64,7 +64,42 @@ class Keys
 
     public static function isMac(): bool
     {
-        return str_contains(request()->userAgent() ?? '', 'Mac');
+        return static::platform() === 'mac';
+    }
+
+    /** Coarse OS bucket from the user agent — keys the reserved-combo list. */
+    public static function platform(): string
+    {
+        $ua = request()->userAgent() ?? '';
+
+        // Unknown/empty UA (CLI, tests, bots) buckets as non-mac, matching the
+        // pre-2.0 isMac() behavior — 'mod' resolves to Ctrl there.
+        return match (true) {
+            str_contains($ua, 'Mac') => 'mac',
+            str_contains($ua, 'Windows') => 'windows',
+            default => 'linux',
+        };
+    }
+
+    /**
+     * The reserved (unbindable) combos for the current request's platform.
+     * Config may be keyed by platform ('all'/'mac'/'windows'/'linux') or be
+     * a flat list (the pre-2.0 format), which is treated as 'all'.
+     *
+     * @return array<int, string>
+     */
+    public static function reservedKeys(): array
+    {
+        $config = (array) config('mouseless.reserved_keys', []);
+
+        if (array_is_list($config)) {
+            return $config;
+        }
+
+        return array_values(array_unique(array_merge(
+            (array) ($config['all'] ?? []),
+            (array) ($config[static::platform()] ?? []),
+        )));
     }
 
     /**
@@ -108,15 +143,22 @@ class Keys
     /**
      * Canonical combo form: lowercase, modifiers first in fixed order,
      * key last — mirrors normalize() in resources/js/index.js so server-side
-     * comparisons match what the engine sees.
+     * comparisons match what the engine sees. The platform-neutral 'mod'
+     * resolves to ⌘ on macOS and Ctrl everywhere else.
      */
-    public static function normalize(?string $combo): ?string
+    public static function normalize(?string $combo, ?bool $mac = null): ?string
     {
         if ($combo === null || trim($combo) === '') {
             return null;
         }
 
         $parts = array_map(fn (string $p): string => strtolower(trim($p)), explode('+', $combo));
+
+        if (in_array('mod', $parts, true)) {
+            $mac ??= static::isMac();
+            $parts = array_map(fn (string $p): string => $p === 'mod' ? ($mac ? 'cmd' : 'ctrl') : $p, $parts);
+        }
+
         $mods = array_values(array_intersect(self::MODIFIERS, $parts));
         $key = '';
 
@@ -156,12 +198,11 @@ class Keys
      */
     public static function displayParts(?string $combo, ?bool $mac = null): array
     {
-        $normalized = static::normalize($combo);
+        $mac ??= static::isMac();
+        $normalized = static::normalize($combo, $mac);
         if ($normalized === null) {
             return [];
         }
-
-        $mac ??= static::isMac();
         $labels = [];
 
         foreach (explode('+', $normalized) as $part) {

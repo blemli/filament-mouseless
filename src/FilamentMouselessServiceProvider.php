@@ -2,10 +2,12 @@
 
 namespace Blemli\FilamentMouseless;
 
+use Blemli\FilamentMouseless\Commands\RenameActionsCommand;
 use Blemli\FilamentMouseless\Commands\ScanActionsCommand;
 use Blemli\FilamentMouseless\Filament\Widgets\PresetSelector;
 use Blemli\FilamentMouseless\Livewire\GotoPalette;
 use Blemli\FilamentMouseless\Livewire\HelpOverlay;
+use Blemli\FilamentMouseless\Livewire\TeachNudges;
 use Blemli\FilamentMouseless\Services\ActionDiscovery;
 use Blemli\FilamentMouseless\Services\BindingResolver;
 use Blemli\FilamentMouseless\Services\CustomActionRegistry;
@@ -48,7 +50,7 @@ class FilamentMouselessServiceProvider extends PackageServiceProvider
     public function configurePackage(Package $package): void
     {
         $package->name(static::$name)
-            ->hasCommand(ScanActionsCommand::class)
+            ->hasCommands([ScanActionsCommand::class, RenameActionsCommand::class])
             ->hasInstallCommand(function (InstallCommand $command) {
                 $command->setName('mouseless:install');
                 $command->addOption('stateless', null, InputOption::VALUE_NONE, 'Install in stateless mode (skip the per-user shortcuts migrations)');
@@ -197,6 +199,7 @@ class FilamentMouselessServiceProvider extends PackageServiceProvider
         Livewire::component('mouseless-help-overlay', HelpOverlay::class);
         Livewire::component('mouseless-goto-palette', GotoPalette::class);
         Livewire::component('mouseless-preset-selector', PresetSelector::class);
+        Livewire::component('mouseless-teach-nudges', TeachNudges::class);
 
         // Discover (and, on opted-in pages, take over) custom actions' key
         // bindings as each Filament page renders. The render event fires before
@@ -559,14 +562,20 @@ class FilamentMouselessServiceProvider extends PackageServiceProvider
     protected function getActionLabels(): array
     {
         $defaults = [
-            'create' => ['New', 'Neu', 'Anlegen', 'Create'],
-            'edit' => ['Edit', 'Bearbeiten'],
-            'delete' => ['Delete', 'Löschen'],
-            'save' => ['Save', 'Speichern'],
-            'view' => ['View', 'Anzeigen'],
-            'replicate' => ['Replicate', 'Duplicate', 'Duplizieren', 'Kopieren'],
-            'export' => ['Export', 'Exportieren'],
-            'import' => ['Import', 'Importieren'],
+            'create' => ['New', 'Neu', 'Anlegen', 'Create', 'Erstellen', 'Crear', 'Créer', 'Nuovo'],
+            'edit' => ['Edit', 'Bearbeiten', 'Editar', 'Modifier', 'Modifica'],
+            'delete' => ['Delete', 'Löschen', 'Borrar', 'Eliminar', 'Supprimer', 'Elimina'],
+            'forceDelete' => ['Force delete', 'Endgültig löschen', 'Forzar borrado', 'Supprimer définitivement', 'Forza eliminazione'],
+            'restore' => ['Restore', 'Wiederherstellen', 'Restaurar', 'Restaurer', 'Ripristina'],
+            'save' => ['Save', 'Save changes', 'Speichern', 'Guardar', 'Guardar cambios', 'Sauvegarder', 'Sauvegarder les modifications', 'Salva'],
+            'view' => ['View', 'Anzeigen', 'Ver', 'Voir', 'Vedi'],
+            'replicate' => ['Replicate', 'Duplicate', 'Duplizieren', 'Kopieren', 'Replicar', 'Duplicar', 'Dupliquer', 'Duplica'],
+            'attach' => ['Attach', 'Verknüpfen', 'Vincular', 'Attacher', 'Collega'],
+            'detach' => ['Detach', 'Trennen', 'Desvincular', 'Détacher', 'Scollega'],
+            'associate' => ['Associate', 'Verknüpfen', 'Asociar', 'Associer', 'Associa'],
+            'dissociate' => ['Dissociate', 'Trennen', 'Disociar', 'Dissocier', 'Dissocia'],
+            'export' => ['Export', 'Exportieren', 'Exportar', 'Exporter', 'Esporta'],
+            'import' => ['Import', 'Importieren', 'Importar', 'Importer', 'Importa'],
         ];
 
         $userLabels = (array) config('mouseless.action_labels', []);
@@ -587,6 +596,7 @@ class FilamentMouselessServiceProvider extends PackageServiceProvider
         return [
             'create_mouseless_presets_table',
             'create_mouseless_user_settings_table',
+            'create_mouseless_nudges_table',
         ];
     }
 }

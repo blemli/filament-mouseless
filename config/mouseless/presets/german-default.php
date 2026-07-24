@@ -3,29 +3,56 @@
 return [
     'slug' => 'german-default',
     'name' => 'Deutsch (Standard)',
-    'description' => 'Aktionen auf ihren deutschen Anfangsbuchstaben (Alt+N = Neu)',
+    'description' => 'Aktionen auf ihren deutschen Anfangsbuchstaben (Alt+E = Erstellen)',
     'locale' => 'de',
-    'version' => '1.0',
+    'version' => '2.0',
     'author' => 'blemli/filament-mouseless',
 
     'bindings' => [
-        // CRUD
-        'crud.create' => 'alt+n',  // Neu
-        'crud.edit' => 'alt+b',  // Bearbeiten
-        'crud.delete' => 'alt+l',  // Löschen
-        'crud.save' => 'alt+s',  // Speichern
-        // crud.cancel teilt sich Escape mit ui.close (gleiche Semantik).
-        'crud.view' => 'alt+a',  // Anzeigen
-        'crud.duplicate' => 'alt+k',  // Kopieren
+        // Submit-Ebene — in jeder Sprache identisch ('mod' = ⌘ auf macOS, sonst Ctrl).
+        'crud.submit' => 'mod+Enter',
+        'crud.save' => 'mod+s',
+        'crud.create-another' => 'mod+shift+Enter',
+        'list.select-all' => 'mod+a', // nur im Listen-Modus, nie in Eingabefeldern
+        'record.copy-markdown' => 'mod+c', // nur wenn nichts markiert ist
+        'record.print' => 'mod+p', // Cheatsheet → Drucken-Aktion → Browser-Druck
+        'nav.command-palette' => 'mod+k',
 
-        // List
+        // Datensatz-Aktionen — Alt + Anfangsbuchstabe.
+        'crud.create' => 'alt+e', // Erstellen (Filaments eigene Beschriftung)
+        'crud.edit' => 'alt+b', // Bearbeiten
+        'crud.view' => 'alt+a', // Anzeigen
+        'crud.delete' => 'alt+l', // Löschen
+        'crud.force-delete' => 'alt+shift+l', // Endgültig löschen — das „härtere" Löschen
+        'crud.restore' => 'alt+w', // Wiederherstellen
+        'crud.duplicate' => 'alt+d', // Duplizieren
+        'crud.attach' => 'alt+v', // Verknüpfen (attach / associate)
+        'crud.detach' => 'alt+t', // Trennen (detach / dissociate)
+        // crud.cancel teilt sich Escape mit ui.close (gleiche Semantik).
+        'record.history' => 'alt+h', // Historie
+        'record.merge' => 'alt+z', // Zusammenführen
+        'record.split' => 'alt+shift+z', // Zerteilen
+        'record.comment' => 'alt+k', // Kommentieren
+        'record.approve' => 'alt+g', // Genehmigen
+        'record.reject' => 'alt+x', // X = durchstreichen, in jeder Sprache gleich
+        'record.archive' => 'alt+shift+a', // Archivieren
+        'record.favorite' => 'alt+m', // Merken
+        'record.watch' => 'alt+shift+b', // Beobachten
+        'record.lock' => 'alt+s', // Sperren
+        'record.share' => 'alt+f', // Freigeben
+
+        // Tabellen-Steuerung — Alt+Shift + Anfangsbuchstabe.
+        'list.filter' => 'alt+shift+f', // Filter
+        'list.group' => 'alt+shift+g',
+        'list.sort' => 'alt+shift+o', // Ordnen
+        'list.columns' => 'alt+shift+s', // Spalten
+        'list.bulk-action' => 'alt+shift+m', // Mehrfachaktionen
+        'list.export' => 'alt+shift+e', // Exportieren
+        'list.import' => 'alt+shift+i', // Importieren
+
+        // Listen-Navigation — feste Tasten.
         'list.search' => '/',
-        'list.filter' => 'alt+f',  // Filtern
         'list.refresh' => 'F5',
-        'list.export' => 'alt+e',  // Exportieren
-        'list.import' => 'alt+i',  // Importieren
-        'list.select-all' => 'alt+shift+a', // Alle (shift to avoid clash with Anzeigen)
-        'list.bulk-action' => 'alt+shift+b',
         'list.next-page' => 'alt+ArrowRight',
         'list.prev-page' => 'alt+ArrowLeft',
         'list.next-row' => 'j', // vim runter
@@ -34,25 +61,14 @@ return [
         'list.select-next-row' => 'shift+j', // Auswahl nach unten erweitern
         'list.select-prev-row' => 'shift+k', // Auswahl nach oben erweitern
 
-        // Record
-        'record.print' => 'alt+d',  // Drucken
-        'record.history' => 'alt+v',  // Verlauf
-        'record.comment' => 'alt+m',  // Anmerkung
-        'record.archive' => 'alt+r',  // Archivieren
-        'record.approve' => 'alt+g',  // Genehmigen
-        'record.reject' => 'alt+shift+r', // Ablehnen (no good DE letter)
-        'record.merge' => 'alt+z',  // Zusammenführen
-
-        // Navigation
-        'nav.goto' => 'g', // Leader: öffnet die „Springe zu"-Palette (Name eines Nav-Eintrags tippen)
-        'nav.dashboard' => 'alt+ArrowUp', // Erstes Nav-Item (Dashboard / Startseite)
-        'nav.profile' => 'alt+shift+p', // Profil
-        'nav.logout' => 'alt+shift+q',
-        'nav.command-palette' => 'cmd+k',
-        'nav.recently-viewed' => 'alt+shift+z', // zuletzt
-        'nav.notifications' => 'alt+shift+n',
-
-        // UI
+        // Oberfläche — Ctrl+Alt, in jeder Sprache identisch.
+        'nav.goto' => 'g', // Leader: öffnet die „Springe zu"-Palette
+        'nav.dashboard' => 'alt+ArrowUp', // Startseite des Panels
+        'nav.profile' => 'ctrl+alt+p',
+        'nav.logout' => 'ctrl+alt+q', // Q = quit
+        'nav.language' => 'ctrl+alt+g', // G = Globus 🌐
+        'nav.recently-viewed' => 'ctrl+alt+r',
+        'nav.notifications' => 'ctrl+alt+n',
         'ui.help' => '?',
         'ui.close' => 'Escape',
         'ui.next-tab' => 'alt+ArrowDown',

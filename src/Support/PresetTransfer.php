@@ -2,6 +2,7 @@
 
 namespace Blemli\FilamentMouseless\Support;
 
+use Blemli\FilamentMouseless\FilamentMouselessPlugin;
 use Illuminate\Support\Facades\Validator;
 
 /** JSON import/export of presets — shared by the preset-selector widget and (later) the admin preset editor. */
@@ -60,7 +61,7 @@ class PresetTransfer
         }
 
         $errors = [];
-        $reserved = array_map(Keys::normalize(...), (array) config('mouseless.reserved_keys', []));
+        $reserved = array_map(Keys::normalize(...), Keys::reservedKeys());
         $seen = [];
 
         foreach ($decoded['bindings'] as $actionId => $combo) {
@@ -82,7 +83,8 @@ class PresetTransfer
 
             $normalized = Keys::normalize($combo);
 
-            if (in_array($normalized, $reserved, true)) {
+            if (in_array($normalized, $reserved, true)
+                && ! FilamentMouselessPlugin::prohibitionsAreSoft()) {
                 $errors[] = __('filament-mouseless::mouseless.profile.reserved_key', ['key' => $combo]);
 
                 continue;

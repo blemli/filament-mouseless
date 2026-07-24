@@ -163,6 +163,8 @@ body.fi-mouseless-mobile:not(.fi-mouseless-kbd) .fi-mouseless-shortcuts-link {
 }
 
 .fi-mouseless-help-kbd {
+    /* Slash the zero so ⌥⇧O (letter, "Order") can never read as ⌥⇧0. */
+    font-variant-numeric: slashed-zero;
     background: var(--mouseless-help-kbd-bg);
     padding: 0.125rem 0.5rem;
     border-radius: 0.25rem;
@@ -554,5 +556,49 @@ body.fi-mouseless-mobile:not(.fi-mouseless-kbd) .fi-mouseless-shortcuts-link {
     .fi-mouseless-layout-main .fi-ta-group-header .fi-ta-group-description {
         position: static;
         margin: 0.5rem 0 0;
+    }
+}
+
+/* ---------- shortcut discovery ----------
+ * Accelerator underline on each action's shortcut initial (Windows style) and
+ * the Alt-hold hint badges that pop over every reachable target. */
+
+.fi-mouseless-accel {
+    text-decoration: underline;
+    text-decoration-thickness: 2px;
+    text-underline-offset: 3px;
+    text-decoration-skip-ink: none;
+}
+
+#fi-mouseless-hints {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 999999;
+}
+
+.fi-mouseless-hint {
+    font-variant-numeric: slashed-zero;
+    position: absolute;
+    background: var(--primary-600, #4f46e5);
+    color: #fff;
+    font-weight: 700;
+    font-size: 1rem;
+    line-height: 1;
+    padding: 0.45rem 0.6rem;
+    border-radius: 0.5rem;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
+    font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+    animation: fi-mouseless-hint-pop 120ms ease-out;
+}
+
+.dark .fi-mouseless-hint {
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.7);
+}
+
+@keyframes fi-mouseless-hint-pop {
+    from {
+        transform: scale(0.6);
+        opacity: 0;
     }
 }

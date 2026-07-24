@@ -3,6 +3,7 @@
 namespace Blemli\FilamentMouseless\Services;
 
 use Blemli\FilamentMouseless\Models\UserSetting;
+use Blemli\FilamentMouseless\Support\Keys;
 use Blemli\FilamentMouseless\Support\Shield;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Log;
@@ -149,7 +150,7 @@ class BindingResolver
 
     public function reservedKeys(): array
     {
-        return (array) config('mouseless.reserved_keys', []);
+        return Keys::reservedKeys();
     }
 
     public function listModeIgnoreSelectors(): array

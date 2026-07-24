@@ -29,24 +29,35 @@ return [
     ],
 
     // Nested so Laravel's translator (which uses dots as separators) finds them.
+    // Labels follow Filament's own wording wherever a native action exists, so
+    // the shortcut initial matches the button the user actually sees.
     'action' => [
         'crud' => [
-            'create' => 'Create',
+            'create' => 'New',
             'edit' => 'Edit',
             'delete' => 'Delete',
+            'force-delete' => 'Force delete',
+            'restore' => 'Restore',
             'save' => 'Save',
+            'submit' => 'Submit form',
+            'create-another' => 'Create & create another',
             'cancel' => 'Cancel',
             'view' => 'View',
-            'duplicate' => 'Duplicate',
+            'duplicate' => 'Replicate',
+            'attach' => 'Link (attach)',
+            'detach' => 'Unlink (detach)',
         ],
         'list' => [
             'search' => 'Search',
-            'filter' => 'Filter',
+            'filter' => 'Filters',
+            'group' => 'Group by',
+            'sort' => 'Order by',
+            'columns' => 'Columns',
             'refresh' => 'Refresh',
             'export' => 'Export',
             'import' => 'Import',
             'select-all' => 'Select all',
-            'bulk-action' => 'Bulk action',
+            'bulk-action' => 'Bulk actions',
             'next-page' => 'Next page',
             'prev-page' => 'Previous page',
             'next-row' => 'Next row',
@@ -63,12 +74,19 @@ return [
             'approve' => 'Approve',
             'reject' => 'Reject',
             'merge' => 'Merge',
+            'split' => 'Split',
+            'copy-markdown' => 'Copy as Markdown',
+            'favorite' => 'Bookmark',
+            'watch' => 'Watch',
+            'lock' => 'Lock',
+            'share' => 'Share',
         ],
         'nav' => [
             'goto' => 'Go to…',
             'dashboard' => 'Dashboard',
             'profile' => 'Profile',
             'logout' => 'Logout',
+            'language' => 'Language',
             'command-palette' => 'Command palette',
             'recently-viewed' => 'Recently viewed',
             'notifications' => 'Notifications',
@@ -97,11 +115,29 @@ return [
         'preset_rejected' => 'Preset rejected.',
     ],
 
+    'teach' => [
+        'title' => 'You could have just hit :key',
+        'body' => '“:label” works without the mouse.',
+        'change' => 'Change shortcut',
+        'dismiss' => "Don't show again",
+        'mute' => "Don't show any tips",
+        'unmute' => 'Show shortcut tips again',
+        'unmuted' => 'Shortcut tips are back on.',
+        'state' => [
+            'unused' => 'Unused',
+            'taught' => 'Taught',
+            'dismissed' => 'Dismissed',
+        ],
+        'clear_tooltip' => 'Click to teach this shortcut again',
+        'cleared' => 'This shortcut will be taught again.',
+    ],
+
     'profile' => [
         'title' => 'My shortcuts',
         'nav_label' => 'Shortcuts',
         'binding_saved' => 'Shortcut saved.',
         'reserved_key' => '“:key” is reserved and cannot be bound.',
+        'reserved_key_warning' => '“:key” is usually owned by the browser or OS — it may not fire.',
     ],
 
     'table' => [
@@ -111,6 +147,7 @@ return [
             'key' => 'Shortcut',
             'default' => 'Default shortcut',
             'status' => 'Status',
+            'teach' => 'Tips',
         ],
         'status' => [
             'changed' => 'Customized',

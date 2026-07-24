@@ -10,6 +10,7 @@ use Blemli\FilamentMouseless\Support\ShortcutConflicts;
 use Closure;
 use Filament\Actions\Action;
 use Filament\Contracts\Plugin;
+use Filament\Facades\Filament;
 use Filament\Panel;
 use Filament\Support\Facades\FilamentView;
 use Illuminate\Support\Facades\Blade;
@@ -21,6 +22,20 @@ class FilamentMouselessPlugin implements Plugin
     protected bool $registerSettingsPage = false;
 
     protected bool $renderHelpOverlay = true;
+
+    protected bool $renderUnderlines = true;
+
+    protected bool $renderHints = false;
+
+    protected bool $warnOnProhibited = false;
+
+    protected bool $teachEnabled = false;
+
+    protected int $teachDeferDays = 0;
+
+    protected bool $escapeToDashboardEnabled = false;
+
+    protected ?string $escapeToTarget = null;
 
     protected bool $renderGoto = true;
 
@@ -137,6 +152,150 @@ class FilamentMouselessPlugin implements Plugin
     public function disableHelpOverlay(): static
     {
         return $this->helpOverlay(false);
+    }
+
+    /**
+     * Accelerator underlines — the shortcut initial underlined in every action
+     * button's label (Windows style). On by default; pass false (or call
+     * disableUnderlines()) to keep button labels untouched. The ⌥-hold hint
+     * badges are unaffected.
+     */
+    public function underlines(bool $enabled = true): static
+    {
+        $this->renderUnderlines = $enabled;
+
+        return $this;
+    }
+
+    public function disableUnderlines(): static
+    {
+        return $this->underlines(false);
+    }
+
+    public static function underlinesEnabled(): bool
+    {
+        return static::safeGet()?->renderUnderlines ?? true;
+    }
+
+    /**
+     * ⌥-hold hint badges — big key badges popping over every reachable target
+     * while the bare Alt/Option key is held outside a text field. Opt-in:
+     * call ->hints() to enable.
+     */
+    public function hints(bool $enabled = true): static
+    {
+        $this->renderHints = $enabled;
+
+        return $this;
+    }
+
+    public static function hintsEnabled(): bool
+    {
+        return static::safeGet()?->renderHints ?? false;
+    }
+
+    /**
+     * Teach missed shortcuts: whenever the user MOUSE-clicks something that
+     * has a keyboard shortcut, a notification points it out ("you could have
+     * just hit ⌥E") with actions to change the shortcut, silence that action,
+     * or mute teaching entirely. At most one nudge per page view, and repeat
+     * nudges for the same action back off — hourly, then daily, then weekly —
+     * until the user either uses the shortcut once (learned: never nudged
+     * again) or dismisses it. Opt-in; needs the package migrations (per-user
+     * state), so ->stateless() panels ignore it.
+     */
+    public function teach(bool $enabled = true): static
+    {
+        $this->teachEnabled = $enabled;
+
+        return $this;
+    }
+
+    public static function teachingEnabled(): bool
+    {
+        $plugin = static::safeGet();
+
+        return ($plugin?->teachEnabled ?? false) && ! ($plugin?->isStateless() ?? false);
+    }
+
+    /**
+     * Grace period for newcomers: no teach notifications during a user's
+     * first X days (measured from their account's created_at). Someone still
+     * finding the buttons shouldn't be told to skip them.
+     */
+    public function deferDays(int $days): static
+    {
+        $this->teachDeferDays = max(0, $days);
+
+        return $this;
+    }
+
+    public static function teachDeferredDays(): int
+    {
+        return static::safeGet()?->teachDeferDays ?? 0;
+    }
+
+    /**
+     * Reserved (browser/OS) combos are hard-blocked by default: the recorder
+     * refuses them, imports reject them, and the engine never registers them.
+     * Call this to downgrade the block to a warning — the combo is accepted
+     * and registered at the user's own risk; the browser may still win.
+     */
+    public function onlyWarnOnProhibited(bool $enabled = true): static
+    {
+        $this->warnOnProhibited = $enabled;
+
+        return $this;
+    }
+
+    public static function prohibitionsAreSoft(): bool
+    {
+        return static::safeGet()?->warnOnProhibited ?? false;
+    }
+
+    /**
+     * Escape as an exit: once there is nothing left to close (no overlay, no
+     * selection, no record page, no focus), another Esc leaves for the
+     * dashboard — unless the list carries filter/search/tab/group state the
+     * user would lose. Pass a URL or a Filament page class to escape to that
+     * page instead of the dashboard.
+     */
+    public function escapeToDashboard(?string $target = null): static
+    {
+        $this->escapeToDashboardEnabled = true;
+        $this->escapeToTarget = $target;
+
+        return $this;
+    }
+
+    /** The resolved escape-target URL, or null when the feature is off. */
+    public static function escapeTarget(): ?string
+    {
+        $plugin = static::safeGet();
+        if (! $plugin?->escapeToDashboardEnabled) {
+            return null;
+        }
+
+        $target = $plugin->escapeToTarget;
+
+        if ($target === null) {
+            try {
+                return Filament::getHomeUrl() ?: '/';
+            } catch (\Throwable) {
+                return '/';
+            }
+        }
+
+        // A Filament page class resolves to its panel URL.
+        if (class_exists($target) && method_exists($target, 'getUrl')) {
+            try {
+                return $target::getUrl();
+            } catch (\Throwable) {
+                return null;
+            }
+        }
+
+        return $target;
     }
 
     /**
@@ -352,6 +511,15 @@ class FilamentMouselessPlugin implements Plugin
                 'panels::body.end',
                 fn (): string => Shield::userMayUse()
                     ? Blade::render('@livewire(\Blemli\FilamentMouseless\Livewire\GotoPalette::class)')
+                    : '',
+            );
+        }
+
+        if ($this->teachEnabled && ! $this->stateless) {
+            FilamentView::registerRenderHook(
+                'panels::body.end',
+                fn (): string => Shield::userMayUse()
+                    ? Blade::render('@livewire(\Blemli\FilamentMouseless\Livewire\TeachNudges::class)')
                     : '',
             );
         }
