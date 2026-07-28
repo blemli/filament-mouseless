@@ -188,7 +188,7 @@ It rewrites only the name inside `::make()` and flags any other references to th
 
 ### v2
 
-Reorder Rows,  Multipanel support, Multitenant Support, ~~Tutorial on missed Shortcuts~~, Statistics on avoided clicks, Let Users share Presets with eachother, Let Admins Moderate Shared Presets (remove unused ones &see which action is the most overwritten, most used),  `shorcuts:list` command, Detect already existing shortcuts of actions (artisan?), ~~singleton preset~~, Free Key Visualisation, Fire Laravel Events, unattended install,  translate to many languages, vimperator mode to jump to fields, uninstall command, support advanced tables, Integrate with Spotlight to directyl run relevant actions, AskPhil, Kanban, ActivityLog (opt-in), and probably even more!
+Reorder Rows,  Multipanel support, Multitenant Support, ~~Tutorial on missed Shortcuts~~, ~~Statistics on avoided clicks~~, Let Users share Presets with eachother, Let Admins Moderate Shared Presets (remove unused ones &see which action is the most overwritten, most used),  `shorcuts:list` command, Detect already existing shortcuts of actions (artisan?), ~~singleton preset~~, Free Key Visualisation, Fire Laravel Events, unattended install,  vimperator mode to jump to fields, uninstall command, support advanced tables, Integrate with Spotlight to directyl run relevant actions, AskPhil, Kanban, ActivityLog (opt-in), and probably even more!
 
 ### Languages
 
@@ -278,6 +278,38 @@ Users see just the shortcuts table — no preset dropdown, no create/rename/dele
 Because that per-user layout lives in the database, singleton mode still needs the package migrations — it sits between the default mode (full preset UI) and `->stateless()` (no customization at all). Combining `->singleton()` with `->stateless()` is contradictory; stateless wins and a warning is logged.
 
 Singleton mode hides presets from *end users* only: the opt-in admin page (`->settingsPage()`) keeps its preset vocabulary, since whoever configures the default layout needs to see what they're configuring.
+
+#### Statistics on avoided clicks
+
+Every shortcut fired is a click you didn't make. Opt in to counting them:
+
+```php
+->plugins([
+  FilamentMouselessPlugin::make()
+      ->statistics(),
+])
+```
+
+The engine counts two things per action: keyboard invocations (each one = a click avoided) and mouse clicks on targets that *have* a shortcut — the two together give every action a keyboard/mouse ratio. Counts are buffered client-side and flushed in small batches; storage is one row per user per day with a JSON counter map (no per-action rows), so the table stays tiny.
+
+What you get:
+
+- **A statistics card** on `/my-shortcuts` (below the preset selector; in singleton mode it stands alone): lifetime "clicks avoided" headline, an 8-week keyboard-share sparkline (ratio of keys to clicks, so a quiet week doesn't read as a relapse), and *untapped actions* — the shortcuts you still mostly click, with their key combos as a nudge.
+- **The same card as a dashboard widget** — register it like any Filament widget; it hides itself while statistics aren't tracked:
+
+  ```php
+  use Blemli\FilamentMouseless\MouselessWidget;
+
+  ->widgets([MouselessWidget::class])
+  ```
+
+  If your dashboard page overrides `getWidgets()`, panel-level registration won't reach it — add `MouselessWidget::class` to that list instead.
+- **An "Invoked" table column**, hidden by default — toggle it on and sort descending for your personal most-used-shortcuts ranking.
+- **An all-users block** on the admin page (`->settingsPage()`): org-wide clicks avoided, active users, most-used shortcuts, and a keyboard leaderboard. Hide it via `mouseless.admin.statistics => false`.
+- **Milestone congratulations** at 100, 1'000 and 10'000 lifetime shortcut uses.
+- **Smarter teaching**: with `->teach()` also on, the one-nudge-per-page slot is spent on your *most-clicked* still-unlearned actions first — a one-off click no longer burns the nudge a frequent offender should have gotten. Without statistics, teach behaves exactly as before.
+
+Statistics need the `mouseless_statistics` migration (re-publish the package migrations when upgrading); like the other per-user features, `->stateless()` panels ignore the call.
 
 ### Overlay
 

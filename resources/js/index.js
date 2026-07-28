@@ -50,6 +50,11 @@ function bootMouseless() {
     // a no-op when teaching is off.
     let teachRecordUsed = () => {};
 
+    // Stats hook: every keyboard dispatch (kind 'kb') and every trusted mouse
+    // click on a target that has a shortcut (kind 'click') reports here.
+    // Assigned by setupStats(); stays a no-op when statistics are off.
+    let statsRecord = () => {};
+
     console.log(TAG, 'bindings count=', Object.keys(bindings).length);
     console.log(TAG, 'bindings=', bindings);
     console.log(TAG, 'reserved=', [...reserved]);
@@ -107,6 +112,9 @@ function bootMouseless() {
 
     // ---- teach missed shortcuts: mouse click on a shortcut's target → nudge ----
     setupTeach();
+
+    // ---- usage statistics: count keyboard uses + bypassing clicks, flush in batches ----
+    setupStats();
     console.log(TAG, '=== boot complete ===');
 
     // Remember which row the cursor was on, per list URL (sessionStorage), and
@@ -343,6 +351,10 @@ function bootMouseless() {
         if (!teach || typeof window.FilamentNotification !== 'function') return;
         const states = teach.states || {};
         const t = teach.strings || {};
+        // Statistics-informed focus: the server ranks the user's most-clicked
+        // still-teachable actions. Empty (statistics off, or nothing ranked
+        // yet) = no restriction — teach behaves exactly as without stats.
+        const clickPriority = Array.isArray(teach.clickPriority) ? teach.clickPriority : [];
         let muted = !!teach.muted;
         let nudgedThisPage = false;
         document.addEventListener('livewire:navigated', () => { nudgedThisPage = false; });
@@ -386,6 +398,12 @@ function bootMouseless() {
             }
 
             if (muted || nudgedThisPage || st.dismissed || st.learned) return;
+            // Spend the one nudge per page on a frequent offender: actions
+            // outside the click-priority top list wait their turn.
+            if (clickPriority.length && !clickPriority.includes(actionId)) {
+                console.log(TAG, 'teach:', actionId, 'not among the most-clicked actions, saving the nudge');
+                return;
+            }
             if (st.nextAt && Date.now() < st.nextAt) {
                 console.log(TAG, 'teach:', actionId, 'backing off until', new Date(st.nextAt).toISOString());
                 return;
@@ -663,6 +681,7 @@ function bootMouseless() {
                 e.preventDefault();
                 e.stopPropagation();
                 teachRecordUsed('ui.tab-jump');
+                statsRecord('ui.tab-jump', 'kb');
                 tab.click();
                 tab.focus();
                 return;
@@ -740,6 +759,7 @@ function bootMouseless() {
     function dispatch(actionId) {
         console.log(TAG, 'dispatch start', actionId);
         teachRecordUsed(actionId);
+        statsRecord(actionId, 'kb');
 
         // UI actions
         if (actionId === 'ui.help') {
@@ -1740,6 +1760,131 @@ function bootMouseless() {
 
         parts.push(k);
         return parts.join('+');
+    }
+
+    // ---- usage statistics (plugin ->statistics(), per-user daily rows) ----
+    // Counts two things per action: keyboard invocations (each one = a click
+    // avoided) and trusted mouse clicks on targets that HAVE a shortcut (the
+    // other side of the ratio, feeds the "untapped actions" list). Counts are
+    // buffered and flushed in batches to the StatisticsFlush Livewire
+    // component; unsent counts survive tab closes via localStorage.
+    function setupStats() {
+        if (!cfg.stats) return;
+        const flushMs = cfg.stats.flushMs || 10000;
+        const BUFFER_KEY = 'mouseless_stats_buffer';
+        let buffer = {};
+        let flushTimer = null;
+
+        // Counts a closed tab never flushed: fold them into this session.
+        try {
+            const stale = JSON.parse(localStorage.getItem(BUFFER_KEY) || 'null');
+            localStorage.removeItem(BUFFER_KEY);
+            if (stale && typeof stale === 'object') buffer = stale;
+        } catch {}
+
+        const merge = (events) => {
+            for (const [id, counts] of Object.entries(events)) {
+                const entry = buffer[id] ??= { kb: 0, click: 0 };
+                entry.kb += counts.kb || 0;
+                entry.click += counts.click || 0;
+            }
+        };
+
+        statsRecord = (actionId, kind) => {
+            const entry = buffer[actionId] ??= { kb: 0, click: 0 };
+            entry[kind]++;
+            if (!flushTimer) flushTimer = setTimeout(flush, flushMs);
+        };
+
+        function flush() {
+            flushTimer = null;
+            const events = buffer;
+            if (!Object.keys(events).length) return;
+            buffer = {};
+            try {
+                window.Livewire.dispatch('mouseless-stats-flush', { events });
+            } catch {
+                merge(events); // Livewire not ready — retry with the next batch
+            }
+        }
+
+        // Leaving the page for real (close, hard navigation): an XHR flush
+        // can't be trusted to finish — park unsent counts in localStorage,
+        // the next page load sends them. SPA morphs keep this context alive,
+        // so the timer keeps working there.
+        window.addEventListener('pagehide', () => {
+            if (flushTimer) { clearTimeout(flushTimer); flushTimer = null; }
+            if (!Object.keys(buffer).length) return;
+            try {
+                localStorage.setItem(BUFFER_KEY, JSON.stringify(buffer));
+                buffer = {};
+            } catch {}
+        });
+
+        // Same guards as the teach layer: only trusted pointer clicks count,
+        // never our own synthetic clicks or keyboard-activated buttons, and
+        // never clicks on mouseless's own chrome.
+        document.addEventListener('click', (e) => {
+            if (!e.isTrusted || e.detail === 0) return;
+            if (e.target.closest?.('.fi-no, [data-mouseless-overlay], [data-mouseless-goto], [data-mouseless-teach]')) return;
+            const actionId = statsClickAction(e);
+            if (actionId) statsRecord(actionId, 'click');
+        }, true);
+
+        // Flush the buffered pre-navigation counts shortly after each SPA
+        // morph settles — keeps "invoked" fresh when the user lands on
+        // /my-shortcuts right after using shortcuts elsewhere.
+        document.addEventListener('livewire:navigated', () => {
+            if (flushTimer) clearTimeout(flushTimer);
+            flushTimer = setTimeout(flush, 1000);
+        });
+
+        console.log(TAG, 'stats: armed, flushing every', flushMs, 'ms');
+    }
+
+    // What shortcut a trusted mouse click bypassed. The stats counterpart of
+    // the teach layer's hit test — same rules, but it only needs the action
+    // id (no notification text), and it must work with teach disabled.
+    function statsClickAction(e) {
+        const el = e.target;
+        const clickRow = el.closest?.('.fi-ta-row, .fi-ta-record') ?? null;
+        const bound = (id) => Object.values(keyToAction).includes(id);
+
+        // Action buttons first — a button inside a row wins over the row rule.
+        for (const actionId of Object.values(keyToAction)) {
+            let target = null;
+            try { target = resolveActionTarget(actionId, clickRow); } catch { continue; }
+            if (target && (target === el || target.contains(el))) return actionId;
+        }
+
+        // Row checkbox → Space toggles the row.
+        if (clickRow && el.closest?.('.fi-ta-record-checkbox, input[type="checkbox"]')) {
+            return bound('list.toggle-row') ? 'list.toggle-row' : null;
+        }
+
+        // Row click opens the record → j/k + Enter.
+        if (clickRow && el.closest?.('a, button')) {
+            return bound('list.next-row') ? 'list.next-row' : null;
+        }
+
+        // Tab click → ⌥1–⌥9 (engine-level; only the first nine have a key).
+        if (el.closest?.('.fi-tabs-item')) {
+            const index = tabItems().indexOf(el.closest('.fi-tabs-item'));
+            return index >= 0 && index < 9 ? 'ui.tab-jump' : null;
+        }
+
+        // Sidebar navigation → the "go to" palette.
+        if (el.closest?.('.fi-sidebar-nav a, .fi-sidebar a.fi-sidebar-item-btn')) {
+            return bound('nav.goto') ? 'nav.goto' : null;
+        }
+
+        // Breadcrumb back to the list from a record page → Escape.
+        if (el.closest?.('.fi-breadcrumbs a')
+            && /^(\/[^\/]+\/[^\/]+)\/(create|\d+(\/(edit|view))?)$/.test(window.location.pathname)) {
+            return bound('ui.close') ? 'ui.close' : null;
+        }
+
+        return null;
     }
 }
 

@@ -395,6 +395,9 @@ body.fi-mouseless-mobile:not(.fi-mouseless-kbd) .fi-mouseless-shortcuts-link {
     grid-column: 1;
     grid-row: 1;
     min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
 }
 
 .fi-mouseless-layout-main {
@@ -427,6 +430,113 @@ body.fi-mouseless-mobile:not(.fi-mouseless-kbd) .fi-mouseless-shortcuts-link {
 
 .fi-mouseless-widget-stack {
     gap: 0.75rem;
+}
+
+/* ---------- statistics (widget on my-shortcuts + admin block) ---------- */
+
+.fi-mouseless-stats {
+    gap: 1rem;
+}
+
+.fi-mouseless-stats-headline {
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.fi-mouseless-stats-number {
+    font-size: 1.875rem;
+    font-weight: 700;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+}
+
+.fi-mouseless-stats-caption {
+    color: var(--mouseless-help-muted);
+    font-size: 0.875rem;
+}
+
+.fi-mouseless-stats-trend svg {
+    display: block;
+    width: 100%;
+    height: 2rem;
+    color: var(--mouseless-help-accent, currentColor);
+    opacity: 0.8;
+}
+
+.fi-mouseless-stats-trend-caption {
+    display: block;
+    margin-top: 0.25rem;
+    font-size: 0.75rem;
+    color: var(--mouseless-help-muted);
+}
+
+.fi-mouseless-stats-subheading {
+    font-weight: 500;
+    font-size: 0.875rem;
+    margin-bottom: 0.25rem;
+}
+
+.fi-mouseless-stats-untapped ul {
+    list-style: none;
+    margin: 0.5rem 0 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.fi-mouseless-stats-untapped li {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.fi-mouseless-stats-untapped-label {
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.fi-mouseless-stats-untapped-counts {
+    font-size: 0.75rem;
+    color: var(--mouseless-help-muted);
+}
+
+.fi-mouseless-admin-stats {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.fi-mouseless-admin-stats-totals {
+    display: flex;
+    gap: 3rem;
+    flex-wrap: wrap;
+}
+
+.fi-mouseless-admin-stat {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.fi-mouseless-admin-stats-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    max-width: 24rem;
+}
+
+.fi-mouseless-admin-stats-list li {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    font-size: 0.875rem;
 }
 
 .fi-mouseless-select-row {

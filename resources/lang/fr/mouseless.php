@@ -112,6 +112,11 @@ return [
         'saved' => 'Paramètres sauvegardés.',
         'preset_approved' => 'Preset « :name » approuvé.',
         'preset_rejected' => 'Preset rejeté.',
+        'stats_heading' => 'Statistiques — tous les utilisateurs',
+        'stats_users' => 'utilisateurs actifs',
+        'stats_top_actions' => 'Raccourcis les plus utilisés',
+        'stats_leaderboard' => 'Classement clavier',
+        'stats_unknown_user' => 'Utilisateur n°:id',
     ],
 
     'teach' => [
@@ -131,6 +136,20 @@ return [
         'cleared' => 'Ce raccourci sera enseigné à nouveau.',
     ],
 
+    'stats' => [
+        'heading' => 'Statistiques',
+        'clicks_avoided' => 'clic évité|clics évités',
+        'trend_label' => 'Part du clavier par semaine (8 dernières semaines)',
+        'untapped_heading' => 'Ici, vous cliquez encore',
+        'untapped_hint' => 'Ces actions ont un raccourci — essayez les touches.',
+        'untapped_counts' => ':clicks× cliqué · :kb× au clavier',
+        'empty' => 'Rien de compté pour l\'instant — utilisez quelques raccourcis.',
+        'milestone' => [
+            'title' => '🎉 :count raccourcis utilisés !',
+            'body' => 'Votre clavier vous a déjà évité :count clics. Continuez !',
+        ],
+    ],
+
     'profile' => [
         'title' => 'Mes raccourcis',
         'nav_label' => 'Raccourcis',
@@ -147,6 +166,7 @@ return [
             'default' => 'Raccourci par défaut',
             'status' => 'Statut',
             'teach' => 'Astuces',
+            'invoked' => 'Utilisations',
         ],
         'status' => [
             'changed' => 'Personnalisé',

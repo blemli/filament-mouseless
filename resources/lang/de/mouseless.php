@@ -112,6 +112,11 @@ return [
         'saved' => 'Einstellungen gespeichert.',
         'preset_approved' => 'Preset „:name" freigegeben.',
         'preset_rejected' => 'Preset abgelehnt.',
+        'stats_heading' => 'Statistik — alle Benutzer',
+        'stats_users' => 'aktive Benutzer',
+        'stats_top_actions' => 'Meistgenutzte Kürzel',
+        'stats_leaderboard' => 'Tastatur-Bestenliste',
+        'stats_unknown_user' => 'Benutzer #:id',
     ],
 
     'teach' => [
@@ -131,6 +136,20 @@ return [
         'cleared' => 'Dieses Kürzel wird wieder gelehrt.',
     ],
 
+    'stats' => [
+        'heading' => 'Statistik',
+        'clicks_avoided' => 'Klick vermieden|Klicks vermieden',
+        'trend_label' => 'Tastatur-Anteil pro Woche (letzte 8 Wochen)',
+        'untapped_heading' => 'Hier klickst du noch',
+        'untapped_hint' => 'Diese Aktionen haben ein Kürzel — probier die Tasten.',
+        'untapped_counts' => ':clicks× geklickt · :kb× per Taste',
+        'empty' => 'Noch nichts gezählt — benutz ein paar Kürzel.',
+        'milestone' => [
+            'title' => '🎉 :count Tastenkürzel benutzt!',
+            'body' => 'Deine Tastatur hat dir schon :count Klicks erspart. Weiter so!',
+        ],
+    ],
+
     'profile' => [
         'title' => 'Meine Tastenkürzel',
         'nav_label' => 'Tastenkürzel',
@@ -147,6 +166,7 @@ return [
             'default' => 'Standard-Kürzel',
             'status' => 'Status',
             'teach' => 'Tipps',
+            'invoked' => 'Benutzt',
         ],
         'status' => [
             'changed' => 'Angepasst',

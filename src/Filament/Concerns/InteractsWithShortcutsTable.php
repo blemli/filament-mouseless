@@ -6,6 +6,7 @@ use Blemli\FilamentMouseless\Facades\FilamentMouseless;
 use Blemli\FilamentMouseless\FilamentMouselessPlugin;
 use Blemli\FilamentMouseless\Models\Nudge;
 use Blemli\FilamentMouseless\Models\Preset;
+use Blemli\FilamentMouseless\Models\Statistic;
 use Blemli\FilamentMouseless\Services\CustomActionRegistry;
 use Blemli\FilamentMouseless\Support\ActionMeta;
 use Blemli\FilamentMouseless\Support\Keys;
@@ -155,6 +156,17 @@ trait InteractsWithShortcutsTable
                         ->action(fn (array $record) => $this->clearShortcutTeach($record))
                         ->toggleable(isToggledHiddenByDefault: true),
                 ] : []),
+                // Lifetime keyboard invocations per action (plugin
+                // ->statistics()). Hidden by default; toggle it on and sort
+                // descending for a "my most used shortcuts" view.
+                ...($this->hasShortcutsStatistics() ? [
+                    TextColumn::make('invoked')
+                        ->label(__('filament-mouseless::mouseless.table.columns.invoked'))
+                        ->numeric()
+                        ->alignEnd()
+                        ->sortable()
+                        ->toggleable(isToggledHiddenByDefault: true),
+                ] : []),
             ])
             ->filters([
                 TernaryFilter::make('changed')
@@ -288,6 +300,24 @@ trait InteractsWithShortcutsTable
                         ->deselectRecordsAfterCompletion(),
                 ]),
             ]);
+    }
+
+    /**
+     * Whether the statistics layer is live for this user — gates the
+     * "Invoked" column here and the widget/aside on the my-shortcuts page
+     * (public: blade templates check it too).
+     */
+    public function hasShortcutsStatistics(): bool
+    {
+        if (! FilamentMouselessPlugin::statisticsEnabled() || ! auth()->check()) {
+            return false;
+        }
+
+        try {
+            return Schema::hasTable('mouseless_statistics');
+        } catch (\Throwable) {
+            return false;
+        }
     }
 
     /** Whether the teach column (and its states) should render at all. */
@@ -433,6 +463,13 @@ trait InteractsWithShortcutsTable
                 return $byCategory;
             }
 
+            if ($sortColumn === 'invoked') {
+                $cmp = ($a['invoked'] ?? 0) <=> ($b['invoked'] ?? 0);
+                if ($cmp !== 0) {
+                    return $sortDirection === 'desc' ? -$cmp : $cmp;
+                }
+            }
+
             $cmp = strcasecmp($a['label'], $b['label']);
 
             return ($sortColumn === 'label' && $sortDirection === 'desc') ? -$cmp : $cmp;
@@ -481,6 +518,15 @@ trait InteractsWithShortcutsTable
                     default => 'unused',
                 };
                 $row['teach_streak'] = (int) ($state['streak'] ?? 0);
+            }
+            unset($row);
+        }
+
+        if ($this->hasShortcutsStatistics()) {
+            $invocations = Statistic::perActionTotals((int) auth()->id());
+
+            foreach ($rows as &$row) {
+                $row['invoked'] = (int) ($invocations[$row['id']]['kb'] ?? 0);
             }
             unset($row);
         }

@@ -15,6 +15,8 @@ return [
         'default_preset' => true,
         'disabled_actions' => true,
         'moderation_queue' => true,
+        // The all-users statistics block (only shows when the plugin has ->statistics()).
+        'statistics' => true,
 
         // Authorization gate for the SuperAdmin page (view + save + approve + reject).
         // RECOMMENDED: define a Gate ability in your AuthServiceProvider and set the

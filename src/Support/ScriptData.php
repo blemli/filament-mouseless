@@ -5,6 +5,7 @@ namespace Blemli\FilamentMouseless\Support;
 use Blemli\FilamentMouseless\Filament\Pages\MyShortcuts;
 use Blemli\FilamentMouseless\FilamentMouselessPlugin;
 use Blemli\FilamentMouseless\Models\Nudge;
+use Blemli\FilamentMouseless\Models\Statistic;
 use Blemli\FilamentMouseless\Services\BindingResolver;
 use Blemli\FilamentMouseless\Services\CustomActionRegistry;
 use Filament\Facades\Filament;
@@ -46,6 +47,7 @@ class ScriptData implements JsonSerializable
             'softProhibitions' => FilamentMouselessPlugin::prohibitionsAreSoft(),
             'escapeTo' => FilamentMouselessPlugin::escapeTarget(),
             'teach' => $this->teach(),
+            'stats' => $this->stats(),
             'actionLabels' => $this->actionLabels,
             // The panel's post-login landing page (configured home URL, or the
             // panel root). nav.dashboard navigates here instead of a hardcoded
@@ -94,6 +96,9 @@ class ScriptData implements JsonSerializable
             return [
                 'muted' => Nudge::isMuted($userId),
                 'states' => Nudge::statesFor($userId),
+                // Statistics-informed focus (empty without ->statistics()):
+                // the engine spends its one-nudge-per-page on these first.
+                'clickPriority' => $this->teachClickPriority($userId),
                 'shortcutsUrl' => $this->shortcutsUrl(),
                 'strings' => [
                     'title' => __('filament-mouseless::mouseless.teach.title'),
@@ -106,6 +111,66 @@ class ScriptData implements JsonSerializable
         } catch (\Throwable) {
             return null;
         }
+    }
+
+    /**
+     * The user's most-clicked actions that teaching could still fix —
+     * ranked by lifetime click count, minus taught/dismissed ones. The
+     * teach layer nudges at most once per page view; this list makes that
+     * one nudge go to a frequent offender instead of a one-off click.
+     * Empty (= no restriction) when statistics aren't tracked.
+     *
+     * @return array<int, string>
+     */
+    protected function teachClickPriority(int $userId): array
+    {
+        if (! FilamentMouselessPlugin::statisticsEnabled()) {
+            return [];
+        }
+
+        try {
+            if (! Schema::hasTable('mouseless_statistics')) {
+                return [];
+            }
+
+            $states = Nudge::statesFor($userId);
+
+            return collect(Statistic::perActionTotals($userId))
+                ->filter(fn (array $t, string $id): bool => $t['click'] > 0
+                    && ! ($states[$id]['learned'] ?? false)
+                    && ! ($states[$id]['dismissed'] ?? false))
+                ->sortByDesc(fn (array $t): int => $t['click'])
+                ->take(5)
+                ->keys()
+                ->all();
+        } catch (\Throwable) {
+            return [];
+        }
+    }
+
+    /**
+     * The statistics layer's payload — non-null arms the engine's usage
+     * counter (keyboard invocations + bypassing clicks, batched and flushed
+     * to the StatisticsFlush component). Null when the plugin doesn't have
+     * ->statistics(), the user is a guest, or the table isn't migrated.
+     *
+     * @return array{flushMs: int}|null
+     */
+    protected function stats(): ?array
+    {
+        if (! FilamentMouselessPlugin::statisticsEnabled() || ! auth()->check()) {
+            return null;
+        }
+
+        try {
+            if (! Schema::hasTable('mouseless_statistics')) {
+                return null;
+            }
+        } catch (\Throwable) {
+            return null;
+        }
+
+        return ['flushMs' => 10_000];
     }
 
     /** The my-shortcuts page URL ("change shortcut" deep-link), when registered. */

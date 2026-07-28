@@ -1,0 +1,33 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('mouseless_statistics', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('user_id');
+            $table->date('date');
+            // Per-action counters: {"crud.create": {"kb": 12, "click": 3}, …}.
+            // One JSON map instead of a row per action — the table stays at
+            // users × active days rows no matter how many shortcuts exist.
+            $table->json('counters');
+            // Row-level sums kept alongside the JSON so lifetime totals,
+            // trends and the admin aggregation stay plain SQL SUM()s.
+            $table->unsignedInteger('keyboard_count')->default(0);
+            $table->unsignedInteger('click_count')->default(0);
+            $table->timestamps();
+
+            $table->unique(['user_id', 'date']);
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('mouseless_statistics');
+    }
+};

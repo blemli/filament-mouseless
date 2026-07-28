@@ -37,6 +37,8 @@ class FilamentMouselessPlugin implements Plugin
 
     protected int $teachDeferDays = 0;
 
+    protected bool $statisticsEnabled = false;
+
     protected bool $escapeToDashboardEnabled = false;
 
     protected ?string $escapeToTarget = null;
@@ -317,6 +319,30 @@ class FilamentMouselessPlugin implements Plugin
         $plugin = static::safeGet();
 
         return ($plugin?->teachEnabled ?? false) && ! ($plugin?->isStateless() ?? false);
+    }
+
+    /**
+     * Track avoided clicks: every keyboard invocation of an action counts as
+     * one click avoided, and mouse clicks on targets that HAVE a shortcut are
+     * counted too — giving each action a shortcut/click ratio. Powers the
+     * statistics widget on /my-shortcuts (clicks avoided, trend, untapped
+     * actions), the hidden "Invoked" table column, the all-users block on the
+     * admin settings page, and the 100 / 1'000 / 10'000 milestone
+     * congratulations. Opt-in; needs the mouseless_statistics migration, so
+     * ->stateless() panels ignore it.
+     */
+    public function statistics(bool $enabled = true): static
+    {
+        $this->statisticsEnabled = $enabled;
+
+        return $this;
+    }
+
+    public static function statisticsEnabled(): bool
+    {
+        $plugin = static::safeGet();
+
+        return ($plugin?->statisticsEnabled ?? false) && ! ($plugin?->isStateless() ?? false);
     }
 
     /**
@@ -626,6 +652,15 @@ class FilamentMouselessPlugin implements Plugin
                 'panels::body.end',
                 fn (): string => Shield::userMayUse()
                     ? Blade::render('@livewire(\Blemli\FilamentMouseless\Livewire\TeachNudges::class)')
+                    : '',
+            );
+        }
+
+        if ($this->statisticsEnabled && ! $this->stateless) {
+            FilamentView::registerRenderHook(
+                'panels::body.end',
+                fn (): string => Shield::userMayUse()
+                    ? Blade::render('@livewire(\Blemli\FilamentMouseless\Livewire\StatisticsFlush::class)')
                     : '',
             );
         }

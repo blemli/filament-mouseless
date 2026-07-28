@@ -15,12 +15,20 @@
         />
     @endif
 
-    <div @class(['fi-mouseless-layout', 'fi-mouseless-layout-singleton' => $this->isSingletonMode()])>
-        @unless ($this->isSingletonMode())
+    @php($hasAside = ! $this->isSingletonMode() || $this->hasShortcutsStatistics())
+
+    <div @class(['fi-mouseless-layout', 'fi-mouseless-layout-singleton' => ! $hasAside])>
+        @if ($hasAside)
             <aside class="fi-mouseless-layout-aside">
-                @livewire(\Blemli\FilamentMouseless\Filament\Widgets\PresetSelector::class)
+                @unless ($this->isSingletonMode())
+                    @livewire(\Blemli\FilamentMouseless\Filament\Widgets\PresetSelector::class)
+                @endunless
+
+                @if ($this->hasShortcutsStatistics())
+                    @livewire(\Blemli\FilamentMouseless\Filament\Widgets\StatisticsOverview::class)
+                @endif
             </aside>
-        @endunless
+        @endif
 
         <div class="fi-mouseless-layout-main">
             {{ $this->table }}

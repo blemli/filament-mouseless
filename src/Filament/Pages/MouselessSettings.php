@@ -5,7 +5,10 @@ namespace Blemli\FilamentMouseless\Filament\Pages;
 use Blemli\FilamentMouseless\Facades\FilamentMouseless;
 use Blemli\FilamentMouseless\FilamentMouselessPlugin;
 use Blemli\FilamentMouseless\Models\Preset;
+use Blemli\FilamentMouseless\Models\Statistic;
+use Blemli\FilamentMouseless\Support\ActionMeta;
 use Blemli\FilamentMouseless\Support\Shield;
+use Filament\Facades\Filament;
 use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Concerns\InteractsWithForms;
@@ -16,6 +19,7 @@ use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Schema as SchemaFacade;
 
 class MouselessSettings extends Page implements HasForms
 {
@@ -141,6 +145,69 @@ class MouselessSettings extends Page implements HasForms
             ->title(__('filament-mouseless::mouseless.admin.saved'))
             ->success()
             ->send();
+    }
+
+    /**
+     * The all-users statistics block: org-wide totals, the most-used
+     * shortcuts, and the keyboard leaderboard. Null hides the section —
+     * when the plugin doesn't track statistics, the table isn't migrated,
+     * or the section is disabled via `mouseless.admin.statistics`.
+     *
+     * @return array{
+     *     totals: array{keyboard: int, clicks: int, users: int},
+     *     topActions: array<int, array{label: string, keyboard: int}>,
+     *     leaderboard: array<int, array{name: string, keyboard: int}>,
+     * }|null
+     */
+    public function getStatisticsSummary(): ?array
+    {
+        if (! FilamentMouselessPlugin::statisticsEnabled() || ! config('mouseless.admin.statistics', true)) {
+            return null;
+        }
+
+        try {
+            if (! SchemaFacade::hasTable('mouseless_statistics')) {
+                return null;
+            }
+        } catch (\Throwable) {
+            return null;
+        }
+
+        $topActions = collect(Statistic::perActionTotalsAllUsers())
+            ->sortByDesc(fn (array $t): int => $t['kb'])
+            ->take(5)
+            ->map(fn (array $t, string $id): array => [
+                'label' => ActionMeta::label($id),
+                'keyboard' => $t['kb'],
+            ])
+            ->values()
+            ->all();
+
+        $leaderboard = array_map(fn (array $row): array => [
+            'name' => $this->statisticsUserName($row['user_id']),
+            'keyboard' => $row['keyboard'],
+        ], Statistic::leaderboard());
+
+        return [
+            'totals' => Statistic::totals(),
+            'topActions' => $topActions,
+            'leaderboard' => $leaderboard,
+        ];
+    }
+
+    protected function statisticsUserName(int $userId): string
+    {
+        try {
+            $user = Filament::auth()->getProvider()->retrieveById($userId);
+
+            if ($user) {
+                return Filament::getUserName($user);
+            }
+        } catch (\Throwable) {
+            // Fall through to the anonymous label.
+        }
+
+        return __('filament-mouseless::mouseless.admin.stats_unknown_user', ['id' => $userId]);
     }
 
     public function getModerationQueue(): array

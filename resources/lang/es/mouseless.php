@@ -112,6 +112,11 @@ return [
         'saved' => 'Configuración guardada.',
         'preset_approved' => 'Preset «:name» aprobado.',
         'preset_rejected' => 'Preset rechazado.',
+        'stats_heading' => 'Estadísticas — todos los usuarios',
+        'stats_users' => 'usuarios activos',
+        'stats_top_actions' => 'Atajos más usados',
+        'stats_leaderboard' => 'Clasificación de teclado',
+        'stats_unknown_user' => 'Usuario #:id',
     ],
 
     'teach' => [
@@ -131,6 +136,20 @@ return [
         'cleared' => 'Este atajo se volverá a enseñar.',
     ],
 
+    'stats' => [
+        'heading' => 'Estadísticas',
+        'clicks_avoided' => 'clic evitado|clics evitados',
+        'trend_label' => 'Proporción de teclado por semana (últimas 8 semanas)',
+        'untapped_heading' => 'Aquí todavía haces clic',
+        'untapped_hint' => 'Estas acciones tienen atajo — prueba las teclas.',
+        'untapped_counts' => ':clicks× con clic · :kb× con teclado',
+        'empty' => 'Aún no hay nada contado — usa algunos atajos.',
+        'milestone' => [
+            'title' => '🎉 ¡:count atajos usados!',
+            'body' => 'Tu teclado ya te ha evitado :count clics. ¡Sigue así!',
+        ],
+    ],
+
     'profile' => [
         'title' => 'Mis atajos',
         'nav_label' => 'Atajos',
@@ -147,6 +166,7 @@ return [
             'default' => 'Atajo predeterminado',
             'status' => 'Estado',
             'teach' => 'Consejos',
+            'invoked' => 'Usos',
         ],
         'status' => [
             'changed' => 'Personalizado',

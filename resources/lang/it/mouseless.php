@@ -112,6 +112,11 @@ return [
         'saved' => 'Impostazioni salvate.',
         'preset_approved' => 'Preset «:name» approvato.',
         'preset_rejected' => 'Preset rifiutato.',
+        'stats_heading' => 'Statistiche — tutti gli utenti',
+        'stats_users' => 'utenti attivi',
+        'stats_top_actions' => 'Scorciatoie più usate',
+        'stats_leaderboard' => 'Classifica tastiera',
+        'stats_unknown_user' => 'Utente n. :id',
     ],
 
     'teach' => [
@@ -131,6 +136,20 @@ return [
         'cleared' => 'Questa scorciatoia verrà insegnata di nuovo.',
     ],
 
+    'stats' => [
+        'heading' => 'Statistiche',
+        'clicks_avoided' => 'clic evitato|clic evitati',
+        'trend_label' => 'Quota tastiera a settimana (ultime 8 settimane)',
+        'untapped_heading' => 'Qui clicchi ancora',
+        'untapped_hint' => 'Queste azioni hanno una scorciatoia — prova i tasti.',
+        'untapped_counts' => ':clicks× cliccato · :kb× da tastiera',
+        'empty' => 'Ancora niente da contare — usa qualche scorciatoia.',
+        'milestone' => [
+            'title' => '🎉 :count scorciatoie usate!',
+            'body' => 'La tua tastiera ti ha già evitato :count clic. Continua così!',
+        ],
+    ],
+
     'profile' => [
         'title' => 'Le mie scorciatoie',
         'nav_label' => 'Scorciatoie',
@@ -147,6 +166,7 @@ return [
             'default' => 'Scorciatoia predefinita',
             'status' => 'Stato',
             'teach' => 'Suggerimenti',
+            'invoked' => 'Utilizzi',
         ],
         'status' => [
             'changed' => 'Personalizzato',

@@ -113,6 +113,11 @@ return [
         'saved' => 'Settings saved.',
         'preset_approved' => 'Preset “:name” approved.',
         'preset_rejected' => 'Preset rejected.',
+        'stats_heading' => 'Statistics — all users',
+        'stats_users' => 'active users',
+        'stats_top_actions' => 'Most used shortcuts',
+        'stats_leaderboard' => 'Keyboard leaderboard',
+        'stats_unknown_user' => 'User #:id',
     ],
 
     'teach' => [
@@ -132,6 +137,20 @@ return [
         'cleared' => 'This shortcut will be taught again.',
     ],
 
+    'stats' => [
+        'heading' => 'Statistics',
+        'clicks_avoided' => 'click avoided|clicks avoided',
+        'trend_label' => 'Keyboard share per week (last 8 weeks)',
+        'untapped_heading' => 'Still clicking',
+        'untapped_hint' => 'These actions have a shortcut — try the keys.',
+        'untapped_counts' => ':clicks× clicked · :kb× by key',
+        'empty' => 'Nothing counted yet — go use some shortcuts.',
+        'milestone' => [
+            'title' => '🎉 :count shortcuts used!',
+            'body' => 'Your keyboard has avoided :count clicks so far. Keep going!',
+        ],
+    ],
+
     'profile' => [
         'title' => 'My shortcuts',
         'nav_label' => 'Shortcuts',
@@ -148,6 +167,7 @@ return [
             'default' => 'Default shortcut',
             'status' => 'Status',
             'teach' => 'Tips',
+            'invoked' => 'Invoked',
         ],
         'status' => [
             'changed' => 'Customized',

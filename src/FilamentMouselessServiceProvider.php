@@ -5,8 +5,10 @@ namespace Blemli\FilamentMouseless;
 use Blemli\FilamentMouseless\Commands\RenameActionsCommand;
 use Blemli\FilamentMouseless\Commands\ScanActionsCommand;
 use Blemli\FilamentMouseless\Filament\Widgets\PresetSelector;
+use Blemli\FilamentMouseless\Filament\Widgets\StatisticsOverview;
 use Blemli\FilamentMouseless\Livewire\GotoPalette;
 use Blemli\FilamentMouseless\Livewire\HelpOverlay;
+use Blemli\FilamentMouseless\Livewire\StatisticsFlush;
 use Blemli\FilamentMouseless\Livewire\TeachNudges;
 use Blemli\FilamentMouseless\Services\ActionDiscovery;
 use Blemli\FilamentMouseless\Services\BindingResolver;
@@ -200,6 +202,8 @@ class FilamentMouselessServiceProvider extends PackageServiceProvider
         Livewire::component('mouseless-goto-palette', GotoPalette::class);
         Livewire::component('mouseless-preset-selector', PresetSelector::class);
         Livewire::component('mouseless-teach-nudges', TeachNudges::class);
+        Livewire::component('mouseless-statistics-overview', StatisticsOverview::class);
+        Livewire::component('mouseless-statistics-flush', StatisticsFlush::class);
 
         // Discover (and, on opted-in pages, take over) custom actions' key
         // bindings as each Filament page renders. The render event fires before
@@ -597,6 +601,7 @@ class FilamentMouselessServiceProvider extends PackageServiceProvider
             'create_mouseless_presets_table',
             'create_mouseless_user_settings_table',
             'create_mouseless_nudges_table',
+            'create_mouseless_statistics_table',
         ];
     }
 }
