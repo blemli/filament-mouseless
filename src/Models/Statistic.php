@@ -125,6 +125,34 @@ class Statistic extends Model
     }
 
     /**
+     * The first day each action was invoked by keyboard, oldest rows first.
+     * The admin-override layer compares these against an override's change
+     * dates: usage that predates the change keeps the old key ("don't move
+     * keys people actually use").
+     *
+     * @return array<string, string> action => Y-m-d of first keyboard use
+     */
+    public static function firstKeyboardUseDates(int $userId): array
+    {
+        $first = [];
+
+        $rows = static::query()
+            ->where('user_id', $userId)
+            ->orderBy('date')
+            ->get(['date', 'counters']);
+
+        foreach ($rows as $row) {
+            foreach ((array) $row->counters as $actionId => $counts) {
+                if ((int) ($counts['kb'] ?? 0) > 0 && ! isset($first[$actionId])) {
+                    $first[$actionId] = $row->date->toDateString();
+                }
+            }
+        }
+
+        return $first;
+    }
+
+    /**
      * Org-wide totals for the admin view.
      *
      * @return array{keyboard: int, clicks: int, users: int}

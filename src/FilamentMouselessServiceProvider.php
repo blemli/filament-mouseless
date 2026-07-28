@@ -602,6 +602,7 @@ class FilamentMouselessServiceProvider extends PackageServiceProvider
             'create_mouseless_user_settings_table',
             'create_mouseless_nudges_table',
             'create_mouseless_statistics_table',
+            'create_mouseless_admin_overrides_table',
         ];
     }
 }

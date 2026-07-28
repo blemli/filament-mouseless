@@ -3,13 +3,15 @@
 namespace Blemli\FilamentMouseless\Filament\Pages;
 
 use Blemli\FilamentMouseless\Facades\FilamentMouseless;
+use Blemli\FilamentMouseless\Filament\Concerns\InteractsWithShortcutsTable;
 use Blemli\FilamentMouseless\FilamentMouselessPlugin;
-use Blemli\FilamentMouseless\Models\Preset;
+use Blemli\FilamentMouseless\Models\AdminOverride;
 use Blemli\FilamentMouseless\Models\Statistic;
+use Blemli\FilamentMouseless\Services\CustomActionRegistry;
 use Blemli\FilamentMouseless\Support\ActionMeta;
+use Blemli\FilamentMouseless\Support\Keys;
 use Blemli\FilamentMouseless\Support\Shield;
 use Filament\Facades\Filament;
-use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
@@ -17,15 +19,31 @@ use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
+use Filament\Tables\Concerns\InteractsWithTable;
+use Filament\Tables\Contracts\HasTable;
+use Filament\Tables\Table;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Schema as SchemaFacade;
 
-class MouselessSettings extends Page implements HasForms
+/**
+ * The SuperAdmin page: the org-wide default preset choice, the defaults
+ * table (the same shortcuts table as /my-shortcuts, editing the defaults
+ * for ALL users via AdminOverride deltas) and the all-users statistics.
+ * Preset moderation lives on the PresetModeration subpage.
+ */
+class MouselessSettings extends Page implements HasForms, HasTable
 {
     use InteractsWithForms;
+    use InteractsWithShortcutsTable;
+    use InteractsWithTable;
 
     protected static ?string $slug = 'mouseless-settings';
+
+    public const WARNED_SESSION_KEY = 'mouseless.admin_defaults_warned';
+
+    /** @var array<string, mixed>|null Request memo — the table resolves this dozens of times per render. */
+    protected ?array $effectivePresetMemo = null;
 
     public static function getNavigationIcon(): string | \BackedEnum | Htmlable | null
     {
@@ -69,7 +87,7 @@ class MouselessSettings extends Page implements HasForms
      * panel user (the config flag is the only gate). Consuming apps SHOULD
      * register a Gate ability and point this config at it.
      */
-    protected static function userMayModerate(): bool
+    public static function userMayModerate(): bool
     {
         $ability = config('mouseless.admin.gate');
 
@@ -88,8 +106,8 @@ class MouselessSettings extends Page implements HasForms
     public function mount(): void
     {
         $this->form->fill([
-            'default_preset' => config('mouseless.default_preset'),
-            'disabled_actions' => config('mouseless.disabled_actions', []),
+            'default_preset' => AdminOverride::defaultPresetSlug()
+                ?: config('mouseless.default_preset'),
         ]);
     }
 
@@ -97,13 +115,6 @@ class MouselessSettings extends Page implements HasForms
     {
         $presets = collect(FilamentMouseless::registry()->all())
             ->mapWithKeys(fn ($p, $slug) => [$slug => ($p['name'] ?? $slug) . ' (' . ($p['locale'] ?? '?') . ')'])
-            ->all();
-
-        $actions = collect(FilamentMouseless::registry()->builtIn())
-            ->flatMap(fn ($p) => array_keys($p['bindings'] ?? []))
-            ->unique()
-            ->sort()
-            ->mapWithKeys(fn ($id) => [$id => __('filament-mouseless::mouseless.action.' . $id)])
             ->all();
 
         return $schema
@@ -118,17 +129,6 @@ class MouselessSettings extends Page implements HasForms
                             ->searchable()
                             ->required(),
                     ]),
-
-                Section::make(__('filament-mouseless::mouseless.admin.disabled_actions'))
-                    ->visible((bool) config('mouseless.admin.disabled_actions', true))
-                    ->components([
-                        CheckboxList::make('disabled_actions')
-                            ->label(__('filament-mouseless::mouseless.admin.disabled_actions'))
-                            ->hiddenLabel()
-                            ->options($actions)
-                            ->columns(2)
-                            ->searchable(),
-                    ]),
             ])
             ->statePath('data');
     }
@@ -139,13 +139,251 @@ class MouselessSettings extends Page implements HasForms
 
         $payload = $this->form->getState();
 
-        cache()->forever('mouseless.admin_overlay', $payload);
+        AdminOverride::setDefaultPresetSlug($payload['default_preset'] ?? null);
+        FilamentMouseless::flush();
 
         Notification::make()
             ->title(__('filament-mouseless::mouseless.admin.saved'))
             ->success()
             ->send();
     }
+
+    // ------------------------------------------------------------------
+    // Defaults table (shared shortcuts table, editing for ALL users)
+    // ------------------------------------------------------------------
+
+    public function table(Table $table): Table
+    {
+        return $this->shortcutsTable($table);
+    }
+
+    public function hasDefaultsTable(): bool
+    {
+        return (bool) config('mouseless.admin.defaults_table', true)
+            && $this->overridesTableExists();
+    }
+
+    protected function overridesTableExists(): bool
+    {
+        try {
+            return SchemaFacade::hasTable('mouseless_admin_overrides');
+        } catch (\Throwable) {
+            return false;
+        }
+    }
+
+    /**
+     * The base the admin edits: the default preset users without an own
+     * selection resolve — the built-in matching the admin's UI locale, then
+     * the configured default. Deltas against it become AdminOverride rows.
+     *
+     * @return array<string, mixed>
+     */
+    protected function baseDefaultPreset(): array
+    {
+        $registry = FilamentMouseless::registry();
+
+        $preset = $registry->builtInForLocale(app()->getLocale())
+            ?? $registry->find(AdminOverride::defaultPresetSlug() ?: (string) config('mouseless.default_preset'))
+            ?? collect($registry->builtIn())->first();
+
+        return $preset ?? ['slug' => null, 'bindings' => [], 'disabled_actions' => []];
+    }
+
+    /** Base + the current admin deltas — what the table displays. */
+    public function getShortcutsPreset(): ?array
+    {
+        if ($this->effectivePresetMemo !== null) {
+            return $this->effectivePresetMemo;
+        }
+
+        $base = $this->baseDefaultPreset();
+        $bindings = (array) ($base['bindings'] ?? []);
+        $disabled = (array) ($base['disabled_actions'] ?? []);
+
+        foreach (AdminOverride::current() as $actionId => $override) {
+            if (AdminOverride::rebinds($override)) {
+                $bindings[$actionId] = $override['combo'];
+            }
+
+            if ($override['disabled']) {
+                $disabled[] = $actionId;
+            }
+        }
+
+        return $this->effectivePresetMemo = [
+            ...$base,
+            'bindings' => $bindings,
+            'disabled_actions' => array_values(array_unique($disabled)),
+        ];
+    }
+
+    /** Comparison baseline = the pristine base, so "changed" means "has a delta". */
+    public function getShortcutsParentPreset(): ?array
+    {
+        return $this->baseDefaultPreset();
+    }
+
+    public function isShortcutsLocked(): bool
+    {
+        return false;
+    }
+
+    public function ensureEditableShortcutsPreset(): void
+    {
+        // Nothing to fork — deltas are written directly by persistShortcuts().
+        // Reaching this point means the all-users warning was confirmed (or
+        // already acknowledged); "record" doesn't persist immediately, so the
+        // flag is set here, not only in persistShortcuts().
+        session()->put(self::WARNED_SESSION_KEY, true);
+    }
+
+    /**
+     * Diff the edited map against the pristine base and write the deltas as
+     * AdminOverride rows; entries equal to the base delete their row.
+     */
+    public function persistShortcuts(array $bindings, array $disabled): bool
+    {
+        abort_unless(static::userMayModerate(), 403);
+
+        if (! $this->overridesTableExists()) {
+            return false;
+        }
+
+        $base = $this->baseDefaultPreset();
+        $baseBindings = (array) ($base['bindings'] ?? []);
+        $baseDisabled = (array) ($base['disabled_actions'] ?? []);
+        $customDefaults = $this->customDefaults();
+
+        $ids = array_unique([
+            ...array_keys($bindings),
+            ...array_keys($baseBindings),
+            ...array_keys($customDefaults),
+            ...array_values($disabled),
+            ...array_values($baseDisabled),
+            ...array_keys(AdminOverride::current()),
+        ]);
+
+        foreach ($ids as $actionId) {
+            $baseCombo = array_key_exists($actionId, $baseBindings)
+                ? $baseBindings[$actionId]
+                : ($customDefaults[$actionId] ?? null);
+
+            $target = array_key_exists($actionId, $bindings) ? $bindings[$actionId] : $baseCombo;
+            $rebound = Keys::normalize($target) !== Keys::normalize($baseCombo);
+
+            // A disable delta only exists on top of an enabled base action —
+            // overrides can't (and don't need to) re-enable base disables.
+            $wantsDisabled = in_array($actionId, $disabled, true)
+                && ! in_array($actionId, $baseDisabled, true);
+
+            AdminOverride::apply($actionId, $rebound, $rebound ? $target : null, $wantsDisabled);
+        }
+
+        // First edit confirmed — no more "applies to all users" prompts
+        // this session.
+        session()->put(self::WARNED_SESSION_KEY, true);
+
+        $this->effectivePresetMemo = null;
+
+        return true;
+    }
+
+    // ------------------------------------------------------------------
+    // All-users warning (reuses the fork-confirmation wrapper)
+    // ------------------------------------------------------------------
+
+    protected function shortcutsEditNeedsConfirmation(): bool
+    {
+        return ! session()->get(self::WARNED_SESSION_KEY, false);
+    }
+
+    protected function shortcutsEditConfirmHeading(): string
+    {
+        return __('filament-mouseless::mouseless.admin.warn.heading');
+    }
+
+    protected function shortcutsEditConfirmDescription(): string
+    {
+        return __('filament-mouseless::mouseless.admin.warn.description');
+    }
+
+    protected function shortcutsEditConfirmSubmitLabel(): string
+    {
+        return __('filament-mouseless::mouseless.admin.warn.confirm');
+    }
+
+    // ------------------------------------------------------------------
+    // Table host tweaks
+    // ------------------------------------------------------------------
+
+    /**
+     * The teach/invoked columns would show the admin's *personal* state —
+     * meaningless on a table that edits everyone's defaults.
+     */
+    protected function shortcutsTeachEnabled(): bool
+    {
+        return false;
+    }
+
+    public function hasShortcutsStatistics(): bool
+    {
+        return false;
+    }
+
+    /**
+     * Flag deltas whose combo is already taken in another locale's built-in
+     * preset — the override applies to every locale, so it would collide
+     * there ("one layer, all locales" trade-off made visible).
+     *
+     * @param  array<int, array<string, mixed>>  $rows
+     * @return array<int, array<string, mixed>>
+     */
+    protected function decorateShortcutRows(array $rows): array
+    {
+        $builtIns = FilamentMouseless::registry()->builtIn();
+        $baseSlug = $this->baseDefaultPreset()['slug'] ?? null;
+
+        foreach ($rows as $index => $row) {
+            if (! $row['changed'] || $row['normalized'] === null) {
+                continue;
+            }
+
+            $conflicts = [];
+
+            foreach ($builtIns as $slug => $preset) {
+                if ($slug === $baseSlug) {
+                    continue;
+                }
+
+                foreach ((array) ($preset['bindings'] ?? []) as $otherId => $combo) {
+                    if ($otherId !== $row['id'] && Keys::normalize($combo) === $row['normalized']) {
+                        $conflicts[] = ($preset['name'] ?? $slug) . ': ' . ActionMeta::label($otherId);
+                    }
+                }
+            }
+
+            if ($conflicts !== []) {
+                $rows[$index]['cross_locale'] = $conflicts;
+            }
+        }
+
+        return $rows;
+    }
+
+    /** @return array<string, string> */
+    protected function customDefaults(): array
+    {
+        try {
+            return app(CustomActionRegistry::class)->managedDefaults();
+        } catch (\Throwable) {
+            return [];
+        }
+    }
+
+    // ------------------------------------------------------------------
+    // Statistics (all users)
+    // ------------------------------------------------------------------
 
     /**
      * The all-users statistics block: org-wide totals, the most-used
@@ -208,54 +446,5 @@ class MouselessSettings extends Page implements HasForms
         }
 
         return __('filament-mouseless::mouseless.admin.stats_unknown_user', ['id' => $userId]);
-    }
-
-    public function getModerationQueue(): array
-    {
-        if (! config('mouseless.publishing.enabled')) {
-            return [];
-        }
-        if (! config('mouseless.publishing.require_approval')) {
-            return [];
-        }
-        if (! config('mouseless.admin.moderation_queue', true)) {
-            return [];
-        }
-
-        return Preset::query()
-            ->where('is_published', true)
-            ->whereNull('approved_at')
-            ->get()
-            ->all();
-    }
-
-    public function approve(int $presetId): void
-    {
-        abort_unless(static::userMayModerate(), 403);
-
-        $preset = Preset::findOrFail($presetId);
-        $preset->approved_by = auth()->id();
-        $preset->approved_at = now();
-        $preset->save();
-
-        Notification::make()
-            ->title(__('filament-mouseless::mouseless.admin.preset_approved', ['name' => $preset->name]))
-            ->success()
-            ->send();
-    }
-
-    public function reject(int $presetId): void
-    {
-        abort_unless(static::userMayModerate(), 403);
-
-        $preset = Preset::findOrFail($presetId);
-        $preset->is_published = false;
-        $preset->published_at = null;
-        $preset->save();
-
-        Notification::make()
-            ->title(__('filament-mouseless::mouseless.admin.preset_rejected'))
-            ->warning()
-            ->send();
     }
 }

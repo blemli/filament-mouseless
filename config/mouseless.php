@@ -13,7 +13,9 @@ return [
     'admin' => [
         'enabled' => true,
         'default_preset' => true,
-        'disabled_actions' => true,
+        // The defaults table: the my-shortcuts table editing the shortcut
+        // defaults for ALL users (stored as mouseless_admin_overrides deltas).
+        'defaults_table' => true,
         'moderation_queue' => true,
         // The all-users statistics block (only shows when the plugin has ->statistics()).
         'statistics' => true,

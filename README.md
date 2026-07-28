@@ -352,7 +352,7 @@ FilamentMouselessPlugin::make()
 
 #### Show the Admin page
 
-The `/mouseless-settings` page (default preset, disabled actions, moderation queue) is off by default. Opt in:
+The `/mouseless-settings` page (default preset, the defaults table, all-users statistics) is off by default. Opt in:
 
 ```php
 ->plugins([
@@ -360,6 +360,23 @@ The `/mouseless-settings` page (default preset, disabled actions, moderation que
       ->settingsPage(),
 ])
 ```
+
+#### Edit the defaults for all users
+
+The admin page hosts the same shortcuts table as `/my-shortcuts` — but editing it changes the **defaults for every user**. Changes are stored as deltas in the `mouseless_admin_overrides` table (publish + run the package migrations when upgrading), never inside anyone's preset:
+
+- **Rebinds are polite.** A user keeps their key when they explicitly rebound it themselves — or (with `->statistics()` on) when they actively *used* it before your change: muscle memory is grandfathered, and their `/my-shortcuts` row shows a "kept for you" badge with the new default. Everyone else, including untouched actions inside personal layouts, gets the new default. Without statistics there is no usage signal, so rebinds simply reach everyone who didn't explicitly rebind.
+- **Disables are hard.** A disabled action disappears for every user; their table shows it locked ("disabled by admin").
+- **No silent key flips.** If a newly assigned default collides with a key a user already has (kept or explicit), the *new* default loses for that user and the action shows as unbound.
+- The first modifying edit per session asks for confirmation ("this changes the defaults for ALL users"); a warning icon flags deltas that collide with another locale's built-in preset.
+- Row reset (or "reset all") deletes the delta and returns to the shipped default.
+- Hide the table via `mouseless.admin.defaults_table => false`.
+
+The **Standard-Preset** select on the same page picks the org-wide fallback preset (used when no built-in matches a user's locale) and now persists in the same table.
+
+#### Preset moderation
+
+When publishing with approval is enabled, the moderation queue lives on its own subpage, `/mouseless-settings/moderation` (nav item "Shortcut moderation"). It disappears when `mouseless.publishing.enabled` or `require_approval` is off.
 
 #### Custom Icon
 

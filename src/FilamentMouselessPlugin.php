@@ -6,6 +6,7 @@ use Blemli\FilamentMouseless\Enums\MouselessAction;
 use Blemli\FilamentMouseless\Facades\FilamentMouseless;
 use Blemli\FilamentMouseless\Filament\Pages\MouselessSettings;
 use Blemli\FilamentMouseless\Filament\Pages\MyShortcuts;
+use Blemli\FilamentMouseless\Filament\Pages\PresetModeration;
 use Blemli\FilamentMouseless\Support\ActionMeta;
 use Blemli\FilamentMouseless\Support\Keys;
 use Blemli\FilamentMouseless\Support\Shield;
@@ -584,6 +585,7 @@ class FilamentMouselessPlugin implements Plugin
 
         if ($this->registerSettingsPage && config('mouseless.admin.enabled', true)) {
             $pages[] = MouselessSettings::class;
+            $pages[] = PresetModeration::class;
         }
 
         $panel->pages($pages);
