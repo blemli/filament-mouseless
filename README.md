@@ -188,7 +188,7 @@ It rewrites only the name inside `::make()` and flags any other references to th
 
 ### v2
 
-Reorder Rows,  Multipanel support, Multitenant Support, ~~Tutorial on missed Shortcuts~~, Statistics on avoided clicks, Let Users share Presets with eachother, Let Admins Moderate Shared Presets (remove unused ones &see which action is the most overwritten, most used),  `shorcuts:list` command, Detect already existing shortcuts of actions (artisan?), singleton preset, Free Key Visualisation, Fire Laravel Events, unattended install,  translate to many languages, vimperator mode to jump to fields, uninstall command, support advanced tables, Integrate with Spotlight to directyl run relevant actions, AskPhil, Kanban, ActivityLog (opt-in), and probably even more!
+Reorder Rows,  Multipanel support, Multitenant Support, ~~Tutorial on missed Shortcuts~~, Statistics on avoided clicks, Let Users share Presets with eachother, Let Admins Moderate Shared Presets (remove unused ones &see which action is the most overwritten, most used),  `shorcuts:list` command, Detect already existing shortcuts of actions (artisan?), ~~singleton preset~~, Free Key Visualisation, Fire Laravel Events, unattended install,  translate to many languages, vimperator mode to jump to fields, uninstall command, support advanced tables, Integrate with Spotlight to directyl run relevant actions, AskPhil, Kanban, ActivityLog (opt-in), and probably even more!
 
 ### Languages
 
@@ -204,11 +204,46 @@ Advanced Tables
 
 Spotlight
 
+Language Switcher?
+
 ## Configure
 
 Everything works great with zero configuration, but everything is still configurable. Milk and Honey! 
 
 ### Basic Configuration
+
+#### Publish the config
+
+Most options below are plugin methods and need no config file. For everything that lives in `config/mouseless.php` (reserved keys, rename map, publishing/moderation, scan paths, …), publish it first:
+
+```bash
+php artisan vendor:publish --tag="filament-mouseless-config"
+```
+
+#### Remap (or disable) single shortcuts
+
+Happy with the defaults but one key is in your way? Remap it right in the panel provider — no preset authoring needed:
+
+```php
+use Blemli\FilamentMouseless\Enums\MouselessAction;
+
+FilamentMouselessPlugin::make()
+    ->remap('crud.create', 'alt+shift+n')       // action id → new combo
+    ->remap(MouselessAction::Approve, 'opt+y')  // enum if you like autocomplete
+    ->remap('record.reject', null)              // null (or '') disables the shortcut
+```
+
+Or the same thing in the config file (fluent calls win over config):
+
+```php
+// config/mouseless.php
+'remap' => [
+    'crud.create' => 'alt+shift+n',
+    'record.reject' => null,
+],
+```
+
+The override rewrites the built-in defaults themselves — every language preset, the <kbd>?</kbd> overlay, the cheatsheet, hints and `/my-shortcuts` all agree. Perfect for stateless installs; on stateful ones a user who explicitly rebound the action keeps their own choice. Combos use the usual syntax (`mod` = ⌘/Ctrl per platform, and `opt`/`option` are accepted for `alt`). A disabled shortcut stays listed in the overlay as unbound — to hide the action entirely use `mouseless.disabled_actions`. <kbd>Esc</kbd> (`ui.close`) is protected and can't be remapped.
 
 #### Stateless Mode
 
@@ -226,6 +261,23 @@ This hides the `/my-shortcuts` page and removes its user-menu link. Shortcuts st
 For unattended installs, `php artisan mouseless:install --stateless` skips the migration prompt entirely.
 
 //todo: --no-interaction for no prompts at all?
+
+#### Singleton Mode
+
+Want users to rebind shortcuts, but the whole *presets* concept is more than your app needs? Singleton mode keeps `/my-shortcuts` fully editable and hides everything preset-shaped:
+
+```php
+->plugins([
+  FilamentMouselessPlugin::make()
+      ->singleton(),
+])
+```
+
+Users see just the shortcuts table — no preset dropdown, no create/rename/delete/publish layout buttons, no import/export, no "locked preset" banner, and the <kbd>?</kbd> overlay drops its "source: …" footer. Rebinding, disabling and resetting shortcuts work exactly as before; the first edit silently creates one managed personal layout per user in the background (no fork confirmation, no notification), and later edits keep writing to it.
+
+Because that per-user layout lives in the database, singleton mode still needs the package migrations — it sits between the default mode (full preset UI) and `->stateless()` (no customization at all). Combining `->singleton()` with `->stateless()` is contradictory; stateless wins and a warning is logged.
+
+Singleton mode hides presets from *end users* only: the opt-in admin page (`->settingsPage()`) keeps its preset vocabulary, since whoever configures the default layout needs to see what they're configuring.
 
 ### Overlay
 

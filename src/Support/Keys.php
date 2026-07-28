@@ -51,6 +51,7 @@ class Keys
         'super' => 'cmd',
         'control' => 'ctrl',
         'option' => 'alt',
+        'opt' => 'alt',
         'return' => 'enter',
         'esc' => 'escape',
         'del' => 'delete',
@@ -138,6 +139,31 @@ class Keys
         }
 
         return static::normalize(implode('+', $translated));
+    }
+
+    /**
+     * Translate alias part names (option/opt → alt, command → cmd, esc →
+     * escape, …) WITHOUT resolving the platform-neutral 'mod' — unlike
+     * {@see fromMousetrap()}. Presets store 'mod' raw so every request can
+     * resolve it for its own platform; use this for combos that end up in
+     * a preset (e.g. ->remap() overrides). Returns null for empty combos.
+     */
+    public static function translateAliases(?string $combo): ?string
+    {
+        if ($combo === null || trim($combo) === '') {
+            return null;
+        }
+
+        $parts = [];
+        foreach (explode('+', $combo) as $part) {
+            $part = strtolower(trim($part));
+            if ($part === '') {
+                continue;
+            }
+            $parts[] = $part === 'mod' ? 'mod' : (self::MOUSETRAP_ALIASES[$part] ?? $part);
+        }
+
+        return $parts === [] ? null : implode('+', $parts);
     }
 
     /**

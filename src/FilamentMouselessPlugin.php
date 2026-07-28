@@ -2,9 +2,12 @@
 
 namespace Blemli\FilamentMouseless;
 
+use Blemli\FilamentMouseless\Enums\MouselessAction;
 use Blemli\FilamentMouseless\Facades\FilamentMouseless;
 use Blemli\FilamentMouseless\Filament\Pages\MouselessSettings;
 use Blemli\FilamentMouseless\Filament\Pages\MyShortcuts;
+use Blemli\FilamentMouseless\Support\ActionMeta;
+use Blemli\FilamentMouseless\Support\Keys;
 use Blemli\FilamentMouseless\Support\Shield;
 use Blemli\FilamentMouseless\Support\ShortcutConflicts;
 use Closure;
@@ -14,6 +17,7 @@ use Filament\Facades\Filament;
 use Filament\Panel;
 use Filament\Support\Facades\FilamentView;
 use Illuminate\Support\Facades\Blade;
+use Illuminate\Support\Facades\Log;
 
 class FilamentMouselessPlugin implements Plugin
 {
@@ -45,6 +49,8 @@ class FilamentMouselessPlugin implements Plugin
 
     protected bool $stateless = false;
 
+    protected bool $singleton = false;
+
     protected bool $strictPermissions = false;
 
     protected ?bool $publishable = null;
@@ -62,6 +68,13 @@ class FilamentMouselessPlugin implements Plugin
     protected string | Closure | null $shortcutsLabel = null;
 
     protected ?string $shortcutsPosition = null;
+
+    /** @var array<string, ?string> action id => combo (null/'' = unbind) */
+    protected array $remaps = [];
+
+    private static bool $loggedIgnoredRemap = false;
+
+    private static bool $loggedSingletonConflict = false;
 
     public function getId(): string
     {
@@ -84,6 +97,94 @@ class FilamentMouselessPlugin implements Plugin
     public function isStateless(): bool
     {
         return $this->stateless;
+    }
+
+    /**
+     * Singleton mode: users never see presets — no preset dropdown, no
+     * create/rename/delete/publish layout actions, no import/export, no
+     * preset name anywhere. They can still rebind (or disable) every
+     * shortcut on /my-shortcuts; behind the scenes the package quietly
+     * manages one personal layout per user, created on their first edit.
+     *
+     * Unlike ->stateless() this keeps per-user state, so the package
+     * migrations are still required. Combining it with ->stateless() is
+     * contradictory — stateless wins and singleton is ignored (logged once).
+     */
+    public function singleton(bool $enabled = true): static
+    {
+        $this->singleton = $enabled;
+
+        return $this;
+    }
+
+    public function isSingleton(): bool
+    {
+        return $this->singleton && ! $this->stateless;
+    }
+
+    /** True when the current panel's plugin runs in singleton mode. */
+    public static function singletonEnabled(): bool
+    {
+        return static::safeGet()?->isSingleton() ?? false;
+    }
+
+    /**
+     * Override one default shortcut without authoring a whole preset — for
+     * devs happy with the base layout who just want to move a key or two.
+     * Takes the action id (string or {@see MouselessAction} case) and the
+     * new combo; pass null (or '') to disable the shortcut entirely.
+     *
+     * The override rewrites every built-in preset (all locales), so it shows
+     * up consistently in the overlay, cheatsheet, hints and /my-shortcuts.
+     * A user who explicitly rebound the action keeps their own choice.
+     * Same idea in the config file: `mouseless.remap`. Fluent calls win
+     * over config entries.
+     */
+    public function remap(string | MouselessAction $action, ?string $combo): static
+    {
+        $this->remaps[$action instanceof MouselessAction ? $action->value : $action] = $combo;
+
+        return $this;
+    }
+
+    /** @return array<string, ?string> */
+    public function getRemaps(): array
+    {
+        return $this->remaps;
+    }
+
+    /**
+     * Effective remap overrides: `mouseless.remap` config with the current
+     * panel's ->remap() calls layered on top. Combos are alias-translated
+     * ('opt+x' → 'alt+x', 'mod' stays platform-neutral) and empty combos
+     * become null (= unbound). Protected bindings (Escape) are ignored —
+     * without them users couldn't close or cancel anything.
+     *
+     * @return array<string, ?string>
+     */
+    public static function remapOverrides(): array
+    {
+        $merged = array_merge(
+            (array) config('mouseless.remap', []),
+            static::safeGet()?->getRemaps() ?? [],
+        );
+
+        $overrides = [];
+
+        foreach ($merged as $actionId => $combo) {
+            if (ActionMeta::isProtected($actionId)) {
+                if (! self::$loggedIgnoredRemap) {
+                    self::$loggedIgnoredRemap = true;
+                    Log::warning("[filament-mouseless] Ignoring remap of protected action '{$actionId}' — its binding cannot be changed.");
+                }
+
+                continue;
+            }
+
+            $overrides[$actionId] = Keys::translateAliases($combo);
+        }
+
+        return $overrides;
     }
 
     /**
@@ -444,6 +545,11 @@ class FilamentMouselessPlugin implements Plugin
 
     public function register(Panel $panel): void
     {
+        if ($this->singleton && $this->stateless && ! self::$loggedSingletonConflict) {
+            self::$loggedSingletonConflict = true;
+            Log::warning('[filament-mouseless] ->singleton() and ->stateless() are mutually exclusive — stateless wins, singleton mode is ignored. Remove one of the two calls.');
+        }
+
         $pages = [];
 
         if (! $this->stateless) {

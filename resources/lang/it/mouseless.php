@@ -230,7 +230,7 @@ return [
         'reset_all' => [
             'label' => 'Ripristina tutto',
             'heading' => 'Ripristinare tutto?',
-            'description' => 'Tutte le scorciatoie e le azioni disattivate tornano ai valori predefiniti del preset padre.',
+            'description' => 'Tutte le scorciatoie e le azioni disattivate tornano ai valori predefiniti.',
             'done' => 'Tutte le scorciatoie ripristinate.',
         ],
         'delete_layout' => [

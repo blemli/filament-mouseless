@@ -130,6 +130,16 @@ class MyShortcuts extends Page implements HasTable
     }
 
     /**
+     * Singleton mode (plugin ->singleton()): presets exist but stay invisible —
+     * the view drops the selector aside, the locked banner and the fork
+     * confirmation, and the auto-fork below happens without a notification.
+     */
+    public function isSingletonMode(): bool
+    {
+        return FilamentMouselessPlugin::singletonEnabled();
+    }
+
+    /**
      * Fork the active (locked) preset into a personal layout
      * („Stephans Layout") and switch the user to it.
      */
@@ -148,6 +158,12 @@ class MyShortcuts extends Page implements HasTable
         // recording that "record" started in the same request.
         $this->keepRecordingThroughPresetChange = true;
         $this->setActivePresetSlug($preset->slug);
+
+        // In singleton mode the layout is invisible plumbing — announcing
+        // its creation would be the one thing that gives presets away.
+        if ($this->isSingletonMode()) {
+            return;
+        }
 
         Notification::make()
             ->title(__('filament-mouseless::mouseless.table.fork.done', ['name' => $name]))

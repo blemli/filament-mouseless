@@ -62,6 +62,8 @@ class TestCase extends Orchestra
     public function getEnvironmentSetUp($app): void
     {
         $app['config']->set('database.default', 'testing');
+        // Livewire component tests encrypt snapshots/cookies and need a key.
+        $app['config']->set('app.key', 'base64:' . base64_encode(str_repeat('a', 32)));
     }
 
     protected function defineDatabaseMigrations(): void

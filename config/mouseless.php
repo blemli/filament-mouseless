@@ -50,6 +50,24 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Remap single shortcuts
+    |--------------------------------------------------------------------------
+    | Override individual default shortcuts without authoring a whole preset —
+    | the override applies to every built-in preset (all locales). Use null to
+    | disable a shortcut (it stays listed in the overlay as unbound; use
+    | 'disabled_actions' above to hide it entirely). Combos accept the usual
+    | syntax plus aliases: 'mod' = ⌘/Ctrl per platform, 'opt'/'option' = alt.
+    | ->remap() calls on the plugin win over entries here.
+    |
+    | 'remap' => [
+    |     'crud.create' => 'alt+shift+n',
+    |     'record.reject' => null, // disable
+    | ],
+    */
+    'remap' => [],
+
+    /*
+    |--------------------------------------------------------------------------
     | Reserved keys (unbindable)
     |--------------------------------------------------------------------------
     | Combos the browser or OS wins regardless of preventDefault — the recorder

@@ -1,5 +1,7 @@
 <x-filament-panels::page>
-    @if ($this->isShortcutsLocked())
+    {{-- Singleton mode: presets are invisible plumbing — no locked banner,
+         no selector aside; the table stands alone and edits just work. --}}
+    @if (! $this->isSingletonMode() && $this->isShortcutsLocked())
         <x-filament::callout
             color="info"
             icon="heroicon-o-lock-closed"
@@ -13,10 +15,12 @@
         />
     @endif
 
-    <div class="fi-mouseless-layout">
-        <aside class="fi-mouseless-layout-aside">
-            @livewire(\Blemli\FilamentMouseless\Filament\Widgets\PresetSelector::class)
-        </aside>
+    <div @class(['fi-mouseless-layout', 'fi-mouseless-layout-singleton' => $this->isSingletonMode()])>
+        @unless ($this->isSingletonMode())
+            <aside class="fi-mouseless-layout-aside">
+                @livewire(\Blemli\FilamentMouseless\Filament\Widgets\PresetSelector::class)
+            </aside>
+        @endunless
 
         <div class="fi-mouseless-layout-main">
             {{ $this->table }}

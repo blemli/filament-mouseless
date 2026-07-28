@@ -96,6 +96,17 @@ class PresetRegistry
             $this->loadInto($presets, $userPath);
         }
 
+        // Dev remaps (config `mouseless.remap` / plugin ->remap()) rewrite the
+        // built-in defaults themselves, so every locale's preset, the overlay,
+        // the cheatsheet and /my-shortcuts all agree. User forks sit nearer in
+        // the resolution chain and still win where they explicitly rebound.
+        $overrides = FilamentMouselessPlugin::remapOverrides();
+        if ($overrides !== []) {
+            foreach ($presets as $slug => $preset) {
+                $presets[$slug]['bindings'] = array_merge((array) ($preset['bindings'] ?? []), $overrides);
+            }
+        }
+
         return $this->builtInCache = $presets;
     }
 

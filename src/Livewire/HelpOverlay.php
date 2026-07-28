@@ -45,7 +45,9 @@ class HelpOverlay extends Component
         return view('filament-mouseless::livewire.help-overlay', [
             'groups' => $groups,
             'customRows' => $this->customRows($resolved['bindings']),
-            'preset' => $resolved['preset'],
+            // Singleton mode hides presets everywhere — the footer's
+            // "source: <preset>" line would leak the managed layout's name.
+            'preset' => FilamentMouselessPlugin::singletonEnabled() ? null : $resolved['preset'],
             'printable' => $plugin?->isCheatsheetPrintable() ?? true,
             'brandName' => filament()->getBrandName(),
             'slogan' => config('app.slogan'),

@@ -230,7 +230,7 @@ return [
         'reset_all' => [
             'label' => 'Tout réinitialiser',
             'heading' => 'Tout réinitialiser ?',
-            'description' => 'Tous les raccourcis et actions désactivées reviennent aux valeurs du preset parent.',
+            'description' => 'Tous les raccourcis et actions désactivées reviennent à leurs valeurs par défaut.',
             'done' => 'Tous les raccourcis réinitialisés.',
         ],
         'delete_layout' => [

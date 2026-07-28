@@ -231,7 +231,7 @@ return [
         'reset_all' => [
             'label' => 'Reset all',
             'heading' => 'Reset everything?',
-            'description' => 'All shortcuts and disabled actions return to the defaults of the parent preset.',
+            'description' => 'All shortcuts and disabled actions return to their defaults.',
             'done' => 'All shortcuts reset.',
         ],
         'delete_layout' => [

@@ -403,6 +403,15 @@ body.fi-mouseless-mobile:not(.fi-mouseless-kbd) .fi-mouseless-shortcuts-link {
     min-width: 0;
 }
 
+/* Singleton mode: no preset aside — the table takes the full width. */
+.fi-mouseless-layout-singleton {
+    grid-template-columns: minmax(0, 1fr);
+}
+
+.fi-mouseless-layout-singleton .fi-mouseless-layout-main {
+    grid-column: 1;
+}
+
 @media (max-width: 64rem) {
     .fi-mouseless-layout {
         grid-template-columns: minmax(0, 1fr);

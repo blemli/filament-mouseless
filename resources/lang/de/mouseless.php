@@ -230,7 +230,7 @@ return [
         'reset_all' => [
             'label' => 'Alles zurücksetzen',
             'heading' => 'Alles zurücksetzen?',
-            'description' => 'Alle Tastenkürzel und deaktivierten Aktionen werden auf die Standardwerte des übergeordneten Presets zurückgesetzt.',
+            'description' => 'Alle Tastenkürzel und deaktivierten Aktionen werden auf ihre Standardwerte zurückgesetzt.',
             'done' => 'Alle Tastenkürzel zurückgesetzt.',
         ],
         'delete_layout' => [

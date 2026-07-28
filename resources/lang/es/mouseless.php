@@ -230,7 +230,7 @@ return [
         'reset_all' => [
             'label' => 'Restablecer todo',
             'heading' => '¿Restablecer todo?',
-            'description' => 'Todos los atajos y acciones desactivadas vuelven a los valores del preset padre.',
+            'description' => 'Todos los atajos y acciones desactivadas vuelven a sus valores predeterminados.',
             'done' => 'Todos los atajos restablecidos.',
         ],
         'delete_layout' => [

@@ -328,20 +328,25 @@ trait InteractsWithShortcutsTable
     /**
      * Wraps modifying row actions: on a locked (not owned) preset, ask first —
      * confirming forks into a personal layout, then the action proceeds.
+     * Singleton mode skips the prompt: the fork is invisible plumbing there,
+     * so the edit must feel like a plain in-place change.
      */
     protected function configureShortcutsForkConfirmation(Action $action): Action
     {
+        $needsPrompt = fn (): bool => $this->isShortcutsLocked()
+            && ! FilamentMouselessPlugin::singletonEnabled();
+
         // Everything must stay conditional: a non-null modal heading/description
         // alone makes Filament open a modal even without requiresConfirmation.
         return $action
-            ->requiresConfirmation(fn (): bool => $this->isShortcutsLocked())
-            ->modalHeading(fn (): ?string => $this->isShortcutsLocked()
+            ->requiresConfirmation($needsPrompt)
+            ->modalHeading(fn (): ?string => $needsPrompt()
                 ? __('filament-mouseless::mouseless.table.fork.heading')
                 : null)
-            ->modalDescription(fn (): ?string => $this->isShortcutsLocked()
+            ->modalDescription(fn (): ?string => $needsPrompt()
                 ? __('filament-mouseless::mouseless.table.fork.description', ['name' => $this->shortcutsForkName()])
                 : null)
-            ->modalSubmitActionLabel(fn (): ?string => $this->isShortcutsLocked()
+            ->modalSubmitActionLabel(fn (): ?string => $needsPrompt()
                 ? __('filament-mouseless::mouseless.table.fork.confirm')
                 : null);
     }
