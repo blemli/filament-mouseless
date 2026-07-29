@@ -222,8 +222,7 @@ trait InteractsWithShortcutsTable
                     ->action(fn (array $record) => $this->resetShortcut($record['id'])),
                 $this->configureShortcutsForkConfirmation(
                     Action::make('toggleShortcutDisabled')
-                        // Admin-disabled rows can't be re-enabled by the user.
-                        ->visible(fn (array $record): bool => ! ($record['readonly'] ?? false) && ! ($record['admin_disabled'] ?? false) && ! $this->isProtectedShortcut($record['id']))
+                        ->visible(fn (array $record): bool => ! ($record['readonly'] ?? false) && ! $this->isProtectedShortcut($record['id']))
                         ->label(fn (array $record): string => $record['disabled']
                             ? __('filament-mouseless::mouseless.table.actions.enable')
                             : __('filament-mouseless::mouseless.table.actions.disable'))
@@ -361,48 +360,25 @@ trait InteractsWithShortcutsTable
      * confirming forks into a personal layout, then the action proceeds.
      * Singleton mode skips the prompt: the fork is invisible plumbing there,
      * so the edit must feel like a plain in-place change.
-     *
-     * The condition and texts are overridable — the admin defaults table
-     * reuses the same wrapper for its "this applies to ALL users" warning.
      */
     protected function configureShortcutsForkConfirmation(Action $action): Action
     {
-        $needsPrompt = fn (): bool => $this->shortcutsEditNeedsConfirmation();
+        $needsPrompt = fn (): bool => $this->isShortcutsLocked()
+            && ! FilamentMouselessPlugin::singletonEnabled();
 
         // Everything must stay conditional: a non-null modal heading/description
         // alone makes Filament open a modal even without requiresConfirmation.
         return $action
             ->requiresConfirmation($needsPrompt)
             ->modalHeading(fn (): ?string => $needsPrompt()
-                ? $this->shortcutsEditConfirmHeading()
+                ? __('filament-mouseless::mouseless.table.fork.heading')
                 : null)
             ->modalDescription(fn (): ?string => $needsPrompt()
-                ? $this->shortcutsEditConfirmDescription()
+                ? __('filament-mouseless::mouseless.table.fork.description', ['name' => $this->shortcutsForkName()])
                 : null)
             ->modalSubmitActionLabel(fn (): ?string => $needsPrompt()
-                ? $this->shortcutsEditConfirmSubmitLabel()
+                ? __('filament-mouseless::mouseless.table.fork.confirm')
                 : null);
-    }
-
-    protected function shortcutsEditNeedsConfirmation(): bool
-    {
-        return $this->isShortcutsLocked()
-            && ! FilamentMouselessPlugin::singletonEnabled();
-    }
-
-    protected function shortcutsEditConfirmHeading(): string
-    {
-        return __('filament-mouseless::mouseless.table.fork.heading');
-    }
-
-    protected function shortcutsEditConfirmDescription(): string
-    {
-        return __('filament-mouseless::mouseless.table.fork.description', ['name' => $this->shortcutsForkName()]);
-    }
-
-    protected function shortcutsEditConfirmSubmitLabel(): string
-    {
-        return __('filament-mouseless::mouseless.table.fork.confirm');
     }
 
     /** Proposed name for the auto-created personal layout. */
@@ -555,11 +531,6 @@ trait InteractsWithShortcutsTable
             unset($row);
         }
 
-        // Host decoration first — it may change effective combos (my-shortcuts
-        // overlays admin defaults/kept keys), and duplicate detection below
-        // must see the final values.
-        $rows = $this->decorateShortcutRows($rows);
-
         // Duplicate detection runs across every effective combo (core + custom)
         // so a preset key colliding with a code-defined one is flagged too.
         $comboCounts = [];
@@ -577,19 +548,6 @@ trait InteractsWithShortcutsTable
                 && ($comboCounts[$row['normalized']] ?? 0) > 1;
         }
 
-        return $rows;
-    }
-
-    /**
-     * Host hook: enrich rows before they render. My-shortcuts overlays admin
-     * effects (kept keys, hard disables), the admin defaults table adds
-     * cross-locale collision warnings.
-     *
-     * @param  array<int, array<string, mixed>>  $rows
-     * @return array<int, array<string, mixed>>
-     */
-    protected function decorateShortcutRows(array $rows): array
-    {
         return $rows;
     }
 

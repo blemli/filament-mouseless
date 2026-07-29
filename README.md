@@ -277,8 +277,6 @@ Users see just the shortcuts table — no preset dropdown, no create/rename/dele
 
 Because that per-user layout lives in the database, singleton mode still needs the package migrations — it sits between the default mode (full preset UI) and `->stateless()` (no customization at all). Combining `->singleton()` with `->stateless()` is contradictory; stateless wins and a warning is logged.
 
-Singleton mode hides presets from *end users* only: the opt-in admin page (`->settingsPage()`) keeps its preset vocabulary, since whoever configures the default layout needs to see what they're configuring.
-
 #### Statistics on avoided clicks
 
 Every shortcut fired is a click you didn't make. Opt in to counting them:
@@ -305,7 +303,6 @@ What you get:
 
   If your dashboard page overrides `getWidgets()`, panel-level registration won't reach it — add `MouselessWidget::class` to that list instead.
 - **An "Invoked" table column**, hidden by default — toggle it on and sort descending for your personal most-used-shortcuts ranking.
-- **An all-users block** on the admin page (`->settingsPage()`): org-wide clicks avoided, active users, most-used shortcuts, and a keyboard leaderboard. Hide it via `mouseless.admin.statistics => false`.
 - **Milestone congratulations** at 100, 1'000 and 10'000 lifetime shortcut uses.
 - **Smarter teaching**: with `->teach()` also on, the one-nudge-per-page slot is spent on your *most-clicked* still-unlearned actions first — a one-off click no longer burns the nudge a frequent offender should have gotten. Without statistics, teach behaves exactly as before.
 
@@ -348,39 +345,11 @@ FilamentMouselessPlugin::make()
     ->disableCheatsheetPrinting()
 ```
 
-### Admin Page
-
-#### Show the Admin page
-
-The `/mouseless-settings` page (default preset, the defaults table, all-users statistics) is off by default. Opt in:
-
-```php
-->plugins([
-  FilamentMouselessPlugin::make()
-      ->settingsPage(),
-])
-```
-
-#### Edit the defaults for all users
-
-The admin page hosts the same shortcuts table as `/my-shortcuts` — but editing it changes the **defaults for every user**. Changes are stored as deltas in the `mouseless_admin_overrides` table (publish + run the package migrations when upgrading), never inside anyone's preset:
-
-- **Rebinds are polite.** A user keeps their key when they explicitly rebound it themselves — or (with `->statistics()` on) when they actively *used* it before your change: muscle memory is grandfathered, and their `/my-shortcuts` row shows a "kept for you" badge with the new default. Everyone else, including untouched actions inside personal layouts, gets the new default. Without statistics there is no usage signal, so rebinds simply reach everyone who didn't explicitly rebind.
-- **Disables are hard.** A disabled action disappears for every user; their table shows it locked ("disabled by admin").
-- **No silent key flips.** If a newly assigned default collides with a key a user already has (kept or explicit), the *new* default loses for that user and the action shows as unbound.
-- The first modifying edit per session asks for confirmation ("this changes the defaults for ALL users"); a warning icon flags deltas that collide with another locale's built-in preset.
-- Row reset (or "reset all") deletes the delta and returns to the shipped default.
-- Hide the table via `mouseless.admin.defaults_table => false`.
-
-The **Standard-Preset** select on the same page picks the org-wide fallback preset (used when no built-in matches a user's locale) and now persists in the same table.
-
-#### Preset moderation
-
-When publishing with approval is enabled, the moderation queue lives on its own subpage, `/mouseless-settings/moderation` (nav item "Shortcut moderation"). It disappears when `mouseless.publishing.enabled` or `require_approval` is off.
+### Look & Feel
 
 #### Custom Icon
 
-Used by the admin page nav and the user-menu link.
+Used by the my-shortcuts page nav and the user-menu link.
 
 ```php
 FilamentMouselessPlugin::make()
@@ -391,19 +360,7 @@ FilamentMouselessPlugin::make()
 
 ```php
 FilamentMouselessPlugin::make()
-    ->settingsPageLabel('Keyboard')
     ->shortcutsLabel(fn () => __('app.my_shortcuts'))
-```
-
-
-
-#### Navigation Group
-
-Defaults to a translated "System". Pass `null` to drop the group.
-
-```php
-FilamentMouselessPlugin::make()
-    ->settingsPageNavigationGroup('Settings')
 ```
 
 ### User Presets
@@ -493,7 +450,7 @@ You can also restrict shortcuts for specific users, using permissions:
 
 ### Permissions
 
-By default everyone gets shortcuts. With [Filament Shield](https://github.com/bezhanSalleh/filament-shield) installed, mouseless registers three permissions so they appear in the role-edit UI, but they're only enforced when you opt in:
+By default everyone gets shortcuts. With [Filament Shield](https://github.com/bezhanSalleh/filament-shield) installed, mouseless registers two permissions so they appear in the role-edit UI, but they're only enforced when you opt in:
 
 //todo: shouldn't they also not show up if strictPermissions isn't enabled?
 
@@ -508,7 +465,6 @@ By default everyone gets shortcuts. With [Filament Shield](https://github.com/be
 | --- | --- |
 | `MouselessUse` (custom) | Master switch. When denied: no link, no overlay, no boot script, no page access. |
 | `View:MyShortcuts` | The per-user customization page. Requires `MouselessUse` too. |
-| `View:MouselessSettings` | The admin settings page. Requires `MouselessUse` too. |
 
 Key formatting follows Shield's `permissions.case`/`separator`. Surface `MouselessUse` in the role-edit UI by enabling the custom-permissions tab, then `shield:generate`:
 

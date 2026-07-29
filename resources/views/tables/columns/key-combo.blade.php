@@ -82,29 +82,5 @@
                 {{ __('filament-mouseless::mouseless.table.code_defined') }}
             </x-filament::badge>
         @endif
-
-        @if ($record['kept'] ?? false)
-            <span title="{{ __('filament-mouseless::mouseless.table.kept_tooltip', ['key' => ($record['kept_default'] ?? null) ? Keys::display($record['kept_default']) : '—']) }}">
-                <x-filament::badge color="info" icon="heroicon-m-hand-raised">
-                    {{ __('filament-mouseless::mouseless.table.kept') }}
-                </x-filament::badge>
-            </span>
-        @endif
-
-        @if (($record['cross_locale'] ?? []) !== [])
-            <span title="{{ implode(' · ', $record['cross_locale']) }}">
-                <x-filament::badge color="warning" icon="heroicon-m-language">
-                    {{ __('filament-mouseless::mouseless.table.cross_locale') }}
-                </x-filament::badge>
-            </span>
-        @endif
-
-        @if ($record['admin_disabled'] ?? false)
-            <span title="{{ __('filament-mouseless::mouseless.table.admin_disabled_tooltip') }}">
-                <x-filament::badge color="gray" icon="heroicon-m-lock-closed">
-                    {{ __('filament-mouseless::mouseless.table.admin_disabled') }}
-                </x-filament::badge>
-            </span>
-        @endif
     @endif
 </div>

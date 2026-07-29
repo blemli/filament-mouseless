@@ -5,36 +5,14 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | SuperAdmin page
-    |--------------------------------------------------------------------------
-    | Hide the entire page (and all its sections) by setting enabled => false.
-    | When the page is enabled, individual sections can be toggled too.
-    */
-    'admin' => [
-        'enabled' => true,
-        'default_preset' => true,
-        // The defaults table: the my-shortcuts table editing the shortcut
-        // defaults for ALL users (stored as mouseless_admin_overrides deltas).
-        'defaults_table' => true,
-        'moderation_queue' => true,
-        // The all-users statistics block (only shows when the plugin has ->statistics()).
-        'statistics' => true,
-
-        // Authorization gate for the SuperAdmin page (view + save + approve + reject).
-        // RECOMMENDED: define a Gate ability in your AuthServiceProvider and set the
-        // string here — e.g. 'moderate-mouseless-presets'. Leaving this null opens
-        // the page to any authenticated panel user, which is fine for single-admin
-        // installs but unsafe when multiple roles can reach the panel.
-        'gate' => null,
-    ],
-
-    /*
-    |--------------------------------------------------------------------------
     | Publishing (opt-in)
     |--------------------------------------------------------------------------
     | Off by default. When enabled, users with the configured Gate can publish
-    | their personal presets into the shared picker. Optional approval queue
-    | routes drafts through the SuperAdmin page.
+    | their personal presets into the shared picker. With require_approval a
+    | published preset stays invisible until approved — there is currently no
+    | approval UI, so approve in code: $preset->forceFill(['approved_at' =>
+    | now(), 'approved_by' => $adminId])->save(). Set require_approval to
+    | false to skip the queue entirely.
     */
     'publishing' => [
         'enabled' => false,

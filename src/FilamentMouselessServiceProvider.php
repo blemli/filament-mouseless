@@ -384,7 +384,6 @@ class FilamentMouselessServiceProvider extends PackageServiceProvider
             [
                 ['MouselessUse', 'Master switch: link, overlay, boot script, page access'],
                 ['View:MyShortcuts', 'The per-user customization page'],
-                ['View:MouselessSettings', 'The admin settings page'],
             ],
         );
 
@@ -527,7 +526,6 @@ class FilamentMouselessServiceProvider extends PackageServiceProvider
     {
         return [
             'filament-mouseless::nav' => 'heroicon-o-cursor-arrow-ripple',
-            'filament-mouseless::admin' => 'heroicon-o-cursor-arrow-ripple',
             'filament-mouseless::profile' => 'heroicon-o-cursor-arrow-ripple',
             'filament-mouseless::help' => 'heroicon-o-cursor-arrow-ripple',
         ];
@@ -602,7 +600,6 @@ class FilamentMouselessServiceProvider extends PackageServiceProvider
             'create_mouseless_user_settings_table',
             'create_mouseless_nudges_table',
             'create_mouseless_statistics_table',
-            'create_mouseless_admin_overrides_table',
         ];
     }
 }

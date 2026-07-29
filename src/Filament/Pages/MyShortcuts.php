@@ -5,10 +5,8 @@ namespace Blemli\FilamentMouseless\Filament\Pages;
 use Blemli\FilamentMouseless\Facades\FilamentMouseless;
 use Blemli\FilamentMouseless\Filament\Concerns\InteractsWithShortcutsTable;
 use Blemli\FilamentMouseless\FilamentMouselessPlugin;
-use Blemli\FilamentMouseless\Models\AdminOverride;
 use Blemli\FilamentMouseless\Models\Preset;
 use Blemli\FilamentMouseless\Models\UserSetting;
-use Blemli\FilamentMouseless\Support\Keys;
 use Blemli\FilamentMouseless\Support\Shield;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
@@ -185,65 +183,6 @@ class MyShortcuts extends Page implements HasTable
         ]);
 
         return true;
-    }
-
-    /**
-     * Overlay the admin-override layer onto the rows so the table shows what
-     * the engine actually resolves: applied admin defaults replace the stale
-     * base combo, grandfathered keys get their "kept" badge, conflict-dropped
-     * actions show unbound, and admin-disabled rows lock shut.
-     *
-     * @param  array<int, array<string, mixed>>  $rows
-     * @return array<int, array<string, mixed>>
-     */
-    protected function decorateShortcutRows(array $rows): array
-    {
-        $decisions = FilamentMouseless::resolver()->adminOverridesFor(auth()->id());
-        $adminDisabled = AdminOverride::disabledActions();
-
-        if ($decisions === [] && $adminDisabled === []) {
-            return $rows;
-        }
-
-        foreach ($rows as $index => $row) {
-            $decision = $decisions[$row['id']] ?? null;
-
-            if ($decision !== null) {
-                switch ($decision['state']) {
-                    case 'applied':
-                        $rows[$index]['combo'] = $decision['combo'];
-                        $rows[$index]['normalized'] = Keys::normalize($decision['combo']);
-                        $rows[$index]['default'] = $decision['combo'];
-
-                        break;
-                    case 'kept':
-                        $rows[$index]['combo'] = $decision['combo'];
-                        $rows[$index]['normalized'] = Keys::normalize($decision['combo']);
-                        $rows[$index]['kept'] = true;
-                        $rows[$index]['kept_default'] = $decision['default'] ?? null;
-
-                        break;
-                    case 'explicit':
-                        // The user's binding stands; only the "default" column
-                        // reflects that the default underneath moved.
-                        $rows[$index]['default'] = $decision['default'] ?? $row['default'];
-
-                        break;
-                    case 'conflict':
-                        $rows[$index]['combo'] = null;
-                        $rows[$index]['normalized'] = null;
-
-                        break;
-                }
-            }
-
-            if (in_array($row['id'], $adminDisabled, true)) {
-                $rows[$index]['disabled'] = true;
-                $rows[$index]['admin_disabled'] = true;
-            }
-        }
-
-        return $rows;
     }
 
     // ------------------------------------------------------------------
