@@ -1,6 +1,7 @@
 <?php
 
 use Blemli\FilamentMouseless\FilamentMouselessPlugin;
+use Blemli\FilamentMouseless\Livewire\HelpOverlay;
 use Blemli\FilamentMouseless\Support\ScriptData;
 use Filament\Facades\Filament;
 use Filament\Panel;
@@ -57,11 +58,11 @@ it('can be disabled explicitly', function () {
 
 it('lists the chord in the help overlay only when enabled', function () {
     makeJumpPanel('jump-overlay-off-panel', jump: false);
-    Livewire\Livewire::test(Blemli\FilamentMouseless\Livewire\HelpOverlay::class)
+    Livewire\Livewire::test(HelpOverlay::class)
         ->assertDontSee('2×');
 
     makeJumpPanel('jump-overlay-on-panel', jump: true);
-    Livewire\Livewire::test(Blemli\FilamentMouseless\Livewire\HelpOverlay::class)
+    Livewire\Livewire::test(HelpOverlay::class)
         ->assertSee('2×')
         ->assertSee(__('filament-mouseless::mouseless.action.ui.jump'));
 });
