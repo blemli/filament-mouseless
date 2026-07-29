@@ -394,6 +394,9 @@ function bootMouseless() {
         '.fi-tabs-item',
         // Copyable values outside tables (infolist entries on view pages).
         '.fi-copyable',
+        // FilePond's visible "browse" trigger — its real file input is
+        // visually hidden and correctly dropped by the visibility checks.
+        '.filepond--label-action',
     ].join(',');
 
     function setupJump() {
@@ -553,19 +556,29 @@ function bootMouseless() {
 
         const push = (el, key, commit) => {
             if (!el) return;
-            // A visually-hidden input rendered as a styled label (toggle
-            // buttons, custom radios): badge and click the label instead —
-            // the key stays the input's, so the label inherits stability.
-            if (!visuallyShown(el) && el.labels && el.labels.length) {
-                const lab = Array.from(el.labels).find(visuallyShown);
-                if (lab) { el = lab; commit = 'click'; }
-            }
-            if (!visuallyShown(el)) return;
-            const rect = el.getBoundingClientRect();
+            // A hidden or covered input rendered as a styled label (toggle
+            // buttons, custom radios — the input hides via opacity/clip and
+            // the label paints over it): badge and click the LABEL instead.
+            // The key stays the input's, so the label inherits stability.
+            const labelSwap = () => {
+                if (!el.labels || !el.labels.length) return false;
+                const lab = Array.from(el.labels).find(l => visuallyShown(l) && hittable(l, l.getBoundingClientRect()));
+                if (!lab) return false;
+                el = lab;
+                commit = 'click';
+                return true;
+            };
+            if (!visuallyShown(el) && !labelSwap()) return;
+            let rect = el.getBoundingClientRect();
             if (!rect.width && !rect.height) return;
             if (rect.bottom <= 0 || rect.top >= innerHeight || rect.right <= 0 || rect.left >= innerWidth) return;
             if (el.closest(JUMP_EXCLUDE)) return;
-            if (!hittable(el, rect)) return;
+            if (!hittable(el, rect)) {
+                if (!labelSwap()) return;
+                rect = el.getBoundingClientRect();
+                if (rect.bottom <= 0 || rect.top >= innerHeight || rect.right <= 0 || rect.left >= innerWidth) return;
+                if (el.closest(JUMP_EXCLUDE)) return;
+            }
             for (const seen of out) {
                 // Containment dedupe: parents come out of querySelectorAll
                 // first, so a dropdown trigger wrapper wins over its button.
@@ -1116,6 +1129,27 @@ function bootMouseless() {
             renderNudge(payload);
         }, true);
 
+        // Tab-reaching a control IS keyboard navigation — it advances the
+        // ui.jump streak (one count per burst, so a single form walk isn't
+        // an instant "taught"). Combined with the click-side streak break
+        // above, the jump nudge only ever targets users whose controls get
+        // reached by mouse.
+        let lastTabAt = 0;
+        let lastTabCountAt = 0;
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Tab') lastTabAt = Date.now();
+        }, true);
+        document.addEventListener('focusin', (e) => {
+            if (cfg.debug) console.log(TAG, 'teach: focusin', e.target?.tagName, 'tabAge=', Date.now() - lastTabAt);
+            if (Date.now() - lastTabAt > 150) return; // focus not caused by Tab
+            if (Date.now() - lastTabCountAt < 10_000) return; // one per burst
+            const el = e.target?.closest?.('input, select, textarea, button, a[href], [contenteditable], [role="button"], [role="tab"], [role="slider"]');
+            if (!el) return;
+            lastTabCountAt = Date.now();
+            console.log(TAG, 'teach: Tab navigation counts as ui.jump keyboard use');
+            teachRecordUsed('ui.jump');
+        }, true);
+
         // A nudge stashed by a navigating click on the previous page: show it
         // here, where the user actually is. Stale entries (reopened tab) drop.
         function replayPendingNudge() {
@@ -1143,6 +1177,12 @@ function bootMouseless() {
             const el = e.target.closest?.('button, a[href], input, select, textarea, [role="button"], [role="tab"], .fi-copyable, [x-sortable-handle]');
             if (!el || el.closest('.fi-sidebar, .fi-breadcrumbs, .phpdebugbar')) return;
             const st = states['ui.jump'] ??= {};
+            // The mouse reached a control — that breaks the keyboard streak,
+            // exactly like clicking any other action's target.
+            if (!st.learned && (st.streak || 0) > 0) {
+                st.streak = 0;
+                try { window.Livewire?.dispatch?.('mouseless-teach-clicked', { actionId: 'ui.jump' }); } catch {}
+            }
             if (muted || nudgedThisPage || st.dismissed || st.learned) return;
             if (st.nextAt && Date.now() < st.nextAt) return;
             nudgedThisPage = true;
