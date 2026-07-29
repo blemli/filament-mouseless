@@ -19,6 +19,11 @@ return [
         'empty' => 'Nichts zum Hinspringen.',
     ],
 
+    'jump' => [
+        'no_targets' => 'Keine Sprungziele auf diesem Bildschirm.',
+        'move_hint' => 'Mit ↑/↓ verschieben · Enter legt die Zeile ab.',
+    ],
+
     'ns' => [
         'crud' => 'CRUD',
         'list' => 'Liste',
@@ -95,12 +100,23 @@ return [
             'close' => 'Schliessen',
             'next-tab' => 'Nächster Tab',
             'prev-tab' => 'Vorheriger Tab',
+            'jump' => 'Zu Element springen',
         ],
     ],
 
     'teach' => [
         'title' => 'Du hättest einfach :key drücken können',
         'body' => '„:label" geht auch ohne Maus.',
+        'body_tab' => 'Der Wechsel zum Tab „:label" geht auch ohne Maus.',
+        'body_nav' => 'Der Wechsel zu „:label" geht auch ohne Maus.',
+        'body_row_open' => 'Das Öffnen einer Zeile geht auch ohne Maus.',
+        'body_row_select' => 'Das Auswählen von Zeilen geht auch ohne Maus.',
+        'body_back' => 'Zurück geht auch ohne Maus.',
+        'body_search' => 'Die Tabellensuche geht auch ohne Maus.',
+        'body_search_global' => 'Die globale Suche geht auch ohne Maus.',
+        'body_page' => 'Das Umblättern geht auch ohne Maus.',
+        'body_sort' => 'Das Sortieren geht auch ohne Maus.',
+        'body_jump' => 'Ein Doppel-Tipp beschriftet jedes Element mit einem Buchstaben — tippen genügt.',
         'change' => 'Kürzel ändern',
         'dismiss' => 'Nicht mehr anzeigen',
         'mute' => 'Gar keine Tipps anzeigen',

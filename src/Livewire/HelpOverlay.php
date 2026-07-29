@@ -40,6 +40,13 @@ class HelpOverlay extends Component
         }
         ksort($groups);
 
+        // Jump mode is a gesture, not a preset binding — list it in the UI
+        // group (only when the plugin activates it) so the overlay and the
+        // printable cheatsheet teach the double-tap.
+        if (FilamentMouselessPlugin::jumpEnabled()) {
+            $groups['ui']['ui.jump'] = (string) config('mouseless.jump.chord', 'ctrl,ctrl');
+        }
+
         $plugin = FilamentMouselessPlugin::safeGet();
 
         return view('filament-mouseless::livewire.help-overlay', [

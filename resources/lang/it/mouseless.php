@@ -19,6 +19,11 @@ return [
         'empty' => 'Niente a cui saltare qui.',
     ],
 
+    'jump' => [
+        'no_targets' => 'Nessuna destinazione di salto in questa schermata.',
+        'move_hint' => 'Sposta con ↑/↓ · Invio rilascia la riga.',
+    ],
+
     'ns' => [
         'crud' => 'CRUD',
         'list' => 'Lista',
@@ -95,12 +100,23 @@ return [
             'close' => 'Chiudi',
             'next-tab' => 'Scheda successiva',
             'prev-tab' => 'Scheda precedente',
+            'jump' => 'Salta a un controllo',
         ],
     ],
 
     'teach' => [
         'title' => 'Bastava premere :key',
         'body' => '«:label» funziona anche senza mouse.',
+        'body_tab' => 'Passare alla scheda «:label» funziona anche senza mouse.',
+        'body_nav' => 'Passare a «:label» funziona anche senza mouse.',
+        'body_row_open' => 'Aprire una riga funziona anche senza mouse.',
+        'body_row_select' => 'Selezionare le righe funziona anche senza mouse.',
+        'body_back' => 'Tornare indietro funziona anche senza mouse.',
+        'body_search' => 'La ricerca nella tabella funziona anche senza mouse.',
+        'body_search_global' => 'La ricerca globale funziona anche senza mouse.',
+        'body_page' => 'Cambiare pagina funziona anche senza mouse.',
+        'body_sort' => 'L\'ordinamento funziona anche senza mouse.',
+        'body_jump' => 'Un doppio tocco mette una lettera su ogni controllo: digitala e ci sei.',
         'change' => 'Cambia scorciatoia',
         'dismiss' => 'Non mostrare più',
         'mute' => 'Non mostrare nessun suggerimento',

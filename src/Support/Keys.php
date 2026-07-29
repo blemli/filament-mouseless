@@ -248,6 +248,17 @@ class Keys
 
     public static function display(?string $combo, ?bool $mac = null): string
     {
+        // A double-tap chord ("ctrl,ctrl") — not a combo the normalizer knows.
+        if ($combo !== null && str_contains($combo, ',')) {
+            $mac ??= static::isMac();
+            $part = strtolower(trim(explode(',', $combo)[0]));
+            $label = $mac
+                ? (self::MAC_MODIFIER_SYMBOLS[$part] ?? ucfirst($part))
+                : (self::GENERIC_MODIFIER_LABELS[$part] ?? ucfirst($part));
+
+            return '2× ' . $label;
+        }
+
         return implode(' ', static::displayParts($combo, $mac));
     }
 

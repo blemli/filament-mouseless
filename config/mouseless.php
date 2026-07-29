@@ -94,6 +94,21 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Jump mode (opt-in via the plugin's ->jump())
+    |--------------------------------------------------------------------------
+    | Double-tapping a bare modifier key pops letter labels over every
+    | clickable control in the page content; typing a label focuses or
+    | clicks it. 'chord' is a double-tap of ONE modifier: 'ctrl,ctrl',
+    | 'alt,alt', 'shift,shift' or 'meta,meta'. 'timeout_ms' is the maximum
+    | gap between the two taps.
+    */
+    'jump' => [
+        'chord' => 'ctrl,ctrl',
+        'timeout_ms' => 350,
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Debug
     |--------------------------------------------------------------------------
     | When true, the JS engine logs every keypress + matched action to the

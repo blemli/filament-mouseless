@@ -44,15 +44,26 @@ class ScriptData implements JsonSerializable
             'debug' => (bool) config('mouseless.debug', false),
             'underlines' => FilamentMouselessPlugin::underlinesEnabled(),
             'hints' => FilamentMouselessPlugin::hintsEnabled(),
+            'jump' => $this->jump(),
             'softProhibitions' => FilamentMouselessPlugin::prohibitionsAreSoft(),
             'escapeTo' => FilamentMouselessPlugin::escapeTarget(),
             'teach' => $this->teach(),
             'stats' => $this->stats(),
             'actionLabels' => $this->actionLabels,
+            // Translated display name per bound action ("Zeile aus-/abwählen").
+            // The teach layer names the ACTION for row-scoped nudges — a row
+            // element's own text is every cell concatenated, never a label.
+            'actionNames' => collect(array_keys($resolved['bindings']))
+                ->mapWithKeys(fn (string $id) => [$id => ActionMeta::label($id)])
+                ->all(),
             // The panel's post-login landing page (configured home URL, or the
             // panel root). nav.dashboard navigates here instead of a hardcoded
             // "/admin", so it works for panels on any path.
             'homeUrl' => $this->homeUrl(),
+            // nav.profile navigates here — resolved server-side so it works
+            // for panels on any path (root, /admin, nested), null when the
+            // my-shortcuts page isn't registered.
+            'shortcutsUrl' => $this->shortcutsUrl(),
             // crud.create on a non-resource page (dashboard, custom page) creates
             // a record of this resource. Slug ("categories"), path ("/admin/categories"),
             // or full create URL ("/admin/categories/create") all accepted.
@@ -61,6 +72,28 @@ class ScriptData implements JsonSerializable
             'strings' => [
                 'no_match' => __('filament-mouseless::mouseless.help.no_match'),
                 'copied' => __('filament-mouseless::mouseless.table.export.copied'),
+            ],
+        ];
+    }
+
+    /**
+     * Jump-mode payload — non-null arms the double-tap detector in the JS
+     * engine. Null when the plugin doesn't call ->jump().
+     *
+     * @return array{chord: string, timeoutMs: int, strings: array<string, string>}|null
+     */
+    protected function jump(): ?array
+    {
+        if (! FilamentMouselessPlugin::jumpEnabled()) {
+            return null;
+        }
+
+        return [
+            'chord' => (string) config('mouseless.jump.chord', 'ctrl,ctrl'),
+            'timeoutMs' => (int) config('mouseless.jump.timeout_ms', 350),
+            'strings' => [
+                'no_targets' => __('filament-mouseless::mouseless.jump.no_targets'),
+                'move_hint' => __('filament-mouseless::mouseless.jump.move_hint'),
             ],
         ];
     }
@@ -100,13 +133,17 @@ class ScriptData implements JsonSerializable
                 // the engine spends its one-nudge-per-page on these first.
                 'clickPriority' => $this->teachClickPriority($userId),
                 'shortcutsUrl' => $this->shortcutsUrl(),
-                'strings' => [
-                    'title' => __('filament-mouseless::mouseless.teach.title'),
-                    'body' => __('filament-mouseless::mouseless.teach.body'),
-                    'change' => __('filament-mouseless::mouseless.teach.change'),
-                    'dismiss' => __('filament-mouseless::mouseless.teach.dismiss'),
-                    'mute' => __('filament-mouseless::mouseless.teach.mute'),
-                ],
+                'strings' => collect([
+                    'title', 'change', 'dismiss', 'mute',
+                    // Per-context bodies: the engine picks by clicked element
+                    // (tab, sidebar link, row, breadcrumb, …), 'body' is the
+                    // generic labeled-button fallback.
+                    'body', 'body_tab', 'body_nav', 'body_row_open', 'body_row_select',
+                    'body_back', 'body_search', 'body_search_global', 'body_page', 'body_sort',
+                    'body_jump',
+                ])->mapWithKeys(fn (string $key) => [
+                    $key => __("filament-mouseless::mouseless.teach.{$key}"),
+                ])->all(),
             ];
         } catch (\Throwable) {
             return null;

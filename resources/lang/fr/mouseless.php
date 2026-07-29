@@ -19,6 +19,11 @@ return [
         'empty' => 'Rien vers quoi sauter ici.',
     ],
 
+    'jump' => [
+        'no_targets' => 'Aucune cible de saut sur cet écran.',
+        'move_hint' => 'Déplacez avec ↑/↓ · Entrée dépose la ligne.',
+    ],
+
     'ns' => [
         'crud' => 'CRUD',
         'list' => 'Liste',
@@ -95,12 +100,23 @@ return [
             'close' => 'Fermer',
             'next-tab' => 'Onglet suivant',
             'prev-tab' => 'Onglet précédent',
+            'jump' => 'Sauter vers un contrôle',
         ],
     ],
 
     'teach' => [
         'title' => 'Vous auriez pu appuyer sur :key',
         'body' => '« :label » fonctionne aussi sans souris.',
+        'body_tab' => 'Passer à l\'onglet « :label » fonctionne aussi sans souris.',
+        'body_nav' => 'Aller à « :label » fonctionne aussi sans souris.',
+        'body_row_open' => 'Ouvrir une ligne fonctionne aussi sans souris.',
+        'body_row_select' => 'Sélectionner des lignes fonctionne aussi sans souris.',
+        'body_back' => 'Revenir en arrière fonctionne aussi sans souris.',
+        'body_search' => 'La recherche dans le tableau fonctionne aussi sans souris.',
+        'body_search_global' => 'La recherche globale fonctionne aussi sans souris.',
+        'body_page' => 'Changer de page fonctionne aussi sans souris.',
+        'body_sort' => 'Le tri fonctionne aussi sans souris.',
+        'body_jump' => 'Un double appui pose une lettre sur chaque contrôle — tapez-la et vous y êtes.',
         'change' => 'Modifier le raccourci',
         'dismiss' => 'Ne plus afficher',
         'mute' => "N'afficher aucune astuce",

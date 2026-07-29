@@ -19,6 +19,11 @@ return [
         'empty' => 'No hay nada a lo que saltar aquí.',
     ],
 
+    'jump' => [
+        'no_targets' => 'No hay destinos de salto en esta pantalla.',
+        'move_hint' => 'Mueve con ↑/↓ · Enter suelta la fila.',
+    ],
+
     'ns' => [
         'crud' => 'CRUD',
         'list' => 'Lista',
@@ -95,12 +100,23 @@ return [
             'close' => 'Cerrar',
             'next-tab' => 'Pestaña siguiente',
             'prev-tab' => 'Pestaña anterior',
+            'jump' => 'Saltar a un control',
         ],
     ],
 
     'teach' => [
         'title' => 'Podrías haber pulsado :key',
         'body' => '«:label» también funciona sin ratón.',
+        'body_tab' => 'Cambiar a la pestaña «:label» también funciona sin ratón.',
+        'body_nav' => 'Ir a «:label» también funciona sin ratón.',
+        'body_row_open' => 'Abrir una fila también funciona sin ratón.',
+        'body_row_select' => 'Seleccionar filas también funciona sin ratón.',
+        'body_back' => 'Volver atrás también funciona sin ratón.',
+        'body_search' => 'Buscar en la tabla también funciona sin ratón.',
+        'body_search_global' => 'La búsqueda global también funciona sin ratón.',
+        'body_page' => 'Cambiar de página también funciona sin ratón.',
+        'body_sort' => 'Ordenar también funciona sin ratón.',
+        'body_jump' => 'Un doble toque pone una letra en cada control: escríbela y llegas.',
         'change' => 'Cambiar atajo',
         'dismiss' => 'No mostrar más',
         'mute' => 'No mostrar ningún consejo',

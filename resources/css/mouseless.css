@@ -76,14 +76,16 @@ body.fi-mouseless-mobile:not(.fi-mouseless-kbd) .fi-mouseless-shortcuts-link {
 
 .fi-mouseless-help-panel {
     width: 100%;
-    max-width: 56rem;
-    max-height: 80vh;
+    max-width: 78rem;
+    /* Sized so the three-column layout fits without a scrollbar; overflow
+       stays as a safety valve for very short viewports only. */
+    max-height: calc(100vh - 3rem);
     overflow-y: auto;
     background: var(--mouseless-help-bg);
     color: var(--mouseless-help-fg);
     border: 1px solid var(--mouseless-help-ring);
     border-radius: 0.75rem;
-    padding: 1.5rem;
+    padding: 1.25rem 1.5rem;
     box-shadow: var(--mouseless-help-shadow);
 }
 
@@ -112,7 +114,7 @@ body.fi-mouseless-mobile:not(.fi-mouseless-kbd) .fi-mouseless-shortcuts-link {
 .fi-mouseless-help-body {
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
+    gap: 1.25rem;
 }
 
 .fi-mouseless-help-group-heading {
@@ -126,8 +128,8 @@ body.fi-mouseless-mobile:not(.fi-mouseless-kbd) .fi-mouseless-shortcuts-link {
 
 .fi-mouseless-help-list {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    column-gap: 1.5rem;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    column-gap: 2rem;
     row-gap: 0.25rem;
     list-style: none;
     margin: 0;
@@ -135,10 +137,54 @@ body.fi-mouseless-mobile:not(.fi-mouseless-kbd) .fi-mouseless-shortcuts-link {
     font-size: 0.875rem;
 }
 
+@media (max-width: 56rem) {
+    .fi-mouseless-help-list {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
 @media (max-width: 32rem) {
     .fi-mouseless-help-list {
         grid-template-columns: minmax(0, 1fr);
         row-gap: 0.5rem;
+    }
+}
+
+/* Short viewports (13" laptops): tighten the rhythm instead of scrolling. */
+@media (max-height: 56rem) {
+    .fi-mouseless-help-overlay {
+        padding: 0.75rem;
+    }
+
+    .fi-mouseless-help-panel {
+        padding: 1rem 1.5rem;
+        max-height: calc(100vh - 1.5rem);
+    }
+
+    .fi-mouseless-help-header {
+        margin-bottom: 0.5rem;
+    }
+
+    .fi-mouseless-help-body {
+        gap: 0.875rem;
+    }
+
+    .fi-mouseless-help-group-heading {
+        margin-bottom: 0.375rem;
+    }
+
+    .fi-mouseless-help-list {
+        font-size: 0.8125rem;
+        row-gap: 0.125rem;
+    }
+
+    .fi-mouseless-help-kbd {
+        padding: 0.0625rem 0.4rem;
+    }
+
+    .fi-mouseless-help-footer {
+        margin-top: 0.75rem;
+        padding-top: 0.5rem;
     }
 }
 
@@ -177,7 +223,7 @@ body.fi-mouseless-mobile:not(.fi-mouseless-kbd) .fi-mouseless-shortcuts-link {
     align-items: center;
     justify-content: space-between;
     gap: 0.75rem;
-    margin-top: 1.5rem;
+    margin-top: 1rem;
     border-top: 1px solid var(--mouseless-help-border);
     padding-top: 0.75rem;
     font-size: 0.75rem;
@@ -720,4 +766,45 @@ body.fi-mouseless-mobile:not(.fi-mouseless-kbd) .fi-mouseless-shortcuts-link {
         transform: scale(0.6);
         opacity: 0;
     }
+}
+
+/* ---------- jump mode ----------
+ * Double-tap Ctrl → label badges over every clickable control. Amber, never
+ * the app's primary: they must read as a different layer than the Alt-hold
+ * hint badges above. */
+
+#fi-mouseless-jump {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 999999;
+}
+
+.fi-mouseless-jump-badge {
+    font-variant-numeric: slashed-zero;
+    position: absolute;
+    background: #f59e0b;
+    color: #451a03;
+    font-weight: 700;
+    font-size: 0.85rem;
+    line-height: 1;
+    padding: 0.35rem 0.5rem;
+    border-radius: 0.4rem;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35);
+    font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+    animation: fi-mouseless-hint-pop 120ms ease-out;
+    transition: opacity 80ms ease-out;
+}
+
+/* Typed prefix fades inside the badge; badges off the typed path fade out. */
+.fi-mouseless-jump-badge .fi-mouseless-jump-typed {
+    opacity: 0.45;
+}
+
+.fi-mouseless-jump-badge.fi-mouseless-jump-dim {
+    opacity: 0.15;
+}
+
+.dark .fi-mouseless-jump-badge {
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.7);
 }

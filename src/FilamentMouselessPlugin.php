@@ -28,6 +28,8 @@ class FilamentMouselessPlugin implements Plugin
 
     protected bool $renderHints = false;
 
+    protected bool $renderJump = false;
+
     protected bool $warnOnProhibited = false;
 
     protected bool $teachEnabled = false;
@@ -281,6 +283,25 @@ class FilamentMouselessPlugin implements Plugin
     public static function hintsEnabled(): bool
     {
         return static::safeGet()?->renderHints ?? false;
+    }
+
+    /**
+     * Jump mode — double-tap Ctrl (chord configurable via mouseless.jump)
+     * to pop letter labels over every clickable control in the page content;
+     * typing a label focuses or clicks it. Labels are hashed from each
+     * control's stable identity, so a control keeps its letter across
+     * reloads and locale switches. Opt-in: call ->jump() to enable.
+     */
+    public function jump(bool $enabled = true): static
+    {
+        $this->renderJump = $enabled;
+
+        return $this;
+    }
+
+    public static function jumpEnabled(): bool
+    {
+        return static::safeGet()?->renderJump ?? false;
     }
 
     /**

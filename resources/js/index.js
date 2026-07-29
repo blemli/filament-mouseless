@@ -40,6 +40,13 @@ function bootMouseless() {
     let gotoActive = -1;  // index into gotoItems of the highlighted row
     let gotoEl = null;    // the [data-mouseless-goto] wrapper element
 
+    // ---- jump mode state (double-tap modifier → stable-hash label badges) ----
+    let jumpOpen = false;
+    let jumpQuery = '';
+    let jumpTargets = []; // [{ el, label, commit, badge, typed, rest }]
+    let jumpMoveItem = null;      // x-sortable-item key of the grabbed row
+    let jumpMoveContainer = null; // its [x-sortable] container
+
     // Anchor row for shift+j / shift+k range selection. A DOM node, not an
     // index, because rows re-render on sort / filter / paginate. Null between
     // gestures; a plain j/k, a Space-toggle, or an Escape-deselect resets it.
@@ -106,6 +113,9 @@ function bootMouseless() {
 
     // ---- shortcut discovery: accelerator underlines + Alt-hold hint badges ----
     setupDiscovery();
+
+    // ---- jump mode: double-tap Ctrl → letter badges on every control ----
+    setupJump();
 
     // ---- row-cursor memory: opening a record and coming back keeps the cursor ----
     setupRowMemory();
@@ -196,7 +206,7 @@ function bootMouseless() {
             if (e.key !== 'Alt' || e.ctrlKey || e.metaKey || e.shiftKey || e.repeat) return;
             if (isTextInputFocus(document.activeElement)) return;
             const overlay = document.querySelector('[data-mouseless-overlay]');
-            if (gotoOpen || (overlay && isVisible(overlay))) return;
+            if (gotoOpen || jumpOpen || (overlay && isVisible(overlay))) return;
             hintsShown = true;
             showHints();
         }, true);
@@ -230,8 +240,16 @@ function bootMouseless() {
     function resolveActionTarget(actionId, scopeRow = null) {
         if (actionId === 'list.search') return findTableSearchInput(document);
         if (actionId === 'list.group') return document.querySelector('.fi-ta-grouping-settings-fields select');
-        if (actionId === 'list.filter') return document.querySelector('.fi-ta-filters-trigger-action-ctn button');
+        if (actionId === 'list.filter') {
+            return document.querySelector('.fi-ta-filters-trigger-action-ctn button')
+                ?? document.querySelector('.fi-ta-filters-dropdown .fi-dropdown-trigger button');
+        }
         if (actionId === 'list.columns') return document.querySelector('.fi-ta-col-manager-dropdown .fi-dropdown-trigger button');
+        if (actionId === 'list.bulk-action') {
+            return Array.from(document.querySelectorAll(
+                '[data-mouseless="list.bulk-action"], .fi-ta-header-toolbar .fi-dropdown-trigger .fi-ac-btn-group',
+            )).find(isVisible) ?? null;
+        }
         if (actionId === 'list.sort') return Array.from(document.querySelectorAll('.fi-ta-header-cell-sort-btn')).find(isVisible) ?? null;
         if (actionId === 'list.next-page' || actionId === 'list.prev-page') {
             const rel = actionId === 'list.next-page' ? 'next' : 'prev';
@@ -239,6 +257,14 @@ function bootMouseless() {
             return Array.from(document.querySelectorAll(sel)).find(isVisible) ?? null;
         }
         if (actionId === 'nav.command-palette') return document.querySelector('.fi-global-search-field');
+        if (actionId === 'nav.logout') {
+            return document.querySelector('[data-mouseless="nav.logout"]')
+                ?? document.querySelector('form[action$="/logout"] button');
+        }
+        if (actionId === 'nav.notifications') {
+            return document.querySelector('[data-mouseless="nav.notifications"]')
+                ?? document.querySelector('.fi-topbar-database-notifications-btn, .fi-sidebar-database-notifications-btn');
+        }
         if (actionId === 'crud.create') return document.querySelector('a[href$="/create"]');
         if (actionId.startsWith('custom.')) return document.querySelector(`[data-mouseless="${actionId}"]`);
         if (actionId.startsWith('nav.') || actionId.startsWith('ui.')) {
@@ -336,6 +362,664 @@ function bootMouseless() {
         document.getElementById('fi-mouseless-hints')?.remove();
     }
 
+    // ---------- jump mode (double-tap modifier → stable-hash label badges) ----------
+    // Vimperator-style: double-tap the chord modifier (default Ctrl) and every
+    // clickable control in the page content gets a letter badge; typing the
+    // label focuses (fields) or clicks (everything else) it. Labels are hashed
+    // from each control's stable identity (wire:model statePath, record key +
+    // column name, href, …), NOT from screen position — so a control keeps its
+    // letter across reloads, relabelings and locale switches.
+
+    const JUMP_ALPHABET = 'abcdefghijklmnopqrstuvwxyz0123456789';
+
+    // Chrome the engine itself owns, plus sidebar/topbar: navigation has its
+    // own affordances (the g palette, nav.* combos) — badges would be noise.
+    // Apps can opt dense regions out (marker maps, canvases, custom widgets
+    // with their own keyboard nav) via data-mouseless-jump="ignore" on any
+    // ancestor. Editor toolbar buttons ARE targets — their x-on:click
+    // handlers (toggleBold() …) give them stable identities. The topbar
+    // (user menu, bell, language switcher) is included; the sidebar stays
+    // out — the g palette owns navigation.
+    const JUMP_EXCLUDE = '.fi-sidebar, .fi-breadcrumbs, #fi-mouseless-hints, #fi-mouseless-jump, [data-mouseless-overlay], [data-mouseless-goto], .phpdebugbar, [data-mouseless-jump="ignore"]';
+
+    const JUMP_SELECTOR = [
+        'input:not([type="hidden"]):not([disabled])',
+        'select:not([disabled])',
+        'textarea:not([disabled])',
+        '[contenteditable="true"]',
+        'button:not([disabled])',
+        'a[href]',
+        '[role="button"]', '[role="tab"]', '[role="checkbox"]', '[role="menuitem"]', '[role="slider"]',
+        '.fi-dropdown-trigger',
+        '.fi-tabs-item',
+        // Copyable values outside tables (infolist entries on view pages).
+        '.fi-copyable',
+    ].join(',');
+
+    function setupJump() {
+        if (!cfg.jump) return;
+
+        const parts = String(cfg.jump.chord || 'ctrl,ctrl').toLowerCase().split(',').map(s => s.trim());
+        const NAMES = { ctrl: 'Control', alt: 'Alt', shift: 'Shift', meta: 'Meta' };
+        let mod = NAMES[parts[0]];
+        if (parts.length !== 2 || parts[0] !== parts[1] || !mod) {
+            console.warn(TAG, 'jump: invalid chord', cfg.jump.chord, '— falling back to ctrl,ctrl');
+            mod = 'Control';
+        }
+        const timeoutMs = Number(cfg.jump.timeoutMs) || 350;
+        console.log(TAG, 'jump mode armed: double-tap', mod, 'within', timeoutMs, 'ms');
+
+        // "Another modifier is also down" for THIS chord key — a tap must be bare.
+        const otherMods = (e) => (mod !== 'Control' && e.ctrlKey) || (mod !== 'Alt' && e.altKey)
+            || (mod !== 'Shift' && e.shiftKey) || (mod !== 'Meta' && e.metaKey);
+
+        let lastTapUp = 0;   // timestamp of the last CLEAN tap's keyup
+        let tapDirty = true; // a non-chord key went down since the chord key's keydown
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === mod && !e.repeat && !otherMods(e)) { tapDirty = false; return; }
+            // Any other key — or a held-repeat of the chord key — means the
+            // modifier is being USED (ctrl+k, ctrl+click prep), not tapped.
+            tapDirty = true;
+            lastTapUp = 0;
+        }, true);
+
+        document.addEventListener('keyup', (e) => {
+            if (e.key !== mod) return;
+            if (tapDirty) { lastTapUp = 0; return; }
+            if (lastTapUp && e.timeStamp - lastTapUp <= timeoutMs) {
+                lastTapUp = 0;
+                // Firefox activates its menubar on a bare Alt keyup — we consumed it.
+                if (mod === 'Alt') e.preventDefault();
+                if (jumpOpen) { closeJump(); return; }
+                // Deliberately NOT guarded on text-input focus: jumping OUT of a
+                // field is a core use case, and a bare modifier tap never types.
+                if (document.querySelector('[data-mouseless-recording]')) return;
+                if (gotoOpen) return;
+                const overlay = document.querySelector('[data-mouseless-overlay]');
+                if (overlay && isVisible(overlay)) return;
+                openJump();
+            } else {
+                lastTapUp = e.timeStamp;
+            }
+        }, true);
+
+        // Mouse activity voids pending taps (ctrl+click) and closes the mode.
+        // Scroll/resize REPOSITION the badges (they follow their targets);
+        // a grabbed sortable row survives scrolling too but drops on
+        // click/blur/navigation.
+        document.addEventListener('mousedown', () => { tapDirty = true; lastTapUp = 0; if (jumpOpen) closeJump(); endJumpMove(); }, true);
+        window.addEventListener('blur', () => { tapDirty = true; lastTapUp = 0; closeJump(); endJumpMove(); });
+        window.addEventListener('scroll', () => { if (jumpOpen) scheduleJumpReposition(); }, { capture: true, passive: true });
+        window.addEventListener('resize', () => { if (jumpOpen) scheduleJumpReposition(); });
+        document.addEventListener('livewire:navigated', () => { closeJump(); endJumpMove(); });
+    }
+
+    // FNV-1a 32-bit — tiny, deterministic, good spread for short DOM keys.
+    function jumpHash(str) {
+        let h = 0x811c9dc5;
+        for (let i = 0; i < str.length; i++) {
+            h ^= str.charCodeAt(i);
+            h = Math.imul(h, 0x01000193);
+        }
+        return h >>> 0;
+    }
+
+    // A control's language-independent identity. Order matters: Livewire state
+    // paths and wire:click expressions are the most stable names Filament gives
+    // us; id/name/href degrade gracefully; the last resort is positional.
+    function jumpStableKey(el, index) {
+        for (const attr of el.attributes) {
+            if (attr.name.startsWith('wire:model')) {
+                // Radio groups / checkbox lists share one statePath — the
+                // option value is what tells their members apart.
+                const t = (el.type || '').toLowerCase();
+                const opt = (t === 'radio' || t === 'checkbox') && el.value ? ':' + el.value : '';
+                return 'wm:' + attr.value + opt;
+            }
+            if (attr.name.startsWith('wire:click')) return 'wc:' + attr.value;
+            // Alpine click handlers: a copyable's handler embeds the copied
+            // value itself — as stable as identity gets for a plain span.
+            if (attr.name.startsWith('x-on:click') || attr.name.startsWith('@click')) return 'xc:' + attr.value;
+        }
+        if (el.id && jumpIdLooksStable(el.id)) return 'id:' + el.id;
+        if (el.getAttribute('name')) return 'nm:' + el.getAttribute('name');
+        const href = el.getAttribute('href');
+        if (href) return 'href:' + href.split('?')[0];
+        // Nearest ancestor with an id — Filament schema components carry
+        // their statePath as id ("form.radioactivity_level"), which names
+        // widgets whose focusable part is an anonymous div (sliders). The
+        // twin index keeps e.g. a range slider's two handles apart.
+        let anc = el.parentElement;
+        for (let i = 0; anc && anc !== document.body && i < 8; i++, anc = anc.parentElement) {
+            if (anc.id && jumpIdLooksStable(anc.id)) {
+                const role = el.getAttribute('role');
+                const twins = Array.from(anc.querySelectorAll(el.tagName)).filter(t => t.getAttribute('role') === role);
+                return 'anc:' + anc.id + ':' + twins.indexOf(el);
+            }
+        }
+        return 'pos:' + el.tagName + ':' + index;
+    }
+
+    // Generated ids change every page load (filepond--browser-tmfxy9pku,
+    // Livewire component hashes) — an id only counts as identity when its
+    // last segment isn't a digit-containing random hash. A single unstable
+    // key would shuffle OTHER controls' letters too, via collision groups.
+    function jumpIdLooksStable(id) {
+        return !/(^|[-_:.])(?=[a-z0-9]*\d)[a-z0-9]{7,}$/i.test(id);
+    }
+
+    // The td's own fi-ta-cell-<name> class — Filament emits the column name
+    // (kebab-cased) on every data cell, so cell labels survive column reorder.
+    function jumpCellColumn(cell) {
+        for (const c of cell.classList) {
+            const m = c.match(/^fi-ta-cell-(.+)$/);
+            if (m) return m[1];
+        }
+        return null;
+    }
+
+    function jumpCandidates() {
+        // An open modal makes the rest of the page inert — scope to it.
+        const modal = Array.from(document.querySelectorAll('.fi-modal-window')).find(isVisible);
+        const root = modal || document.body;
+        const out = [];
+
+        // Stronger than isVisible(): inactive tab/wizard panels keep their
+        // layout size but hide via CSS visibility — their fields must never
+        // be badged. Deliberately NOT opacity-aware: Filament's page-fade
+        // leaves ancestors at computed opacity 0 while fully visible, and
+        // truly invisible leftovers fail the hit-probe below anyway.
+        const visuallyShown = (el) => (el.checkVisibility
+            ? el.checkVisibility({ checkVisibilityCSS: true, visibilityProperty: true })
+            : isVisible(el));
+
+        // The element must actually be hittable near where its badge points —
+        // kills leftovers that pass the CSS checks but render nowhere, and
+        // things buried under other layers.
+        const hittable = (el, rect) => {
+            const pts = [
+                [rect.left + rect.width / 2, rect.top + rect.height / 2],
+                [rect.left + Math.min(rect.width, 24) / 2, rect.top + Math.min(rect.height, 24) / 2],
+            ];
+            for (let [x, y] of pts) {
+                x = Math.min(Math.max(x, 1), innerWidth - 2);
+                y = Math.min(Math.max(y, 1), innerHeight - 2);
+                const hit = document.elementFromPoint(x, y);
+                if (hit && (hit === el || el.contains(hit) || hit.contains(el))) return true;
+            }
+            return false;
+        };
+
+        const push = (el, key, commit) => {
+            if (!el) return;
+            // A visually-hidden input rendered as a styled label (toggle
+            // buttons, custom radios): badge and click the label instead —
+            // the key stays the input's, so the label inherits stability.
+            if (!visuallyShown(el) && el.labels && el.labels.length) {
+                const lab = Array.from(el.labels).find(visuallyShown);
+                if (lab) { el = lab; commit = 'click'; }
+            }
+            if (!visuallyShown(el)) return;
+            const rect = el.getBoundingClientRect();
+            if (!rect.width && !rect.height) return;
+            if (rect.bottom <= 0 || rect.top >= innerHeight || rect.right <= 0 || rect.left >= innerWidth) return;
+            if (el.closest(JUMP_EXCLUDE)) return;
+            if (!hittable(el, rect)) return;
+            for (const seen of out) {
+                // Containment dedupe: parents come out of querySelectorAll
+                // first, so a dropdown trigger wrapper wins over its button.
+                if (seen.el === el || seen.el.contains(el) || el.contains(seen.el)) return;
+                // Distinct controls at the same spot would stack unreadable
+                // badges — first one wins.
+                if (Math.abs(seen.rect.left - rect.left) < 14 && Math.abs(seen.rect.top - rect.top) < 12) return;
+            }
+            out.push({ el, key, commit, rect });
+        };
+
+        // Selected rows — and the row the j/k cursor is on (highlight = focus
+        // inside the row) — contribute per-cell targets: the selection checkbox,
+        // copyable values (span.fi-copyable — clicking it copies) and clickable
+        // cells (a/button.fi-ta-col). All other rows get nothing: j/k already
+        // walks rows, and badging every cell of every row is pure noise.
+        const cellRows = new Set(root.querySelectorAll('.fi-ta-row.fi-selected, .fi-ta-record.fi-selected'));
+        const cursorRow = document.activeElement?.closest?.('.fi-ta-row, .fi-ta-record');
+        if (cursorRow && root.contains(cursorRow)) cellRows.add(cursorRow);
+        for (const row of cellRows) {
+            if (!isVisible(row)) continue;
+            const rec = rowRecordKey(row) || 'row';
+            const checkbox = row.querySelector('input.fi-ta-record-checkbox');
+            if (checkbox) push(checkbox, 'chk:' + rec, 'click');
+            let cellIdx = 0;
+            for (const cell of row.querySelectorAll('.fi-ta-cell')) {
+                cellIdx++;
+                // The actions cell gets one badge per action — the "⋮" group
+                // trigger and/or each inline action button.
+                if (cell.matches('.fi-ta-actions-cell') || cell.querySelector('.fi-ta-actions')) {
+                    let actIdx = 0;
+                    for (const act of cell.querySelectorAll('.fi-dropdown-trigger, button:not([disabled]), a[href]')) {
+                        actIdx++;
+                        push(act, 'rowact:' + rec + ':' + actIdx, act.closest('.fi-dropdown-trigger') ? 'dropdown' : 'click');
+                    }
+                    continue;
+                }
+                // Copy trigger, else an editable column widget (SelectColumn,
+                // TextInputColumn, ToggleColumn, …), else the clickable wrapper.
+                const target = cell.querySelector('.fi-copyable')
+                    || cell.querySelector('select:not([disabled]), input:not([type="hidden"]):not([disabled]), textarea:not([disabled]), [role="switch"]:not([disabled]), [role="checkbox"]:not([disabled])')
+                    || cell.querySelector('a.fi-ta-col, button.fi-ta-col');
+                if (!target) continue;
+                const commit = (isTextInputFocus(target) || target.tagName === 'SELECT') ? 'focus' : 'click';
+                push(target, 'cell:' + rec + ':' + (jumpCellColumn(cell) ?? cellIdx), commit);
+            }
+        }
+
+        for (const el of root.querySelectorAll(JUMP_SELECTOR)) {
+            if (el.closest('.fi-ta-row, .fi-ta-record')) continue; // rows: selected-only, handled above
+            const commit = el.closest('.fi-dropdown-trigger') ? 'dropdown'
+                : (isTextInputFocus(el) || el.tagName === 'SELECT' || el.matches('[role="slider"]')) ? 'focus'
+                    : 'click';
+            push(el, jumpStableKey(el, out.length), commit);
+        }
+
+        // Chart.js widgets: segments/points live inside a canvas, not the DOM
+        // — ask the chart instance for their positions. Committing one shows
+        // its tooltip (the hover equivalent).
+        let canvasIdx = 0;
+        for (const canvas of root.querySelectorAll('canvas')) {
+            canvasIdx++;
+            if (!isVisible(canvas) || canvas.closest(JUMP_EXCLUDE)) continue;
+            let chart = null;
+            try {
+                const alp = window.Alpine && window.Alpine.$data ? window.Alpine.$data(canvas) : null;
+                chart = (window.Chart && window.Chart.getChart ? window.Chart.getChart(canvas) : null)
+                    ?? (alp ? (typeof alp.getChart === 'function' ? alp.getChart() : alp.chart) : null);
+            } catch { /* not a chart canvas */ }
+            if (!chart || !chart.getDatasetMeta || !chart.data) continue;
+            const cRect = canvas.getBoundingClientRect();
+            let added = 0;
+            for (let d = 0; d < (chart.data.datasets || []).length && added < 20; d++) {
+                const meta = chart.getDatasetMeta(d);
+                if (!meta || meta.hidden) continue;
+                for (let i = 0; i < meta.data.length && added < 20; i++) {
+                    const pt = meta.data[i];
+                    const pos = pt && pt.tooltipPosition ? pt.tooltipPosition() : pt;
+                    if (!pos || typeof pos.x !== 'number') continue;
+                    const x = cRect.left + pos.x;
+                    const y = cRect.top + pos.y;
+                    if (x <= 0 || x >= innerWidth || y <= 0 || y >= innerHeight) continue;
+                    const rect = { left: x, top: y, right: x, bottom: y, width: 0, height: 0 };
+                    if (out.some(seen => Math.abs(seen.rect.left - rect.left) < 14 && Math.abs(seen.rect.top - rect.top) < 12)) continue;
+                    out.push({
+                        el: canvas,
+                        // Content-derived key: dataset + point label, so a
+                        // segment keeps its letter as long as its data exists.
+                        key: 'chart:' + canvasIdx + ':' + (chart.data.datasets[d].label ?? d) + ':' + ((chart.data.labels || [])[i] ?? i),
+                        commit: 'chart',
+                        rect,
+                        chart,
+                        chartDataset: d,
+                        chartIndex: i,
+                    });
+                    added++;
+                }
+            }
+            if (added >= 20) console.log(TAG, 'jump: chart badge cap reached on canvas', canvasIdx);
+
+            // Legend entries are canvas-drawn too — badge their hit boxes;
+            // committing toggles the dataset/segment like a legend click.
+            const hitBoxes = chart.legend && chart.legend.legendHitBoxes;
+            if (hitBoxes && chart.legend.legendItems) {
+                for (let i = 0; i < hitBoxes.length; i++) {
+                    const hb = hitBoxes[i];
+                    const item = chart.legend.legendItems[i];
+                    if (!hb || !item) continue;
+                    const x = cRect.left + hb.left;
+                    const y = cRect.top + hb.top + hb.height / 2;
+                    if (x <= 0 || x >= innerWidth || y <= 0 || y >= innerHeight) continue;
+                    const rect = { left: x, top: y, right: x, bottom: y, width: 0, height: 0 };
+                    if (out.some(seen => Math.abs(seen.rect.left - rect.left) < 14 && Math.abs(seen.rect.top - rect.top) < 12)) continue;
+                    out.push({
+                        el: canvas,
+                        key: 'chartlegend:' + canvasIdx + ':' + (item.text ?? i),
+                        commit: 'chartlegend',
+                        rect,
+                        chart,
+                        chartLegendIndex: i,
+                    });
+                }
+            }
+        }
+
+        // Label capacity is 36 singles + collision pairs; 200 is far beyond any
+        // usable screen — cap hard so a pathological page can't wedge the mode.
+        return out.slice(0, 200);
+    }
+
+    function jumpAssignLabels(cands) {
+        const N = JUMP_ALPHABET.length;
+        const groups = new Map();
+        for (const c of cands) {
+            c.hash = jumpHash(c.key);
+            const letter = JUMP_ALPHABET[c.hash % N];
+            if (!groups.has(letter)) groups.set(letter, []);
+            groups.get(letter).push(c);
+        }
+        const out = [];
+        for (const [letter, members] of groups) {
+            if (members.length === 1) {
+                members[0].label = letter;
+                out.push(members[0]);
+                continue;
+            }
+            // Collision group: the letter becomes a prefix and EVERY member gets
+            // letter+second — prefix-free because a letter is a single OR a
+            // prefix, never both. The second char is hashed too; ties probe
+            // deterministically over key-sorted members, so the outcome doesn't
+            // depend on enumeration order.
+            members.sort((a, b) => (a.key < b.key ? -1 : 1));
+            const used = new Set();
+            for (const c of members.slice(0, N)) {
+                let s = Math.floor(c.hash / N) % N;
+                while (used.has(s)) s = (s + 1) % N;
+                used.add(s);
+                c.label = letter + JUMP_ALPHABET[s];
+                out.push(c);
+            }
+            if (members.length > N) console.warn(TAG, 'jump: dropped', members.length - N, 'target(s) in group', letter);
+        }
+        return out;
+    }
+
+    function openJump() {
+        const cands = jumpAssignLabels(jumpCandidates());
+        if (!cands.length) {
+            console.log(TAG, 'jump: no targets on screen');
+            toast(cfg.jump?.strings?.no_targets);
+            return;
+        }
+        const container = document.createElement('div');
+        container.id = 'fi-mouseless-jump';
+        jumpTargets = cands.map((c) => {
+            const badge = document.createElement('div');
+            badge.className = 'fi-mouseless-jump-badge';
+            const typed = document.createElement('span');
+            typed.className = 'fi-mouseless-jump-typed';
+            const rest = document.createElement('span');
+            rest.className = 'fi-mouseless-jump-rest';
+            rest.textContent = c.label;
+            badge.append(typed, rest);
+            badge.style.left = `${Math.max(4, c.rect.left - 6)}px`;
+            badge.style.top = `${Math.max(4, c.rect.top - 10)}px`;
+            container.appendChild(badge);
+            return {
+                el: c.el, label: c.label, commit: c.commit, badge, typed, rest,
+                chart: c.chart, chartDataset: c.chartDataset, chartIndex: c.chartIndex,
+                chartLegendIndex: c.chartLegendIndex,
+            };
+        });
+        document.body.appendChild(container);
+        jumpOpen = true;
+        jumpQuery = '';
+        // Debug aid: lets a console (or a bug report) show WHY a control got
+        // its letter — labels are pure functions of these keys.
+        window.__mouselessJumpTargets = cands.map(c => ({ key: c.key, label: c.label }));
+        console.log(TAG, 'jump: open,', jumpTargets.length, 'target(s)');
+    }
+
+    function closeJump() {
+        jumpOpen = false;
+        jumpQuery = '';
+        jumpTargets = [];
+        document.getElementById('fi-mouseless-jump')?.remove();
+    }
+
+    // Badges follow their targets while the user scrolls or resizes. Targets
+    // scrolled out of view hide their badge; targets that only BECOME visible
+    // after scrolling weren't enumerated (viewport-clipped at open time) — a
+    // second double-tap re-enumerates.
+    let jumpRepositionRaf = 0;
+
+    function scheduleJumpReposition() {
+        if (jumpRepositionRaf) return;
+        jumpRepositionRaf = requestAnimationFrame(() => {
+            jumpRepositionRaf = 0;
+            repositionJump();
+        });
+    }
+
+    function repositionJump() {
+        console.log(TAG, 'jump: repositioning', jumpTargets.length, 'badge(s)');
+        for (const t of jumpTargets) {
+            let pos = null;
+            if (t.commit === 'chart') {
+                try {
+                    const p = t.chart.getDatasetMeta(t.chartDataset).data[t.chartIndex].tooltipPosition();
+                    const cr = t.el.getBoundingClientRect();
+                    pos = { left: cr.left + p.x, top: cr.top + p.y };
+                } catch { pos = null; }
+            } else if (t.commit === 'chartlegend') {
+                try {
+                    const hb = t.chart.legend.legendHitBoxes[t.chartLegendIndex];
+                    const cr = t.el.getBoundingClientRect();
+                    pos = { left: cr.left + hb.left, top: cr.top + hb.top + hb.height / 2 };
+                } catch { pos = null; }
+            } else if (t.el.isConnected) {
+                const r = t.el.getBoundingClientRect();
+                pos = { left: r.left, top: r.top };
+            }
+            const off = !pos || pos.top < -24 || pos.top > innerHeight || pos.left < -24 || pos.left > innerWidth;
+            t.badge.style.display = off ? 'none' : '';
+            if (pos) {
+                t.badge.style.left = `${Math.max(4, pos.left - 6)}px`;
+                t.badge.style.top = `${Math.max(4, pos.top - 10)}px`;
+            }
+        }
+    }
+
+    function filterJump() {
+        for (const t of jumpTargets) {
+            if (t.label.startsWith(jumpQuery)) {
+                t.badge.classList.remove('fi-mouseless-jump-dim');
+                t.typed.textContent = jumpQuery;
+                t.rest.textContent = t.label.slice(jumpQuery.length);
+            } else {
+                t.badge.classList.add('fi-mouseless-jump-dim');
+            }
+        }
+    }
+
+    function handleJumpKey(e) {
+        if (e.isComposing) return;
+        // While the badges are up NOTHING may leak — not to the focused field,
+        // not to the browser, not to the combo engine.
+        e.preventDefault();
+        e.stopPropagation();
+
+        if (e.key === 'Escape') { closeJump(); return; }
+        if (e.key === 'Backspace') {
+            if (!jumpQuery) { closeJump(); return; }
+            jumpQuery = jumpQuery.slice(0, -1);
+            filterJump();
+            return;
+        }
+        if (e.ctrlKey || e.metaKey || e.altKey) return;
+        const ch = e.key.length === 1 ? e.key.toLowerCase() : '';
+        if (!/^[a-z0-9]$/.test(ch)) return;
+
+        const candidate = jumpQuery + ch;
+        const exact = jumpTargets.find(t => t.label === candidate);
+        if (exact) { commitJump(exact); return; }
+        if (jumpTargets.some(t => t.label.startsWith(candidate))) {
+            jumpQuery = candidate;
+            filterJump();
+            return;
+        }
+        // Dead key: swallow it, keep the query, shake the badges.
+        shakeJump();
+    }
+
+    // ---- move mode: a grabbed x-sortable row follows ↑/↓ until Enter/Esc ----
+
+    function startJumpMove(handle) {
+        const item = handle.closest('[x-sortable-item]');
+        const container = handle.closest('[x-sortable]');
+        if (!item || !container) { handle.click(); return; }
+        jumpMoveItem = item.getAttribute('x-sortable-item');
+        jumpMoveContainer = container;
+        styleJumpMove(true);
+        toast(cfg.jump?.strings?.move_hint);
+        console.log(TAG, 'jump: move mode on', jumpMoveItem);
+    }
+
+    // Livewire re-renders after every reorder, so the grabbed row is tracked
+    // by its x-sortable-item key, never by element reference.
+    function jumpMoveEl() {
+        if (!jumpMoveContainer || !jumpMoveContainer.isConnected) return null;
+        return jumpMoveContainer.querySelector(`[x-sortable-item="${CSS.escape(jumpMoveItem)}"]`);
+    }
+
+    function styleJumpMove(on) {
+        const el = jumpMoveEl();
+        if (!el) return;
+        el.style.outline = on ? '2px solid #f59e0b' : '';
+        el.style.outlineOffset = on ? '1px' : '';
+    }
+
+    function endJumpMove() {
+        if (!jumpMoveContainer) return;
+        styleJumpMove(false);
+        jumpMoveItem = null;
+        jumpMoveContainer = null;
+        console.log(TAG, 'jump: move mode off');
+    }
+
+    function handleJumpMoveKey(e) {
+        const dir = (e.key === 'ArrowUp' || e.key === 'k') ? -1
+            : (e.key === 'ArrowDown' || e.key === 'j') ? 1 : 0;
+        if (dir) {
+            e.preventDefault();
+            e.stopPropagation();
+            const item = jumpMoveEl();
+            if (!item) { endJumpMove(); return; }
+            const container = jumpMoveContainer;
+            const items = Array.from(container.children).filter(c => c.matches && c.matches('[x-sortable-item]'));
+            const i = items.indexOf(item);
+            const j = i + dir;
+            if (i < 0 || j < 0 || j >= items.length) return;
+            if (dir < 0) items[j].before(item); else items[j].after(item);
+            // Mimic the SortableJS 'end' event the x-on:end handlers expect:
+            // key-value reads oldIndex/newIndex, repeater and reorderable
+            // tables read $event.item + $event.target.sortable.toArray()
+            // (DOM order — already moved above).
+            const ev = new CustomEvent('end', { bubbles: false });
+            ev.item = item;
+            ev.from = container;
+            ev.to = container;
+            ev.oldIndex = i;
+            ev.newIndex = j;
+            ev.oldDraggableIndex = i;
+            ev.newDraggableIndex = j;
+            container.dispatchEvent(ev);
+            setTimeout(() => styleJumpMove(true), 120); // survive the re-render
+            return;
+        }
+        if (['Enter', 'Escape', ' ', 'Tab'].includes(e.key)) {
+            e.preventDefault();
+            e.stopPropagation();
+            endJumpMove();
+            return;
+        }
+        // Any other key just drops the row where it is.
+        endJumpMove();
+    }
+
+    function shakeJump() {
+        const box = document.getElementById('fi-mouseless-jump');
+        if (!box || typeof box.animate !== 'function') return;
+        box.animate(
+            [
+                { transform: 'translateX(0)' },
+                { transform: 'translateX(-5px)' },
+                { transform: 'translateX(5px)' },
+                { transform: 'translateX(0)' },
+            ],
+            { duration: 160 },
+        );
+    }
+
+    function commitJump(target) {
+        const el = target.el;
+        console.log(TAG, 'jump: commit', target.label, '->', el);
+        closeJump();
+        // Every commit is a click avoided — and three commits teach ui.jump.
+        teachRecordUsed('ui.jump');
+        statsRecord('ui.jump', 'kb');
+        if (!el.isConnected) return; // Livewire morphed it away mid-mode
+        // A sortable drag handle can't be clicked into anything — grab its row
+        // instead and let ↑/↓ move it (repeater items, key-value rows,
+        // reorderable tables all share the x-sortable machinery).
+        const handle = el.closest('[x-sortable-handle]');
+        if (handle) { startJumpMove(handle); return; }
+        if (target.commit === 'chart') {
+            // Hover equivalent: activate the segment and show its tooltip.
+            try {
+                const { chart, chartDataset: d, chartIndex: i } = target;
+                const pos = chart.getDatasetMeta(d).data[i].tooltipPosition();
+                chart.setActiveElements([{ datasetIndex: d, index: i }]);
+                if (chart.tooltip && chart.tooltip.setActiveElements) chart.tooltip.setActiveElements([{ datasetIndex: d, index: i }], pos);
+                chart.update();
+            } catch (err) {
+                console.warn(TAG, 'jump: chart tooltip failed', err);
+            }
+            return;
+        }
+        if (target.commit === 'chartlegend') {
+            // Same effect as clicking the legend entry: Chart.js's own legend
+            // onClick toggles the dataset (or the pie segment) and updates.
+            try {
+                const { chart, chartLegendIndex: i } = target;
+                const item = chart.legend.legendItems[i];
+                const onClick = chart.legend.options && chart.legend.options.onClick;
+                if (typeof onClick === 'function') {
+                    onClick.call(chart.legend, null, item, chart.legend);
+                } else if (typeof item.datasetIndex === 'number') {
+                    chart.setDatasetVisibility(item.datasetIndex, !chart.isDatasetVisible(item.datasetIndex));
+                    chart.update();
+                } else {
+                    chart.toggleDataVisibility(item.index);
+                    chart.update();
+                }
+            } catch (err) {
+                console.warn(TAG, 'jump: chart legend toggle failed', err);
+            }
+            return;
+        }
+        if (target.commit === 'focus') {
+            el.focus();
+            el.scrollIntoView?.({ block: 'nearest' });
+            // Date/time inputs: focusing alone would still need a click on the
+            // calendar icon (a shadow-DOM part, unreachable as a target) — pop
+            // the native picker directly while we still hold the keypress's
+            // user activation. Throws without activation → ignore.
+            const pickable = ['date', 'month', 'week', 'time', 'datetime-local'];
+            if (el.tagName === 'INPUT' && pickable.includes((el.type || '').toLowerCase()) && typeof el.showPicker === 'function') {
+                try { el.showPicker(); } catch { /* no user activation (or unsupported) — focus is enough */ }
+            }
+            return;
+        }
+        if (target.commit === 'dropdown') {
+            openDropdown(el);
+            focusOpenedPanel(el);
+            return;
+        }
+        el.click();
+        if (typeof el.focus === 'function') el.focus();
+    }
+
+    // Nudge stashed by a navigating click, shown on the destination page.
+    const TEACH_PENDING_KEY = 'mouseless_teach_pending';
+
     // ---- teach missed shortcuts (plugin ->teach(), per-user state in DB) ----
     // A real mouse click on something that has a shortcut earns a Filament
     // notification: "you could have just hit ⌥E" with change / not-this-action
@@ -357,7 +1041,10 @@ function bootMouseless() {
         const clickPriority = Array.isArray(teach.clickPriority) ? teach.clickPriority : [];
         let muted = !!teach.muted;
         let nudgedThisPage = false;
-        document.addEventListener('livewire:navigated', () => { nudgedThisPage = false; });
+        document.addEventListener('livewire:navigated', () => {
+            nudgedThisPage = false;
+            replayPendingNudge();
+        });
         console.log(TAG, 'teach: armed,', Object.keys(states).length, 'action state(s), muted=', muted);
 
         // The notification's buttons $dispatch Livewire events (persisted by
@@ -387,7 +1074,7 @@ function bootMouseless() {
             if (e.target.closest?.('.fi-no, [data-mouseless-overlay], [data-mouseless-goto], [data-mouseless-teach]')) return;
 
             const hit = teachClickHit(e);
-            if (!hit) return;
+            if (!hit) { maybeJumpNudge(e); return; }
             const { actionId, combo, target, keyText } = hit;
             const st = states[actionId] ??= {};
 
@@ -410,8 +1097,63 @@ function bootMouseless() {
             }
 
             nudgedThisPage = true;
-            showTeachNudge(actionId, combo, target, keyText);
+            const payload = nudgePayload(actionId, combo, target, keyText);
+
+            // A link click unloads this page (SPA morph or full load) — the
+            // notification would die unseen while still burning its backoff.
+            // Stash the nudge and let the DESTINATION page show it.
+            const link = e.target.closest?.('a[href]');
+            const navigates = link
+                && !e.metaKey && !e.ctrlKey && !e.shiftKey
+                && link.getAttribute('target') !== '_blank'
+                && !(link.getAttribute('href') || '').startsWith('#');
+            if (navigates) {
+                console.log(TAG, 'teach: deferring nudge across navigation', actionId);
+                try { sessionStorage.setItem(TEACH_PENDING_KEY, JSON.stringify({ ...payload, at: Date.now() })); } catch {}
+                return;
+            }
+
+            renderNudge(payload);
         }, true);
+
+        // A nudge stashed by a navigating click on the previous page: show it
+        // here, where the user actually is. Stale entries (reopened tab) drop.
+        function replayPendingNudge() {
+            let pending = null;
+            try {
+                pending = JSON.parse(sessionStorage.getItem(TEACH_PENDING_KEY) || 'null');
+                sessionStorage.removeItem(TEACH_PENDING_KEY);
+            } catch {}
+            if (!pending || Date.now() - (pending.at || 0) > 15_000) return;
+            if (muted || nudgedThisPage) return;
+            const st = states[pending.actionId] ??= {};
+            if (st.dismissed || st.learned) return;
+            nudgedThisPage = true;
+            // Let the destination page settle (and Livewire finish booting).
+            setTimeout(() => renderNudge(pending), 600);
+        }
+        replayPendingNudge();
+
+        // Fallback nudge: the click had no dedicated shortcut, but jump mode
+        // could have reached the target. Deliberately LOW priority — it only
+        // ever fires for clicks no other nudge claims — with the same
+        // dismiss/mute/backoff/learn mechanics as every other action.
+        function maybeJumpNudge(e) {
+            if (!cfg.jump) return;
+            const el = e.target.closest?.('button, a[href], input, select, textarea, [role="button"], [role="tab"], .fi-copyable, [x-sortable-handle]');
+            if (!el || el.closest('.fi-sidebar, .fi-breadcrumbs, .phpdebugbar')) return;
+            const st = states['ui.jump'] ??= {};
+            if (muted || nudgedThisPage || st.dismissed || st.learned) return;
+            if (st.nextAt && Date.now() < st.nextAt) return;
+            nudgedThisPage = true;
+            const mod = (String(cfg.jump.chord || 'ctrl,ctrl').split(',')[0] || 'ctrl').trim();
+            renderNudge({
+                actionId: 'ui.jump',
+                combo: cfg.jump.chord || 'ctrl,ctrl',
+                key: '2× ' + displayCombo(mod),
+                label: '',
+            });
+        }
 
         // What shortcut the click bypassed. Bindings resolve via the same
         // targets the dispatcher uses; on top of that, structural clicks
@@ -494,10 +1236,56 @@ function bootMouseless() {
             return null;
         }
 
-        function showTeachNudge(actionId, combo, target, keyText = null) {
+        // Visible text of an element WITHOUT its count badges — a tab renders
+        // as "Radioactive 12" (label + .fi-badge), only "Radioactive" is the name.
+        function elementLabel(el) {
+            const clone = el.cloneNode(true);
+            clone.querySelectorAll('.fi-badge').forEach(b => b.remove());
+            return (clone.textContent || '').replace(/\s+/g, ' ').trim().slice(0, 60);
+        }
+
+        // Which body string fits the action. The generic '":label" works
+        // without the mouse' only reads well when the label IS the clicked
+        // button — structural targets (tabs, links, rows, chevrons, column
+        // headers) describe what the shortcut DOES instead.
+        const TEACH_BODY_KEYS = {
+            'ui.tab-jump': 'body_tab',
+            'nav.goto': 'body_nav',
+            'nav.dashboard': 'body_nav',
+            'list.next-row': 'body_row_open',
+            'list.prev-row': 'body_row_open',
+            'list.toggle-row': 'body_row_select',
+            'list.select-next-row': 'body_row_select',
+            'list.select-prev-row': 'body_row_select',
+            'ui.close': 'body_back',
+            'list.search': 'body_search',
+            'nav.command-palette': 'body_search_global',
+            'list.next-page': 'body_page',
+            'list.prev-page': 'body_page',
+            'list.sort': 'body_sort',
+            'ui.jump': 'body_jump',
+        };
+
+        // Everything a nudge needs, resolved while the clicked element still
+        // exists — deferred nudges render on the NEXT page, after this DOM
+        // is gone.
+        function nudgePayload(actionId, combo, target, keyText = null) {
             const key = keyText || displayCombo(combo);
-            const label = (target.textContent || '').replace(/\s+/g, ' ').trim().slice(0, 60)
-                || target.getAttribute?.('aria-label') || '';
+            // A target inside a table row has no usable text of its own — its
+            // textContent is every cell of the row concatenated ("Bröseli von
+            // Emmental AGT-FETA-610 Fondue Fighters …"). Name the ACTION there
+            // (translated: "Bearbeiten", "Zeile aus-/abwählen"); element text
+            // only makes sense for real labeled buttons outside rows — minus
+            // any count badge ("Radioactive 12" is a tab label plus its badge).
+            const inRow = !!target.closest?.('.fi-ta-row, .fi-ta-record');
+            const name = (cfg.actionNames?.[actionId] || '').trim();
+            const label = inRow
+                ? name
+                : (elementLabel(target) || target.getAttribute?.('aria-label') || name || '');
+            return { actionId, combo, key, label };
+        }
+
+        function renderNudge({ actionId, combo, key, label }) {
             console.log(TAG, 'teach: nudging', actionId, '=', combo);
 
             const actions = [];
@@ -526,7 +1314,13 @@ function bootMouseless() {
                 .icon('heroicon-o-cursor-arrow-ripple')
                 .seconds(12)
                 .actions(actions);
-            if (label) notification.body((t.body || '“:label” works without the mouse.').replace(':label', label));
+            const bodyTemplate = t[TEACH_BODY_KEYS[actionId] || 'body']
+                || t.body || '“:label” works without the mouse.';
+            // Templates without :label (e.g. "Opening a row works without the
+            // mouse.") render even when no usable label was extractable.
+            if (label || !bodyTemplate.includes(':label')) {
+                notification.body(bodyTemplate.replace(':label', label));
+            }
             notification.send();
 
             // Advance the backoff locally (a reload must not double-nudge)
@@ -574,11 +1368,26 @@ function bootMouseless() {
         // when that field is actually rendered on the current page.
         if (id === 'nav.command-palette') return !!findGlobalSearchInput(document);
 
-        // A language switcher only exists when the app provides one — it opts in
-        // via data-mouseless="nav.language" on its trigger.
-        if (id === 'nav.language') {
-            const el = document.querySelector('[data-mouseless="nav.language"]');
+        // A language switcher / recently-viewed list only exists when the app
+        // provides one — they opt in via a data-mouseless attribute on their
+        // trigger. Without it the binding has nothing to press.
+        if (id === 'nav.language' || id === 'nav.recently-viewed') {
+            const el = document.querySelector(`[data-mouseless="${id}"]`);
             return !!(el && isVisible(el));
+        }
+
+        // Logout exists whenever Filament's user menu renders its POST form.
+        if (id === 'nav.logout') {
+            return !!(document.querySelector('[data-mouseless="nav.logout"]')
+                || document.querySelector('form[action$="/logout"]'));
+        }
+
+        // The notifications bell only renders with ->databaseNotifications().
+        if (id === 'nav.notifications') {
+            if (document.querySelector('[data-mouseless="nav.notifications"]')) return true;
+            return !!Array.from(document.querySelectorAll(
+                '.fi-topbar-database-notifications-btn, .fi-sidebar-database-notifications-btn',
+            )).find(isVisible);
         }
 
         // UI and navigation actions are always reachable.
@@ -611,6 +1420,20 @@ function bootMouseless() {
             return !!findTableSearchInput(document);
         }
 
+        if (id === 'list.filter') {
+            if (document.querySelector('.fi-ta-filters-trigger-action-ctn button')
+                || document.querySelector('.fi-ta-filters-dropdown .fi-dropdown-trigger button')) return true;
+            // Fall through: modal-style filters render a plain action button.
+        }
+
+        // The bulk-actions trigger only shows while rows are selected — treat
+        // it as available whenever the table selects at all (checkbox column).
+        if (id === 'list.bulk-action') {
+            if (document.querySelector('[data-mouseless="list.bulk-action"]')) return true;
+            if (Array.from(document.querySelectorAll('.fi-ta-header-toolbar .fi-dropdown-trigger .fi-ac-btn-group')).find(isVisible)) return true;
+            return !!document.querySelector('.fi-ta-record-checkbox');
+        }
+
         const names = filamentActionNames(id);
         if (!names.length) return true; // Unknown action type — never dim.
         for (const name of names) {
@@ -636,9 +1459,29 @@ function bootMouseless() {
         // The "go to" palette owns every keystroke while it's open.
         if (gotoOpen) { handleGotoKey(e); return; }
 
+        // Jump mode owns every keystroke while its badges are up.
+        if (jumpOpen) { handleJumpKey(e); return; }
+
+        // Move mode (grabbed sortable row) owns arrows/enter until dropped.
+        if (jumpMoveContainer) { handleJumpMoveKey(e); return; }
+
+        // An open action menu claims ↑/↓/j/k/Home/End for walking its items.
+        if (dropdownMenuNav(e)) return;
+
         // The my-shortcuts page is capturing a combo (recording / key search)
         // — stay out of the way so the captured key never triggers an action.
         if (document.querySelector('[data-mouseless-recording]')) return;
+
+        // Keys the FOCUSED control natively consumes must reach it, never the
+        // engine: a <select> needs arrows/Enter/Space/type-ahead, a checkbox
+        // or radio needs Space (+ arrows for group nav), a button needs
+        // Space/Enter to activate, a slider handle needs arrows. Escape blurs
+        // a <select> so the escape cascade continues on the next press.
+        if (keysStayNative(e)) {
+            if (e.key === 'Escape' && e.target.tagName === 'SELECT') e.target.blur();
+            console.log(TAG, 'key stays native on', e.target.tagName, e.target.type || e.target.getAttribute('role') || '');
+            return;
+        }
 
         const pressed = eventToKey(e);
         const inInput = isTextInputFocus(e.target);
@@ -691,14 +1534,25 @@ function bootMouseless() {
         // Bare ↑/↓ continue row navigation once a row is focused (⇧ extends the
         // selection) — everywhere else the arrows keep their native scrolling.
         // Not a rebindable action: it's the arrow-continuation of j/k.
-        if ((e.key === 'ArrowDown' || e.key === 'ArrowUp') && !e.altKey && !e.ctrlKey && !e.metaKey && !inInput) {
+        if ((e.key === 'ArrowDown' || e.key === 'ArrowUp') && !e.altKey && !e.ctrlKey && !e.metaKey) {
             const row = document.activeElement?.closest?.('.fi-ta-row, .fi-ta-record');
-            if (row) {
+            // A modal/slide-over showing rows claims the arrows outright — ↓
+            // enters its list at the top like a first j. And from a table
+            // search box, ↓ drops into the result rows (combobox convention);
+            // all other inputs keep their caret keys.
+            const arrowModal = Array.from(document.querySelectorAll('.fi-modal-window')).find(isVisible);
+            const modalHasRows = !!arrowModal && Array.from(arrowModal.querySelectorAll('.fi-ta-row, .fi-ta-record')).some(isVisible);
+            const ae = document.activeElement;
+            const fromSearch = e.key === 'ArrowDown' && inInput && ae && (
+                (ae.type || '').toLowerCase() === 'search'
+                || Array.from(ae.attributes || []).some(a => a.name.startsWith('wire:model') && /search/i.test(a.value))
+            );
+            if ((!inInput && (row || modalHasRows)) || fromSearch) {
                 const dir = e.key === 'ArrowDown' ? 'next' : 'prev';
                 console.log(TAG, 'arrow row-nav ->', dir, e.shiftKey ? '(extend selection)' : '');
                 e.preventDefault();
                 e.stopPropagation();
-                dispatch(e.shiftKey ? `list.select-${dir}-row` : `list.${dir}-row`);
+                dispatch(e.shiftKey && !fromSearch ? `list.select-${dir}-row` : `list.${dir}-row`);
                 return;
             }
         }
@@ -725,6 +1579,16 @@ function bootMouseless() {
                 return;
             }
         }
+        // F5 only means "refresh the table" when the page has a refresh action
+        // — otherwise it stays the browser's reload key. Swallowing it with a
+        // "no match" toast would break the most muscle-memoried key there is.
+        if (actionId === 'list.refresh'
+            && !findActionButton('refresh', document, true)
+            && !document.querySelector('[data-mouseless="list.refresh"]')) {
+            console.log(TAG, 'list.refresh: no refresh action here, leaving F5 to the browser');
+            return;
+        }
+
         if (actionId === 'record.print') {
             // Overlay open → let the browser print; the print stylesheet renders
             // the cheatsheet. No print action on the page → browser print too.
@@ -801,6 +1665,14 @@ function bootMouseless() {
                 }
                 return;
             }
+            //   3. Typing in a field → release focus only; the NEXT Esc
+            //      escalates. Navigating away mid-keystroke (step 4) would
+            //      throw the user's form input away on a single Esc.
+            if (isTextInputFocus(document.activeElement)) {
+                console.log(TAG, 'dispatch -> ui.close: blurring text input (next Esc escalates)');
+                document.activeElement.blur?.();
+                return;
+            }
             const path = window.location.pathname;
             const m = path.match(/^(\/[^\/]+\/[^\/]+)\/(create|\d+(\/(edit|view))?)$/);
             if (m) {
@@ -856,7 +1728,40 @@ function bootMouseless() {
                 console.log(TAG, 'dispatch -> nav via [data-mouseless="' + actionId + '"]');
                 return;
             }
-            if (actionId === 'nav.profile')   { console.log(TAG, 'dispatch -> /admin/my-shortcuts'); return goUrl('/admin/my-shortcuts'); }
+            // Filament renders logout as a POST form in the user menu
+            // (Action::postToUrl()) — there is no URL to navigate to, and the
+            // form exists in the DOM even while the dropdown is closed.
+            if (actionId === 'nav.logout') {
+                const form = document.querySelector('form[action$="/logout"]');
+                if (form) {
+                    console.log(TAG, 'dispatch -> nav.logout: submitting', form.action);
+                    form.requestSubmit ? form.requestSubmit() : form.submit();
+                    return;
+                }
+                console.warn(TAG, 'nav.logout: no logout form on this page');
+                toast(strings.no_match);
+                return;
+            }
+            // The database-notifications bell (topbar or sidebar variant) —
+            // only rendered when the panel enables ->databaseNotifications().
+            if (actionId === 'nav.notifications') {
+                const bell = Array.from(document.querySelectorAll(
+                    '.fi-topbar-database-notifications-btn, .fi-sidebar-database-notifications-btn',
+                )).find(isVisible);
+                if (bell) {
+                    console.log(TAG, 'dispatch -> nav.notifications: opening bell', bell);
+                    bell.click();
+                    return;
+                }
+                console.warn(TAG, 'nav.notifications: no database-notifications trigger (panel feature off?)');
+                toast(strings.no_match);
+                return;
+            }
+            if (actionId === 'nav.profile') {
+                const url = cfg.shortcutsUrl || '/admin/my-shortcuts';
+                console.log(TAG, 'dispatch -> nav.profile:', url);
+                return goUrl(url);
+            }
             if (actionId === 'nav.dashboard') {
                 // Prefer the panel's real home URL (where Filament lands you
                 // after login). It need not be "/admin" — any panel path works.
@@ -877,7 +1782,11 @@ function bootMouseless() {
                 return goUrl('/admin');
             }
             if (actionId.startsWith('nav.resource.')) {
-                const url = `/admin/${actionId.replace('nav.resource.', '')}`;
+                // Panel base from the server-provided home URL — panels need
+                // not live at /admin (the demo runs at the domain root).
+                let base = '/admin';
+                try { base = new URL(cfg.homeUrl || '/admin', window.location.origin).pathname.replace(/\/$/, ''); } catch {}
+                const url = `${base}/${actionId.replace('nav.resource.', '')}`;
                 console.log(TAG, 'dispatch -> resource', url);
                 return goUrl(url);
             }
@@ -894,7 +1803,10 @@ function bootMouseless() {
         if (actionId === 'list.next-row' || actionId === 'list.prev-row') {
             const dir = actionId === 'list.next-row' ? 1 : -1;
             selectAnchorRow = null; // a plain move ends any shift-select gesture
-            const rowElements = Array.from(document.querySelectorAll('.fi-ta-row, .fi-ta-record')).filter(isVisible);
+            // An open modal makes the page behind it inert — its rows must
+            // never catch the cursor.
+            const rowNavModal = Array.from(document.querySelectorAll('.fi-modal-window')).find(isVisible);
+            const rowElements = Array.from((rowNavModal || document).querySelectorAll('.fi-ta-row, .fi-ta-record')).filter(isVisible);
             console.log(TAG, 'dispatch -> list row nav', actionId, 'rows=', rowElements.length);
             if (!rowElements.length) {
                 toast(strings.no_match);
@@ -1008,10 +1920,11 @@ function bootMouseless() {
         // a mountAction wire-click, so the generic action finder misses it.
         if (actionId === 'list.filter') {
             const trigger = document.querySelector('.fi-ta-filters-trigger-action-ctn button')
+                || document.querySelector('.fi-ta-filters-dropdown .fi-dropdown-trigger button')
                 || document.querySelector('[x-on\\:click*="toggleFiltersDropdown"]');
             console.log(TAG, 'dispatch -> list.filter, trigger=', trigger);
             if (trigger && isVisible(trigger)) {
-                trigger.click();
+                openDropdown(trigger);
                 focusOpenedPanel(trigger);
                 return;
             }
@@ -1156,6 +2069,24 @@ function bootMouseless() {
             return;
         }
 
+        // list.bulk-action — the bulk-actions dropdown in the table toolbar.
+        // It's a grouped-action trigger (no mountAction wire-click), rendered
+        // only while rows are selected, so the generic finder can't see it.
+        if (actionId === 'list.bulk-action') {
+            const trigger = Array.from(document.querySelectorAll(
+                '[data-mouseless="list.bulk-action"], .fi-ta-header-toolbar .fi-dropdown-trigger .fi-ac-btn-group',
+            )).find(isVisible);
+            if (trigger) {
+                console.log(TAG, 'dispatch -> list.bulk-action: opening bulk group', trigger);
+                openDropdown(trigger);
+                focusOpenedPanel(trigger);
+                return;
+            }
+            console.warn(TAG, 'list.bulk-action: no bulk-actions trigger (select rows first)');
+            toast(strings.no_match);
+            return;
+        }
+
         // crud.create — URL-based navigation.
         //   1. Existing /create link on the page → use it (resource list / header).
         //   2. URL is a resource detail page (create/edit/view/show) → /{panel}/{slug}/create.
@@ -1197,8 +2128,6 @@ function bootMouseless() {
         const candidates = filamentActionNames(actionId);
         const rowScoped = ROW_LEVEL_ACTIONS.has(actionId);
         const focusedRow = document.activeElement?.closest?.('.fi-ta-row, .fi-ta-record');
-        const scope = (rowScoped && focusedRow) ? focusedRow : document;
-        console.log(TAG, 'looking for Filament action button. Candidates:', candidates, 'scope=', scope === document ? 'document' : 'focusedRow');
 
         if (rowScoped && !focusedRow && document.querySelector('.fi-ta-row, .fi-ta-record')) {
             console.warn(TAG, actionId, 'requires a focused row — press j/k first');
@@ -1206,14 +2135,25 @@ function bootMouseless() {
             return;
         }
 
-        for (const name of candidates) {
-            const btn = findActionButton(name, scope);
-            console.log(TAG, '  candidate', name, '->', btn ? 'FOUND' : 'not found');
-            if (btn) {
-                console.log(TAG, '  button el=', btn);
-                btn.click();
-                console.log(TAG, '  click dispatched');
-                return;
+        // Record actions (history, approve, …) also render as row actions.
+        // With a cursored row, search it first so ⌥H opens THAT row's history
+        // — a document-wide search would always hit row 1's button. Page-level
+        // actions still resolve via the document pass.
+        const scopes = rowScoped
+            ? [focusedRow ?? document]
+            : (focusedRow ? [focusedRow, document] : [document]);
+        console.log(TAG, 'looking for Filament action button. Candidates:', candidates, 'scopes=', scopes.map(s => s === document ? 'document' : 'focusedRow'));
+
+        for (const scope of scopes) {
+            for (const name of candidates) {
+                const btn = findActionButton(name, scope);
+                console.log(TAG, '  candidate', name, scope === document ? '(document)' : '(row)', '->', btn ? 'FOUND' : 'not found');
+                if (btn) {
+                    console.log(TAG, '  button el=', btn);
+                    btn.click();
+                    console.log(TAG, '  click dispatched');
+                    return;
+                }
             }
         }
 
@@ -1320,11 +2260,17 @@ function bootMouseless() {
             `[wire\\:click="${actionName}"]`,
             `[wire\\:click^="${actionName}("]`,
         ];
+        // Actions collapsed into a "…" ActionGroup live inside a closed
+        // dropdown panel — present in the DOM, invisible on screen. A
+        // programmatic click still reaches their wire:click handler, so keep
+        // the first such candidate as a last resort behind visible buttons.
+        let groupedFallback = null;
         for (const sel of wireSelectors) {
             const all = scope.querySelectorAll(sel);
             if (all.length) log(TAG, '    [wire] selector matched', all.length, 'el(s):', sel);
             for (const el of all) {
                 if (isVisible(el) && !el.disabled) return el;
+                if (!groupedFallback && !el.disabled && el.closest('.fi-dropdown-panel')) groupedFallback = el;
             }
         }
 
@@ -1371,6 +2317,11 @@ function bootMouseless() {
             }
         }
 
+        if (groupedFallback) {
+            log(TAG, '    [group] no visible button — using grouped ("…") action', groupedFallback);
+            return groupedFallback;
+        }
+
         return null;
     }
 
@@ -1388,6 +2339,26 @@ function bootMouseless() {
             const t = (target.type || 'text').toLowerCase();
             return !['checkbox', 'radio', 'button', 'submit', 'reset', 'file', 'image', 'hidden', 'color', 'range'].includes(t);
         }
+        return false;
+    }
+
+    // True when the focused control natively consumes this key — the engine
+    // must not steal it (Space is bound to list.toggle-row, which would eat
+    // a checkbox's toggle or a button's activation). Row LINKS deliberately
+    // stay with the engine: Space on a link would only scroll the page, the
+    // engine's row-toggle is more useful there. ⌘/Ctrl combos always stay
+    // with the engine.
+    function keysStayNative(e) {
+        const t = e.target;
+        if (!t || !t.tagName || e.ctrlKey || e.metaKey) return false;
+        if (t.tagName === 'SELECT') return true; // arrows, Enter, Space, type-ahead
+        const role = t.getAttribute('role');
+        const type = t.tagName === 'INPUT' ? (t.type || '').toLowerCase() : null;
+        if ((type === 'checkbox' || type === 'radio' || role === 'checkbox' || role === 'radio' || role === 'switch')
+            && (e.key === ' ' || e.key.startsWith('Arrow'))) return true;
+        if ((t.tagName === 'BUTTON' || role === 'button' || role === 'tab' || role === 'menuitem')
+            && (e.key === ' ' || e.key === 'Enter')) return true;
+        if (role === 'slider' && (e.key.startsWith('Arrow') || ['Home', 'End', 'PageUp', 'PageDown'].includes(e.key))) return true;
         return false;
     }
 
@@ -1510,6 +2481,42 @@ function bootMouseless() {
     function openDropdown(el) {
         el.dispatchEvent(new MouseEvent('mousedown', { button: 0, bubbles: true, cancelable: true }));
         el.click();
+    }
+
+    // While an action menu is open (row actions, bulk actions, user menu — any
+    // visible .fi-dropdown-panel containing a .fi-dropdown-list), ↑/↓ and j/k
+    // walk its items with wrap-around, Home/End jump to the edges, and Enter
+    // activates the focused item natively. Panels without a list (filters,
+    // column manager) keep their native Tab/caret behavior, and j/k stay
+    // typable inside a panel's text inputs.
+    function dropdownMenuNav(e) {
+        if (e.altKey || e.ctrlKey || e.metaKey) return false;
+        const dir = (e.key === 'ArrowDown' || e.key === 'j') ? 1
+            : (e.key === 'ArrowUp' || e.key === 'k') ? -1 : 0;
+        if (!dir && e.key !== 'Home' && e.key !== 'End') return false;
+
+        const panel = Array.from(document.querySelectorAll('.fi-dropdown-panel'))
+            .find(p => isVisible(p) && p.querySelector('.fi-dropdown-list'));
+        if (!panel) return false;
+        if ((e.key === 'j' || e.key === 'k') && isTextInputFocus(e.target)) return false;
+
+        const items = Array.from(panel.querySelectorAll('.fi-dropdown-list-item'))
+            .filter(el => isVisible(el) && !el.matches('.fi-disabled, [disabled], [aria-disabled="true"]'));
+        if (!items.length) return false;
+
+        const current = items.indexOf(document.activeElement?.closest?.('.fi-dropdown-list-item'));
+        const next = e.key === 'Home' ? 0
+            : e.key === 'End' ? items.length - 1
+            : current === -1 ? (dir === 1 ? 0 : items.length - 1)
+            : (current + dir + items.length) % items.length;
+
+        e.preventDefault();
+        e.stopPropagation();
+        const item = items[next];
+        if (!item.matches('a[href], button, [tabindex]')) item.tabIndex = -1;
+        item.focus();
+        console.log(TAG, 'dropdown menu nav ->', item.textContent.trim());
+        return true;
     }
 
     // Once a trigger has opened its panel, move focus inside so Tab walks the

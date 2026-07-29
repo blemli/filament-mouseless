@@ -19,6 +19,11 @@ return [
         'empty' => 'Nothing to jump to here.',
     ],
 
+    'jump' => [
+        'no_targets' => 'No jump targets on this screen.',
+        'move_hint' => 'Move with ↑/↓ · Enter drops the row.',
+    ],
+
     'ns' => [
         'crud' => 'CRUD',
         'list' => 'List',
@@ -96,12 +101,23 @@ return [
             'close' => 'Close',
             'next-tab' => 'Next tab',
             'prev-tab' => 'Previous tab',
+            'jump' => 'Jump to any control',
         ],
     ],
 
     'teach' => [
         'title' => 'You could have just hit :key',
         'body' => '“:label” works without the mouse.',
+        'body_tab' => 'Switching to tab “:label” works without the mouse.',
+        'body_nav' => 'Jumping to “:label” works without the mouse.',
+        'body_row_open' => 'Opening a row works without the mouse.',
+        'body_row_select' => 'Selecting rows works without the mouse.',
+        'body_back' => 'Going back works without the mouse.',
+        'body_search' => 'Searching the table works without the mouse.',
+        'body_search_global' => 'The global search works without the mouse.',
+        'body_page' => 'Flipping pages works without the mouse.',
+        'body_sort' => 'Sorting works without the mouse.',
+        'body_jump' => 'A double-tap puts a letter on every control — type it and you are there.',
         'change' => 'Change shortcut',
         'dismiss' => "Don't show again",
         'mute' => "Don't show any tips",
