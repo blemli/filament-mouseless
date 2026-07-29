@@ -288,3 +288,13 @@ it('lists bound actions the user clicks more than they key as untapped', functio
         ->and($untapped[0]['kb'])->toBe(1)
         ->and($untapped[0]['combo'])->not->toBe('');
 });
+
+it('honors custom milestones configured on the plugin', function () {
+    $panel = Panel::make()->id('custom-milestones')->plugin(FilamentMouselessPlugin::make()->statistics(milestones: [25]));
+    Filament::registerPanel($panel);
+    Filament::setCurrentPanel($panel);
+
+    expect(Statistic::record(1, ['a' => ['kb' => 24]]))->toBe([])
+        ->and(Statistic::record(1, ['a' => ['kb' => 1]]))->toBe([25])
+        ->and(Statistic::record(1, ['a' => ['kb' => 200]]))->toBe([]);
+});

@@ -5,6 +5,7 @@ namespace Blemli\FilamentMouseless;
 use Blemli\FilamentMouseless\Enums\MouselessAction;
 use Blemli\FilamentMouseless\Facades\FilamentMouseless;
 use Blemli\FilamentMouseless\Filament\Pages\MyShortcuts;
+use Blemli\FilamentMouseless\Models\Statistic;
 use Blemli\FilamentMouseless\Support\ActionMeta;
 use Blemli\FilamentMouseless\Support\Keys;
 use Blemli\FilamentMouseless\Support\Shield;
@@ -37,6 +38,9 @@ class FilamentMouselessPlugin implements Plugin
     protected int $teachDeferDays = 0;
 
     protected bool $statisticsEnabled = false;
+
+    /** @var array<int, int>|null */
+    protected ?array $milestones = null;
 
     protected bool $escapeToDashboardEnabled = false;
 
@@ -333,13 +337,17 @@ class FilamentMouselessPlugin implements Plugin
      * one click avoided, and mouse clicks on targets that HAVE a shortcut are
      * counted too — giving each action a shortcut/click ratio. Powers the
      * statistics widget on /my-shortcuts (clicks avoided, trend, untapped
-     * actions), the hidden "Invoked" table column, and the 100 / 1'000 / 10'000 milestone
-     * congratulations. Opt-in; needs the mouseless_statistics migration, so
-     * ->stateless() panels ignore it.
+     * actions), the hidden "Invoked" table column, and the milestone
+     * congratulations (100 / 1'000 / 10'000 by default, override via
+     * $milestones for e.g. short-lived demo accounts). Opt-in; needs the
+     * mouseless_statistics migration, so ->stateless() panels ignore it.
+     *
+     * @param  array<int, int>|null  $milestones
      */
-    public function statistics(bool $enabled = true): static
+    public function statistics(bool $enabled = true, ?array $milestones = null): static
     {
         $this->statisticsEnabled = $enabled;
+        $this->milestones = $milestones;
 
         return $this;
     }
@@ -349,6 +357,14 @@ class FilamentMouselessPlugin implements Plugin
         $plugin = static::safeGet();
 
         return ($plugin?->statisticsEnabled ?? false) && ! ($plugin?->isStateless() ?? false);
+    }
+
+    /**
+     * @return array<int, int>
+     */
+    public static function milestones(): array
+    {
+        return static::safeGet()?->milestones ?? Statistic::MILESTONES;
     }
 
     /**

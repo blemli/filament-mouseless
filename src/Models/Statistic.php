@@ -2,6 +2,7 @@
 
 namespace Blemli\FilamentMouseless\Models;
 
+use Blemli\FilamentMouseless\FilamentMouselessPlugin;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -71,7 +72,7 @@ class Statistic extends Model
         $row->save();
 
         return array_values(array_filter(
-            self::MILESTONES,
+            FilamentMouselessPlugin::milestones(),
             fn (int $milestone): bool => $before < $milestone && $before + $kbDelta >= $milestone,
         ));
     }

@@ -40,7 +40,7 @@ Dark-Mode Support, Language Adaptive: DE (**E**rstellen), EN (**N**ew), ES (**C*
 
 ### roadmap
 
-Reorder Rows,  Multipanel support, Multitenant Support, ~~Tutorial on missed Shortcuts~~, ~~Statistics on avoided clicks~~, Let Users share Presets with eachother, Let Admins Moderate Shared Presets (remove unused ones &see which action is the most overwritten, most used),  `shorcuts:list` command, Detect already existing shortcuts of actions (artisan?), ~~singleton preset~~, Free Key Visualisation, Fire Laravel Events, unattended install,  ~~vimperator mode to jump to fields (double ctrl)~~, uninstall command, support advanced tables, Integrate with Spotlight to directly run relevant actions, AskPhil, Kanban, ActivityLog (opt-in), and probably even more!
+Reorder Rows (also in Repeaters),  Multipanel support, Multitenant Support, Filter the Cheatsheet, Nudge for Cheatsheet,  ~~Tutorial on missed Shortcuts~~, ~~Statistics on avoided clicks~~, Let Users share Presets with eachother, Let Admins Moderate Shared Presets (remove unused ones &see which action is the most overwritten, most used),  `shorcuts:list` command, Detect already existing shortcuts of actions (artisan?), ~~singleton preset~~, Free Key Visualisation, Fire Laravel Events, unattended install,  ~~vimperator mode to jump to fields (double ctrl)~~, uninstall command, support advanced tables, Integrate with Spotlight to directly run relevant actions, AskPhil, Kanban, ActivityLog (opt-in), and probably even more!
 
 ### Languages
 
