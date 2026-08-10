@@ -1835,8 +1835,10 @@ function bootMouseless() {
     }
 
     function hasOpenModal() {
-        const modal = document.querySelector('.fi-modal-window');
-        return !!(modal && isVisible(modal));
+        // Pages pre-render every closed modal/slideover (actions, the column
+        // manager, filters …), so "the first .fi-modal-window" is usually a
+        // hidden one — any VISIBLE window counts.
+        return Array.from(document.querySelectorAll('.fi-modal-window')).some(isVisible);
     }
 
     function dispatch(actionId) {
