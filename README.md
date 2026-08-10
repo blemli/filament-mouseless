@@ -36,11 +36,11 @@ php artisan mouseless:install
 
 ## Features
 
-Dark-Mode Support, Language Adaptive: DE (**E**rstellen), EN (**N**ew), ES (**C**rear), FR (**C**réer) & IT (**N**uovo), Filament Native Style (no custom theme needed), Mobile Friendly, Hidden on Devices without Keyboard, Respects your Theme & Font & Color, Stateless mode available (without migrations), Show a Shortcuts Overlay with <kbd>?</kbd>, Convenient `mouseless:install` command, Let Users Register custom Combinations, Compatible with Filament Shield but not required, Configure everything like Icons &  Labels & Positions, Printable CheatSheat, Jump to Resources with Shortcuts, Navigate Table Rows, Highlight Shortcuts in UI, Utility to rename existing actions, Create your most important Resource from anywhere, Escape to Dashboard, Open Filters Panel, Open Column Selector, Teach Shortcuts to users without annoying them, Jump to any Control with a Double-Tap of Ctrl (opt-in), 
+Dark-Mode Support, Language Adaptive: DE (**E**rstellen), EN (**N**ew), ES (**C**rear), FR (**C**réer) & IT (**N**uovo), Filament Native Style (no custom theme needed), Mobile Friendly, Hidden on Devices without Keyboard, Respects your Theme & Font & Color, Stateless mode available (without migrations), Show a Shortcuts Overlay with <kbd>?</kbd>, Convenient `mouseless:install` command, Let Users Register custom Combinations, Compatible with Filament Shield but not required, Configure everything like Icons &  Labels & Positions, Printable CheatSheat, Go to Resources with Shortcuts, Navigate Table Rows, Highlight Shortcuts in UI, Utility to rename existing actions, Create your most important Resource from anywhere, Escape to Dashboard, Teach Shortcuts to users without annoying them, Jump to any Control with a Double-Tap of Ctrl (opt-in), Laravel-Events to hook into, Reorder Rows (also in Repeaters), 
 
 ### roadmap
 
-Reorder Rows (also in Repeaters),  Multipanel support, Multitenant Support, Filter the Cheatsheet, Nudge for Cheatsheet,  ~~Tutorial on missed Shortcuts~~, ~~Statistics on avoided clicks~~, Let Users share Presets with eachother, Let Admins Moderate Shared Presets (remove unused ones &see which action is the most overwritten, most used),  `shorcuts:list` command, Detect already existing shortcuts of actions (artisan?), ~~singleton preset~~, Free Key Visualisation, Fire Laravel Events, unattended install,  ~~vimperator mode to jump to fields (double ctrl)~~, uninstall command, support advanced tables, Integrate with Spotlight to directly run relevant actions, AskPhil, Kanban, ActivityLog (opt-in), and probably even more!
+ Multipanel support, Multitenant Support, Filtersearch the Cheatsheet, Nudge for Cheatsheet,  ~~Tutorial on missed Shortcuts~~, ~~Statistics on avoided clicks~~, Let Users share Presets with eachother, Let Admins Moderate Shared Presets (remove unused ones &see which action is the most overwritten, most used),  `shorcuts:list` command, Detect already existing shortcuts of actions (artisan?), ~~singleton preset~~, Free Key Visualisation, ~~Fire Laravel Events~~, unattended install,  ~~vimperator mode to jump to fields (double ctrl)~~, uninstall command
 
 ### Languages
 
@@ -48,7 +48,7 @@ EN, DE, ES, FR, IT — each with its own initials-based default preset. Requests
 
 ### Supported Third Party Packages
 
-Filament Shield, ActivityLog, Advanced Tables, Spotlight, Language Switcher
+Filament Shield, more to come
 
 ## Configure
 
@@ -419,6 +419,36 @@ The chord is configurable — a double-tap of any single modifier:
 ```
 
 A general chord system (arbitrary key sequences for any action) may come later.
+
+### Events
+
+The package fires plain Laravel events whenever something is *persisted* — hook them for audit logs, analytics, cache busting or a Slack cheer. Nothing fires during shortcut *resolution* (that happens on every request and would be pure noise).
+
+All events live in `Blemli\FilamentMouseless\Events`:
+
+| Event | Fired when | Payload |
+| --- | --- | --- |
+| `ShortcutsChanged` | A user edits their layout in the shortcuts table (rebind, remove, reset, enable/disable — single, bulk or per-category) | `userId`, `presetSlug`, old/new `bindings` & `disabled`, `changedActionIds()` helper |
+| `PresetCreated` | A personal layout is stored (fork-on-first-edit, "create layout", import-as-new) | `preset` |
+| `PresetDeleted` | A personal layout is deleted | `preset` |
+| `PresetActivated` | The user switches their active layout (`null` slug = follow the UI locale's default) | `userId`, `previousSlug`, `slug` |
+| `PresetPublished` / `PresetUnpublished` | A layout is shared with other users / made private again | `preset` |
+| `PresetImported` | A layout is imported from JSON — `replacedExisting` tells overwrite from create | `preset`, `replacedExisting` |
+| `MilestoneReached` | A statistics flush crosses a lifetime-keyboard-count milestone (see `->statistics(milestones: [...])`) | `userId`, `milestone`, `lifetimeKeyboardCount` |
+
+Listen to them like any Laravel event, e.g. in your `AppServiceProvider`:
+
+```php
+use Blemli\FilamentMouseless\Events\ShortcutsChanged;
+use Illuminate\Support\Facades\Event;
+
+Event::listen(function (ShortcutsChanged $event) {
+    logger()->info('Shortcuts changed', [
+        'user' => $event->userId,
+        'actions' => $event->changedActionIds(),
+    ]);
+});
+```
 
 ## Tiers
 

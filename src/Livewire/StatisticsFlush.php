@@ -2,6 +2,7 @@
 
 namespace Blemli\FilamentMouseless\Livewire;
 
+use Blemli\FilamentMouseless\Events\MilestoneReached;
 use Blemli\FilamentMouseless\FilamentMouselessPlugin;
 use Blemli\FilamentMouseless\Models\Statistic;
 use Filament\Notifications\Notification;
@@ -54,6 +55,12 @@ class StatisticsFlush extends Component
         $crossed = Statistic::record((int) auth()->id(), $clean);
 
         if ($crossed !== []) {
+            $lifetime = Statistic::lifetimeKeyboardCount((int) auth()->id());
+
+            foreach ($crossed as $milestone) {
+                MilestoneReached::dispatch((int) auth()->id(), $milestone, $lifetime);
+            }
+
             $this->congratulate(max($crossed));
         }
     }

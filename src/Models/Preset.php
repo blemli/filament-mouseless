@@ -2,6 +2,8 @@
 
 namespace Blemli\FilamentMouseless\Models;
 
+use Blemli\FilamentMouseless\Events\PresetCreated;
+use Blemli\FilamentMouseless\Events\PresetDeleted;
 use Blemli\FilamentMouseless\Services\PresetRegistry;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
@@ -11,6 +13,11 @@ class Preset extends Model
     protected $table = 'mouseless_presets';
 
     protected $guarded = [];
+
+    protected $dispatchesEvents = [
+        'created' => PresetCreated::class,
+        'deleted' => PresetDeleted::class,
+    ];
 
     protected $casts = [
         'bindings' => 'array',

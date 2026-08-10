@@ -2,6 +2,10 @@
 
 namespace Blemli\FilamentMouseless\Filament\Widgets;
 
+use Blemli\FilamentMouseless\Events\PresetActivated;
+use Blemli\FilamentMouseless\Events\PresetImported;
+use Blemli\FilamentMouseless\Events\PresetPublished;
+use Blemli\FilamentMouseless\Events\PresetUnpublished;
 use Blemli\FilamentMouseless\Facades\FilamentMouseless;
 use Blemli\FilamentMouseless\FilamentMouselessPlugin;
 use Blemli\FilamentMouseless\Models\Preset;
@@ -79,13 +83,20 @@ class PresetSelector extends Widget implements HasActions, HasForms
 
     protected function persistSelection(): void
     {
+        $previous = UserSetting::query()->where('user_id', auth()->id())->value('active_preset_slug');
+        $slug = $this->selectedSlug();
+
         UserSetting::updateOrCreate(
             ['user_id' => auth()->id()],
-            ['active_preset_slug' => $this->selectedSlug()],
+            ['active_preset_slug' => $slug],
         );
 
         FilamentMouseless::flush();
         $this->dispatch('mouseless-preset-changed');
+
+        if ($previous !== $slug) {
+            PresetActivated::dispatch((int) auth()->id(), $previous, $slug);
+        }
     }
 
     protected function selectedSlug(): ?string
@@ -288,6 +299,8 @@ class PresetSelector extends Widget implements HasActions, HasForms
                             : $preset->name,
                     ]);
 
+                    PresetUnpublished::dispatch($preset);
+
                     Notification::make()
                         ->title(__('filament-mouseless::mouseless.widget.private_done'))
                         ->success()->send();
@@ -302,6 +315,8 @@ class PresetSelector extends Widget implements HasActions, HasForms
                             : $preset->name . $authorSuffix,
                         ...($requiresApproval ? [] : ['approved_at' => now(), 'approved_by' => auth()->id()]),
                     ]);
+
+                    PresetPublished::dispatch($preset);
 
                     Notification::make()
                         ->title(__($requiresApproval
@@ -542,6 +557,8 @@ class PresetSelector extends Widget implements HasActions, HasForms
                 'disabled_actions' => array_values((array) ($payload['disabled_actions'] ?? [])),
             ]);
 
+            PresetImported::dispatch($existing, true);
+
             $this->switchTo($existing->slug);
 
             Notification::make()
@@ -557,6 +574,8 @@ class PresetSelector extends Widget implements HasActions, HasForms
             $payload['description'] ?? null,
             origin: 'imported',
         );
+
+        PresetImported::dispatch($preset, false);
 
         $this->switchTo($preset->slug);
 

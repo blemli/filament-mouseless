@@ -2,6 +2,7 @@
 
 namespace Blemli\FilamentMouseless\Filament\Concerns;
 
+use Blemli\FilamentMouseless\Events\ShortcutsChanged;
 use Blemli\FilamentMouseless\Facades\FilamentMouseless;
 use Blemli\FilamentMouseless\FilamentMouselessPlugin;
 use Blemli\FilamentMouseless\Models\Nudge;
@@ -69,6 +70,10 @@ trait InteractsWithShortcutsTable
      */
     protected function saveShortcuts(array $bindings, array $disabled): bool
     {
+        // Pre-mutation snapshot for the event diff — the resolver memo is
+        // only flushed below, so this still sees the old layout.
+        $old = $this->getShortcutsPreset() ?? [];
+
         if (! $this->persistShortcuts($bindings, $disabled)) {
             Notification::make()
                 ->title(__('filament-mouseless::mouseless.table.notifications.save_failed'))
@@ -79,6 +84,15 @@ trait InteractsWithShortcutsTable
 
         FilamentMouseless::flush();
         $this->flushCachedTableRecords();
+
+        ShortcutsChanged::dispatch(
+            (int) auth()->id(),
+            (string) ($old['slug'] ?? ''),
+            (array) ($old['bindings'] ?? []),
+            $bindings,
+            array_values((array) ($old['disabled_actions'] ?? [])),
+            array_values($disabled),
+        );
 
         return true;
     }

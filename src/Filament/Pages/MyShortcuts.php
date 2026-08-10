@@ -2,6 +2,7 @@
 
 namespace Blemli\FilamentMouseless\Filament\Pages;
 
+use Blemli\FilamentMouseless\Events\PresetActivated;
 use Blemli\FilamentMouseless\Facades\FilamentMouseless;
 use Blemli\FilamentMouseless\Filament\Concerns\InteractsWithShortcutsTable;
 use Blemli\FilamentMouseless\FilamentMouselessPlugin;
@@ -204,6 +205,8 @@ class MyShortcuts extends Page implements HasTable
 
     protected function setActivePresetSlug(?string $slug): void
     {
+        $previous = UserSetting::query()->where('user_id', auth()->id())->value('active_preset_slug');
+
         UserSetting::updateOrCreate(
             ['user_id' => auth()->id()],
             ['active_preset_slug' => $slug],
@@ -211,6 +214,10 @@ class MyShortcuts extends Page implements HasTable
 
         FilamentMouseless::flush();
         $this->dispatch('mouseless-preset-changed');
+
+        if ($previous !== $slug) {
+            PresetActivated::dispatch((int) auth()->id(), $previous, $slug);
+        }
     }
 
     /** Re-render (fresh records, banner, actions) when the widget switches presets. */
