@@ -26,6 +26,10 @@ return [
         'move_hint' => 'Déplacez avec ↑/↓ · Entrée dépose la ligne.',
     ],
 
+    'keys' => [
+        'space' => 'Espace',
+    ],
+
     'ns' => [
         'crud' => 'CRUD',
         'list' => 'Liste',

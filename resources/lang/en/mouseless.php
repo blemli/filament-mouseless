@@ -26,6 +26,12 @@ return [
         'move_hint' => 'Move with ↑/↓ · Enter drops the row.',
     ],
 
+    // Key-cap labels that are words rather than symbols read in the user's
+    // language ("Space" → "Leertaste"). Symbol caps (⌫ ↑ ⌘) need no entry.
+    'keys' => [
+        'space' => 'Space',
+    ],
+
     'ns' => [
         'crud' => 'CRUD',
         'list' => 'List',

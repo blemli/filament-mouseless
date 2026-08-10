@@ -26,6 +26,10 @@ return [
         'move_hint' => 'Mit ↑/↓ verschieben · Enter legt die Zeile ab.',
     ],
 
+    'keys' => [
+        'space' => 'Leertaste',
+    ],
+
     'ns' => [
         'crud' => 'CRUD',
         'list' => 'Liste',

@@ -72,6 +72,9 @@ class ScriptData implements JsonSerializable
             'strings' => [
                 'no_match' => __('filament-mouseless::mouseless.help.no_match'),
                 'copied' => __('filament-mouseless::mouseless.table.export.copied'),
+                // The one word-label keycap; the JS display maps fall back to
+                // 'Space' when absent. Symbol caps never vary by locale.
+                'key_space' => Keys::keyLabel('space'),
             ],
         ];
     }

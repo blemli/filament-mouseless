@@ -26,6 +26,10 @@ return [
         'move_hint' => 'Mueve con ↑/↓ · Enter suelta la fila.',
     ],
 
+    'keys' => [
+        'space' => 'Espacio',
+    ],
+
     'ns' => [
         'crud' => 'CRUD',
         'list' => 'Lista',

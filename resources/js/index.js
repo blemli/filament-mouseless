@@ -136,7 +136,7 @@ function bootMouseless() {
             ? { ctrl: '⌃', cmd: '⌘', meta: '⌘', alt: '⌥', shift: '⇧' }
             : { ctrl: 'Ctrl', cmd: 'Cmd', meta: 'Cmd', alt: 'Alt', shift: 'Shift' };
         const keys = {
-            space: 'Space', escape: 'Esc', enter: 'Enter', tab: 'Tab',
+            space: strings.key_space || 'Space', escape: 'Esc', enter: 'Enter', tab: 'Tab',
             backspace: '⌫', delete: 'Del', home: 'Home', end: 'End',
             pageup: 'PgUp', pagedown: 'PgDn',
             arrowup: '↑', arrowdown: '↓', arrowleft: '←', arrowright: '→',
@@ -1635,7 +1635,7 @@ function bootMouseless() {
             ? { cmd: '⌘', meta: '⌘', ctrl: '⌃', alt: '⌥', shift: '⇧' }
             : { cmd: 'Ctrl', meta: 'Meta', ctrl: 'Ctrl', alt: 'Alt', shift: 'Shift' };
         const keys = {
-            enter: 'Enter', escape: 'Esc', space: 'Space', tab: 'Tab',
+            enter: 'Enter', escape: 'Esc', space: strings.key_space || 'Space', tab: 'Tab',
             arrowup: '↑', arrowdown: '↓', arrowleft: '←', arrowright: '→',
         };
         const parts = combo.split('+').map((p) => {

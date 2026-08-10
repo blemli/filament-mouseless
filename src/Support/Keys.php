@@ -284,10 +284,15 @@ class Keys
             || isset(self::KEY_LABELS[$key]);
     }
 
-    protected static function keyLabel(string $key): string
+    public static function keyLabel(string $key): string
     {
         if (isset(self::KEY_LABELS[$key])) {
-            return self::KEY_LABELS[$key];
+            // Word labels are locale-specific ("Space" → "Leertaste"); symbol
+            // labels (⌫ ↑) have no lang entry and fall back to the constant.
+            $line = "filament-mouseless::mouseless.keys.{$key}";
+            $translated = __($line);
+
+            return $translated === $line ? self::KEY_LABELS[$key] : $translated;
         }
 
         if (preg_match('/^f\d{1,2}$/', $key)) {

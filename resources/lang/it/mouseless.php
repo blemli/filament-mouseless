@@ -26,6 +26,10 @@ return [
         'move_hint' => 'Sposta con ↑/↓ · Invio rilascia la riga.',
     ],
 
+    'keys' => [
+        'space' => 'Spazio',
+    ],
+
     'ns' => [
         'crud' => 'CRUD',
         'list' => 'Lista',
