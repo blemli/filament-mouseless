@@ -188,6 +188,7 @@ return [
         ],
         'recording' => [
             'heading' => 'Nueva combinación de teclas para «:action»',
+            'hint' => 'Pulsa la nueva combinación de teclas para esta acción. (Esc para cancelar)',
             'press' => 'Pulsa una combinación de teclas…',
             'cancel' => 'Cancelar',
         ],
@@ -232,7 +233,8 @@ return [
         ],
         'key_search' => [
             'label' => 'Buscar pulsando una tecla',
-            'hint' => 'Pulsa una combinación de teclas… (Esc para cancelar)',
+            'hint' => 'Pulsa una tecla para ver qué tiene asignado. (Esc para cancelar)',
+            'press' => 'Pulsa una tecla para buscar…',
         ],
         'fork' => [
             'heading' => '¿Crear tu propio layout?',

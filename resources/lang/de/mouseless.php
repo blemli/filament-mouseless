@@ -188,6 +188,7 @@ return [
         ],
         'recording' => [
             'heading' => 'Neue Tastenkombination für „:action"',
+            'hint' => 'Drücke die neue Tastenkombination für diese Aktion. (Esc bricht ab)',
             'press' => 'Tastenkombination drücken…',
             'cancel' => 'Abbrechen',
         ],
@@ -232,7 +233,8 @@ return [
         ],
         'key_search' => [
             'label' => 'Per Tastendruck suchen',
-            'hint' => 'Tastenkombination drücken… (Esc bricht ab)',
+            'hint' => 'Drücke eine Taste, um zu sehen, was darauf belegt ist. (Esc bricht ab)',
+            'press' => 'Taste drücken, um zu suchen…',
         ],
         'fork' => [
             'heading' => 'Eigenes Layout erstellen?',

@@ -141,6 +141,9 @@ function bootMouseless() {
     // ---- shortcut discovery: accelerator underlines + Alt-hold hint badges ----
     setupDiscovery();
 
+    // ---- key-search trigger: move the toolbar action into the search box ----
+    setupKeySearchRelocate();
+
     // ---- jump mode: double-tap Ctrl → letter badges on every control ----
     setupJump();
 
@@ -402,6 +405,24 @@ function bootMouseless() {
     // Chrome the engine itself owns, plus sidebar/topbar: navigation has its
     // own affordances (the g palette, nav.* combos) — badges would be noise.
     // Apps can opt dense regions out (marker maps, canvases, custom widgets
+    // The key-search trigger is declared as a table toolbar action (that's
+    // what wires up its modal), but it belongs INSIDE the search box, in the
+    // slot of the magnifying-glass prefix. CSS can't re-parent across the
+    // toolbar's flex containers, so the node is physically moved into the
+    // search field's input wrapper. Livewire morphs put a fresh button back
+    // into the toolbar and drop the moved one; the MutationObserver runs
+    // before paint, so the correction never flashes.
+    function setupKeySearchRelocate() {
+        const relocate = () => {
+            const btn = document.querySelector('.fi-ta-header-toolbar .fi-mouseless-key-search-btn');
+            if (!btn) return;
+            const wrp = btn.closest('.fi-ta-header-toolbar')?.querySelector('.fi-ta-search-field .fi-input-wrp');
+            if (wrp && btn.parentElement !== wrp) wrp.insertBefore(btn, wrp.firstChild);
+        };
+        relocate();
+        new MutationObserver(relocate).observe(document.body, { childList: true, subtree: true });
+    }
+
     // with their own keyboard nav) via data-mouseless-jump="ignore" on any
     // ancestor. Editor toolbar buttons ARE targets — their x-on:click
     // handlers (toggleBold() …) give them stable identities. The topbar

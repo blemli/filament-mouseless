@@ -661,14 +661,29 @@ body.fi-mouseless-mobile:not(.fi-mouseless-kbd) .fi-mouseless-shortcuts-link {
     opacity: 0.45;
 }
 
-/* Key-search icon: push to the far right of the toolbar actions, next to
- * the search field. */
+/* Key-search icon: lives INSIDE the search box, in place of the stock
+ * magnifying-glass prefix. The button is declared as a toolbar action (that
+ * wires up its modal) and physically moved into the input wrapper by
+ * setupKeySearchRelocate() in index.js. Until the script runs it still sits
+ * in the toolbar — keep it tucked against the search field there. */
 .fi-mouseless-layout-main .fi-ta-header-toolbar > .fi-ta-actions {
     flex: 1;
 }
 
 .fi-mouseless-layout-main .fi-ta-header-toolbar .fi-mouseless-key-search-btn {
-    margin-left: auto;
+    margin-inline-start: auto;
+}
+
+.fi-mouseless-layout-main .fi-ta-search-field .fi-input-wrp-prefix {
+    display: none;
+}
+
+/* Once relocated: cancel the icon button's negative bleed on the start side
+ * so it clears the wrapper's border, and let it keep the prefix's footprint
+ * (icon glyph ends up ~0.75rem in, where the magnifier was). */
+.fi-mouseless-layout-main .fi-ta-search-field .fi-mouseless-key-search-btn {
+    margin-block: 0;
+    margin-inline: 0.25rem -0.5rem;
 }
 
 .fi-mouseless-key-search-modal {

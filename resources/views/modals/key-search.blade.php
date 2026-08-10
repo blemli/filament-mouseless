@@ -18,7 +18,10 @@
     --}}
     x-on:keydown.window.capture="capture($event)"
 >
-    <x-filament::badge color="warning" size="lg">
-        {{ __('filament-mouseless::mouseless.table.recording.press') }}
+    {{-- Info-blue with a magnifier, deliberately NOT the record modal's
+         warning-yellow "press a key" badge — the two modals capture keys the
+         same way and would otherwise be indistinguishable. --}}
+    <x-filament::badge color="info" icon="heroicon-m-magnifying-glass" size="lg">
+        {{ __('filament-mouseless::mouseless.table.key_search.press') }}
     </x-filament::badge>
 </div>

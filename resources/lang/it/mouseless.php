@@ -188,6 +188,7 @@ return [
         ],
         'recording' => [
             'heading' => 'Nuova combinazione di tasti per «:action»',
+            'hint' => 'Premi la nuova combinazione di tasti per questa azione. (Esc per annullare)',
             'press' => 'Premi una combinazione di tasti…',
             'cancel' => 'Annulla',
         ],
@@ -232,7 +233,8 @@ return [
         ],
         'key_search' => [
             'label' => 'Cerca premendo un tasto',
-            'hint' => 'Premi una combinazione di tasti… (Esc per annullare)',
+            'hint' => 'Premi un tasto per vedere cosa gli è assegnato. (Esc per annullare)',
+            'press' => 'Premi un tasto per cercare…',
         ],
         'fork' => [
             'heading' => 'Creare il tuo layout?',

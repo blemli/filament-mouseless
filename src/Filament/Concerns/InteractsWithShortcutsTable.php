@@ -224,14 +224,20 @@ trait InteractsWithShortcutsTable
                     // recording — every open starts at "press a key…".
                     ->mountUsing(fn (array $record) => $this->startRecording($record['id']))
                     ->modalHeading(fn (array $record): string => __('filament-mouseless::mouseless.table.recording.heading', ['action' => $record['label']]))
+                    // Key icon + warning tint: the twin "press a key" modal
+                    // (search-by-key) is info-blue with a magnifier, so the
+                    // two stay tellable at a glance.
+                    ->modalIcon('heroicon-o-key')
+                    ->modalIconColor('warning')
                     ->modalDescription(fn (): string => $this->isShortcutsLocked() && ! FilamentMouselessPlugin::singletonEnabled()
                         ? __('filament-mouseless::mouseless.table.fork.description', ['name' => $this->shortcutsForkName()])
-                        : __('filament-mouseless::mouseless.table.key_search.hint'))
+                        : __('filament-mouseless::mouseless.table.recording.hint'))
                     // Closure, not view(): pendingSteal must be re-read on every
                     // re-render so the steal prompt appears inside the modal.
                     ->modalContent(fn (): View => view('filament-mouseless::modals.key-record', ['steal' => $this->pendingSteal]))
-                    // Filament's default is 4xl — near-fullscreen on a laptop.
-                    ->modalWidth(Width::Medium)
+                    // Filament's default is 4xl — near-fullscreen on a laptop;
+                    // xl keeps most action names on one heading line.
+                    ->modalWidth(Width::ExtraLarge)
                     ->slideOver(false)
                     ->modalSubmitAction(false)
                     ->modalCancelActionLabel(__('filament-mouseless::mouseless.table.recording.cancel')),
@@ -327,9 +333,14 @@ trait InteractsWithShortcutsTable
                     ->tooltip(__('filament-mouseless::mouseless.table.key_search.label'))
                     ->extraAttributes(['class' => 'fi-mouseless-key-search-btn'])
                     ->modalHeading(__('filament-mouseless::mouseless.table.key_search.label'))
+                    // Counterpart to the record modal's warning-yellow key
+                    // icon — see the record action above.
+                    ->modalIcon('heroicon-o-magnifying-glass')
+                    ->modalIconColor('info')
                     ->modalDescription(__('filament-mouseless::mouseless.table.key_search.hint'))
                     ->modalContent(view('filament-mouseless::modals.key-search'))
-                    ->modalWidth(Width::Medium)
+                    // Same width as the record modal — they are twins.
+                    ->modalWidth(Width::ExtraLarge)
                     ->slideOver(false)
                     ->modalSubmitAction(false)
                     ->modalCancelActionLabel(__('filament-mouseless::mouseless.table.recording.cancel')),

@@ -189,6 +189,7 @@ return [
         ],
         'recording' => [
             'heading' => 'New shortcut for “:action”',
+            'hint' => 'Press the new key combination for this action. (Esc to cancel)',
             'press' => 'Press a key combination…',
             'cancel' => 'Cancel',
         ],
@@ -233,7 +234,8 @@ return [
         ],
         'key_search' => [
             'label' => 'Search by key press',
-            'hint' => 'Press a key combination… (Esc to cancel)',
+            'hint' => 'Press a key to see what is bound to it. (Esc to cancel)',
+            'press' => 'Press a key to search…',
         ],
         'fork' => [
             'heading' => 'Create your own layout?',

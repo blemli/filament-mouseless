@@ -188,6 +188,7 @@ return [
         ],
         'recording' => [
             'heading' => 'Nouveau raccourci pour « :action »',
+            'hint' => 'Appuyez sur la nouvelle combinaison de touches pour cette action. (Échap pour annuler)',
             'press' => 'Appuyez sur une combinaison de touches…',
             'cancel' => 'Annuler',
         ],
@@ -232,7 +233,8 @@ return [
         ],
         'key_search' => [
             'label' => 'Rechercher par appui de touche',
-            'hint' => 'Appuyez sur une combinaison de touches… (Échap pour annuler)',
+            'hint' => 'Appuyez sur une touche pour voir ce qui lui est associé. (Échap pour annuler)',
+            'press' => 'Appuyez sur une touche pour rechercher…',
         ],
         'fork' => [
             'heading' => 'Créer votre propre layout ?',

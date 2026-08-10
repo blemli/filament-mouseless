@@ -68,7 +68,7 @@
             x-on:keyup.window.capture="release($event)"
             class="fi-mouseless-key-record-capture"
         >
-            <x-filament::badge color="warning" size="lg">
+            <x-filament::badge color="warning" icon="heroicon-m-key" size="lg">
                 {{ __('filament-mouseless::mouseless.table.recording.press') }}
             </x-filament::badge>
 
