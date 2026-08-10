@@ -26,15 +26,6 @@ class MyShortcuts extends Page implements HasTable
 
     protected string $view = 'filament-mouseless::pages.my-shortcuts';
 
-    /**
-     * Forking a locked preset dispatches `mouseless-preset-changed`, whose
-     * listener cancels any in-progress recording. When the fork was triggered
-     * by "record" itself, that would throw away the recording we just started
-     * (forcing a second click). This one-shot flag tells the listener to leave
-     * the recording alone for that self-inflicted switch.
-     */
-    public bool $keepRecordingThroughPresetChange = false;
-
     public static function getNavigationIcon(): string | \BackedEnum | Htmlable | null
     {
         return FilamentMouselessPlugin::safeGet()?->getIcon()
@@ -155,9 +146,6 @@ class MyShortcuts extends Page implements HasTable
 
         $preset = Preset::forkFrom($source, $name);
 
-        // This switch is our own doing — don't let onPresetChanged() cancel a
-        // recording that "record" started in the same request.
-        $this->keepRecordingThroughPresetChange = true;
         $this->setActivePresetSlug($preset->slug);
 
         // In singleton mode the layout is invisible plumbing — announcing
@@ -224,14 +212,7 @@ class MyShortcuts extends Page implements HasTable
     #[On('mouseless-preset-changed')]
     public function onPresetChanged(): void
     {
-        // A manual switch (from the preset selector) abandons any recording;
-        // a fork we triggered to *enable* recording must keep it going.
-        if ($this->keepRecordingThroughPresetChange) {
-            $this->keepRecordingThroughPresetChange = false;
-        } else {
-            $this->cancelRecording();
-        }
-
+        $this->cancelRecording();
         $this->flushCachedTableRecords();
     }
 

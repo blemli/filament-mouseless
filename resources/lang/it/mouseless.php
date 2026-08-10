@@ -187,6 +187,7 @@ return [
             'enable' => 'Attiva',
         ],
         'recording' => [
+            'heading' => 'Nuova combinazione di tasti per «:action»',
             'press' => 'Premi una combinazione di tasti…',
             'cancel' => 'Annulla',
         ],

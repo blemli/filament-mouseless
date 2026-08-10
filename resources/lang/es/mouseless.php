@@ -187,6 +187,7 @@ return [
             'enable' => 'Activar',
         ],
         'recording' => [
+            'heading' => 'Nueva combinación de teclas para «:action»',
             'press' => 'Pulsa una combinación de teclas…',
             'cancel' => 'Cancelar',
         ],

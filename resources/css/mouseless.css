@@ -677,6 +677,57 @@ body.fi-mouseless-mobile:not(.fi-mouseless-kbd) .fi-mouseless-shortcuts-link {
     padding: 1rem 0;
 }
 
+.fi-mouseless-key-record-modal {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem 0;
+}
+
+.fi-mouseless-key-record-capture {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+/* Big live keycaps: held modifiers appear while pressed, the final combo
+ * flashes before the modal closes. min-height reserves the row so the modal
+ * doesn't jump when the first cap appears. */
+.fi-mouseless-key-record-caps {
+    display: flex;
+    justify-content: center;
+    gap: 0.75rem;
+    min-height: 4.5rem;
+    padding: 0.5rem 0;
+}
+
+.fi-mouseless-key-record-cap {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 4rem;
+    height: 4rem;
+    padding: 0 1rem;
+    background: var(--mouseless-help-kbd-bg);
+    border: 1px solid var(--mouseless-help-border);
+    border-bottom-width: 3px;
+    border-radius: 0.75rem;
+    /* Same reasoning as .fi-mouseless-kbd: system UI font renders the
+     * modifier glyphs (⇧ ⌥ ⌘ ⌃) legibly, monospace draws them tiny. */
+    font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    font-size: 1.75rem;
+    font-weight: 700;
+    line-height: 1;
+    white-space: nowrap;
+}
+
+.fi-mouseless-key-record-steal-actions {
+    display: flex;
+    gap: 1rem;
+}
+
 /* Modal text must wrap even when an ancestor (e.g. a table actions cell or
  * an app theme) forces white-space: nowrap — otherwise the heading,
  * description and footer buttons overflow the modal window. */

@@ -112,9 +112,31 @@ function bootMouseless() {
         }, 60);
     });
 
-    // Shared with the Blade key-capture snippets (recording cell, key-search
+    // Shared with the Blade key-capture snippets (record modal, key-search
     // modal) so combo normalization can never drift from the engine's.
     window.mouselessEventToKey = eventToKey;
+
+    // "alt+shift+e" → ['⌥','⇧','E'] on the Mac, ['Alt','Shift','E'] elsewhere.
+    // Mirrors Keys::displayParts() so the record modal's live keycaps match
+    // the table's badges.
+    window.mouselessComboDisplayParts = (combo) => {
+        const mods = IS_MAC_PLATFORM
+            ? { ctrl: '⌃', cmd: '⌘', meta: '⌘', alt: '⌥', shift: '⇧' }
+            : { ctrl: 'Ctrl', cmd: 'Cmd', meta: 'Cmd', alt: 'Alt', shift: 'Shift' };
+        const keys = {
+            space: 'Space', escape: 'Esc', enter: 'Enter', tab: 'Tab',
+            backspace: '⌫', delete: 'Del', home: 'Home', end: 'End',
+            pageup: 'PgUp', pagedown: 'PgDn',
+            arrowup: '↑', arrowdown: '↓', arrowleft: '←', arrowright: '→',
+        };
+        return String(combo || '').split('+').filter(Boolean).map((part) => {
+            const p = part.toLowerCase();
+            if (mods[p]) return mods[p];
+            if (keys[p]) return keys[p];
+            if (/^f\d{1,2}$/.test(p)) return p.toUpperCase();
+            return p.length === 1 ? p.toUpperCase() : p[0].toUpperCase() + p.slice(1);
+        });
+    };
 
     // ---- shortcut discovery: accelerator underlines + Alt-hold hint badges ----
     setupDiscovery();

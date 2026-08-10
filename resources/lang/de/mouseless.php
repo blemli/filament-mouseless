@@ -187,6 +187,7 @@ return [
             'enable' => 'Aktivieren',
         ],
         'recording' => [
+            'heading' => 'Neue Tastenkombination für „:action"',
             'press' => 'Tastenkombination drücken…',
             'cancel' => 'Abbrechen',
         ],

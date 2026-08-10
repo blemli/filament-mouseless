@@ -188,6 +188,7 @@ return [
             'enable' => 'Enable',
         ],
         'recording' => [
+            'heading' => 'New shortcut for “:action”',
             'press' => 'Press a key combination…',
             'cancel' => 'Cancel',
         ],

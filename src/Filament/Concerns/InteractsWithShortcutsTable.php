@@ -16,12 +16,14 @@ use Filament\Actions\Action;
 use Filament\Actions\BulkAction;
 use Filament\Actions\BulkActionGroup;
 use Filament\Notifications\Notification;
+use Filament\Support\Enums\Width;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\ViewColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Grouping\Group;
 use Filament\Tables\Table;
+use Illuminate\Contracts\View\View;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\HtmlString;
@@ -208,18 +210,31 @@ trait InteractsWithShortcutsTable
                     ->options($this->shortcutsModifierOptions()),
             ])
             ->recordActions([
-                $this->configureShortcutsForkConfirmation(
-                    Action::make('record')
-                        ->label(fn (array $record): string => $record['combo'] === null
-                            ? __('filament-mouseless::mouseless.table.actions.record_unbound')
-                            : __('filament-mouseless::mouseless.table.actions.record'))
-                        ->icon('heroicon-m-key')
-                        ->visible(fn (array $record): bool => ! $record['disabled'] && ! ($record['readonly'] ?? false) && ! $this->isProtectedShortcut($record['id']))
-                        ->action(function (array $record): void {
-                            $this->ensureEditableShortcutsPreset();
-                            $this->startRecording($record['id']);
-                        }),
-                ),
+                // Recording happens in a modal (like the key search), so no
+                // fork-confirmation wrapper: on a locked preset the modal
+                // description carries the fork notice instead, and the fork
+                // itself happens at save time (applyRecordedKey/confirmSteal).
+                Action::make('record')
+                    ->label(fn (array $record): string => $record['combo'] === null
+                        ? __('filament-mouseless::mouseless.table.actions.record_unbound')
+                        : __('filament-mouseless::mouseless.table.actions.record'))
+                    ->icon('heroicon-m-key')
+                    ->visible(fn (array $record): bool => ! $record['disabled'] && ! ($record['readonly'] ?? false) && ! $this->isProtectedShortcut($record['id']))
+                    // Mounting resets any stale steal prompt from an abandoned
+                    // recording — every open starts at "press a key…".
+                    ->mountUsing(fn (array $record) => $this->startRecording($record['id']))
+                    ->modalHeading(fn (array $record): string => __('filament-mouseless::mouseless.table.recording.heading', ['action' => $record['label']]))
+                    ->modalDescription(fn (): string => $this->isShortcutsLocked() && ! FilamentMouselessPlugin::singletonEnabled()
+                        ? __('filament-mouseless::mouseless.table.fork.description', ['name' => $this->shortcutsForkName()])
+                        : __('filament-mouseless::mouseless.table.key_search.hint'))
+                    // Closure, not view(): pendingSteal must be re-read on every
+                    // re-render so the steal prompt appears inside the modal.
+                    ->modalContent(fn (): View => view('filament-mouseless::modals.key-record', ['steal' => $this->pendingSteal]))
+                    // Filament's default is 4xl — near-fullscreen on a laptop.
+                    ->modalWidth(Width::Medium)
+                    ->slideOver(false)
+                    ->modalSubmitAction(false)
+                    ->modalCancelActionLabel(__('filament-mouseless::mouseless.table.recording.cancel')),
                 $this->configureShortcutsForkConfirmation(
                     Action::make('removeShortcut')
                         ->label(__('filament-mouseless::mouseless.table.actions.remove'))
@@ -270,18 +285,6 @@ trait InteractsWithShortcutsTable
                             ->success()
                             ->send();
                     }),
-                Action::make('searchByKey')
-                    ->label(__('filament-mouseless::mouseless.table.key_search.label'))
-                    ->icon('heroicon-m-key')
-                    ->iconButton()
-                    ->color('gray')
-                    ->tooltip(__('filament-mouseless::mouseless.table.key_search.label'))
-                    ->extraAttributes(['class' => 'fi-mouseless-key-search-btn'])
-                    ->modalHeading(__('filament-mouseless::mouseless.table.key_search.label'))
-                    ->modalDescription(__('filament-mouseless::mouseless.table.key_search.hint'))
-                    ->modalContent(view('filament-mouseless::modals.key-search'))
-                    ->modalSubmitAction(false)
-                    ->modalCancelActionLabel(__('filament-mouseless::mouseless.table.recording.cancel')),
                 BulkActionGroup::make([
                     $this->configureShortcutsForkConfirmation(
                         BulkAction::make('disableSelected')
@@ -313,6 +316,23 @@ trait InteractsWithShortcutsTable
                         ->action(fn (Collection $records) => $this->bulkResetShortcuts($records))
                         ->deselectRecordsAfterCompletion(),
                 ]),
+                // Declared last so it is the toolbar's final child: the CSS
+                // overlap that pulls it into the search box assumes nothing
+                // renders to its right (the bulk-actions trigger would).
+                Action::make('searchByKey')
+                    ->label(__('filament-mouseless::mouseless.table.key_search.label'))
+                    ->icon('heroicon-m-key')
+                    ->iconButton()
+                    ->color('gray')
+                    ->tooltip(__('filament-mouseless::mouseless.table.key_search.label'))
+                    ->extraAttributes(['class' => 'fi-mouseless-key-search-btn'])
+                    ->modalHeading(__('filament-mouseless::mouseless.table.key_search.label'))
+                    ->modalDescription(__('filament-mouseless::mouseless.table.key_search.hint'))
+                    ->modalContent(view('filament-mouseless::modals.key-search'))
+                    ->modalWidth(Width::Medium)
+                    ->slideOver(false)
+                    ->modalSubmitAction(false)
+                    ->modalCancelActionLabel(__('filament-mouseless::mouseless.table.recording.cancel')),
             ]);
     }
 
@@ -847,6 +867,7 @@ trait InteractsWithShortcutsTable
         }
 
         $this->cancelRecording();
+        $this->unmountAction();
 
         Notification::make()
             ->title(__('filament-mouseless::mouseless.table.steal.done', [
@@ -868,6 +889,7 @@ trait InteractsWithShortcutsTable
         }
 
         $this->cancelRecording();
+        $this->unmountAction();
 
         Notification::make()
             ->title(__('filament-mouseless::mouseless.profile.binding_saved'))

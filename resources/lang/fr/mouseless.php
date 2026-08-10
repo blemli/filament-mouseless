@@ -187,6 +187,7 @@ return [
             'enable' => 'Activer',
         ],
         'recording' => [
+            'heading' => 'Nouveau raccourci pour « :action »',
             'press' => 'Appuyez sur une combinaison de touches…',
             'cancel' => 'Annuler',
         ],
