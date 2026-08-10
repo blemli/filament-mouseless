@@ -11,6 +11,8 @@ return [
         'source' => 'Preset: :preset',
         'no_match' => 'No matching action on this page.',
         'code_defined' => 'Defined in code — not user-customizable',
+        'filter_placeholder' => 'Filter shortcuts…',
+        'filter_empty' => 'No shortcut matches your filter.',
     ],
 
     'goto' => [

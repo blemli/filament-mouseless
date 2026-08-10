@@ -11,6 +11,8 @@ return [
         'source' => 'Preset: :preset',
         'no_match' => 'No hay ninguna acción que coincida en esta página.',
         'code_defined' => 'Definido en el código — no personalizable',
+        'filter_placeholder' => 'Filtrar atajos…',
+        'filter_empty' => 'Ningún atajo coincide con el filtro.',
     ],
 
     'goto' => [

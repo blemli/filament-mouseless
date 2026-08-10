@@ -11,6 +11,8 @@ return [
         'source' => 'Preset: :preset',
         'no_match' => 'Nessuna azione corrispondente su questa pagina.',
         'code_defined' => 'Definito nel codice — non personalizzabile',
+        'filter_placeholder' => 'Filtra le scorciatoie…',
+        'filter_empty' => 'Nessuna scorciatoia corrisponde al filtro.',
     ],
 
     'goto' => [

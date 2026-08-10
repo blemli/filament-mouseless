@@ -56,6 +56,7 @@ class HelpOverlay extends Component
             // "source: <preset>" line would leak the managed layout's name.
             'preset' => FilamentMouselessPlugin::singletonEnabled() ? null : $resolved['preset'],
             'printable' => $plugin?->isCheatsheetPrintable() ?? true,
+            'searchable' => $plugin?->isCheatsheetSearchable() ?? true,
             'brandName' => filament()->getBrandName(),
             'slogan' => config('app.slogan'),
             'appVersion' => $this->appVersion(),

@@ -62,6 +62,8 @@ class FilamentMouselessPlugin implements Plugin
 
     protected bool $printableCheatsheet = true;
 
+    protected bool $searchableCheatsheet = true;
+
     protected string | Closure | null $icon = null;
 
     protected string | Closure | null $shortcutsLabel = null;
@@ -490,6 +492,24 @@ class FilamentMouselessPlugin implements Plugin
     public function isCheatsheetPrintable(): bool
     {
         return $this->printableCheatsheet;
+    }
+
+    public function searchableCheatsheet(bool $enabled = true): static
+    {
+        $this->searchableCheatsheet = $enabled;
+
+        return $this;
+    }
+
+    /** Drop the filter box from the help overlay. */
+    public function dontSearchCheatSheet(): static
+    {
+        return $this->searchableCheatsheet(false);
+    }
+
+    public function isCheatsheetSearchable(): bool
+    {
+        return $this->searchableCheatsheet;
     }
 
     public function showShortcutsOnMobile(bool $enabled = true): static

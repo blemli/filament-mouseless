@@ -11,6 +11,8 @@ return [
         'source' => 'Preset : :preset',
         'no_match' => 'Aucune action correspondante sur cette page.',
         'code_defined' => 'Défini dans le code — non personnalisable',
+        'filter_placeholder' => 'Filtrer les raccourcis…',
+        'filter_empty' => 'Aucun raccourci ne correspond au filtre.',
     ],
 
     'goto' => [

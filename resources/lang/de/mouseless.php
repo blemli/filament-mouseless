@@ -11,6 +11,8 @@ return [
         'source' => 'Preset: :preset',
         'no_match' => 'Keine passende Aktion auf dieser Seite.',
         'code_defined' => 'Im Code definiert – nicht anpassbar',
+        'filter_placeholder' => 'Tastenkürzel filtern…',
+        'filter_empty' => 'Kein Tastenkürzel passt zum Filter.',
     ],
 
     'goto' => [

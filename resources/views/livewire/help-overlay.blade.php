@@ -1,6 +1,32 @@
 <div
-    x-data="{ open: false }"
-    @mouseless-help.window="open = ! open"
+    x-data="{
+        open: false,
+        q: '',
+        empty: false,
+        filter() {
+            const q = this.q.trim().toLowerCase();
+            let hits = 0;
+            this.$root.querySelectorAll('.fi-mouseless-help-body section').forEach((section) => {
+                {{-- A hit on the group heading ("Navigation") keeps its whole group. --}}
+                const heading = section.querySelector('.fi-mouseless-help-group-heading');
+                const groupHit = q !== '' && heading && heading.textContent.toLowerCase().includes(q);
+                let visible = 0;
+                section.querySelectorAll('.fi-mouseless-help-item').forEach((item) => {
+                    {{-- textContent covers label + displayed keycap (⌥N); data-combo
+                         makes the raw form ("alt+n") searchable too. --}}
+                    const hay = (item.textContent + ' ' + (item.dataset.combo || '')).toLowerCase();
+                    const hit = q === '' || groupHit || hay.includes(q);
+                    item.classList.toggle('fi-mouseless-help-item-filtered', ! hit);
+                    if (hit) visible++;
+                });
+                section.classList.toggle('fi-mouseless-help-section-filtered', visible === 0);
+                hits += visible;
+            });
+            this.empty = q !== '' && hits === 0;
+        },
+    }"
+    x-init="$watch('q', () => filter())"
+    @mouseless-help.window="open = ! open; if (open) { q = ''; $nextTick(() => $refs.search?.focus()) }"
     @if ($printable)
         {{-- Body class scopes the print stylesheet: without it, Cmd+P prints the page normally. --}}
         x-effect="document.body.classList.toggle('fi-mouseless-help-open', open)"
@@ -27,6 +53,16 @@
                 <h2 class="fi-mouseless-help-title">
                     {{ __('filament-mouseless::mouseless.help.title') }}
                 </h2>
+                @if ($searchable)
+                    <input
+                        type="search"
+                        x-ref="search"
+                        x-model="q"
+                        placeholder="{{ __('filament-mouseless::mouseless.help.filter_placeholder') }}"
+                        aria-label="{{ __('filament-mouseless::mouseless.help.filter_placeholder') }}"
+                        class="fi-mouseless-help-search"
+                    />
+                @endif
                 <button
                     type="button"
                     @click="open = false"
@@ -43,7 +79,7 @@
                         </h3>
                         <ul class="fi-mouseless-help-list">
                             @foreach ($actions as $actionId => $key)
-                                <li class="fi-mouseless-help-item" data-mouseless-help-item="{{ $actionId }}">
+                                <li class="fi-mouseless-help-item" data-mouseless-help-item="{{ $actionId }}" data-combo="{{ $key }}">
                                     <span>{{ __('filament-mouseless::mouseless.action.' . $actionId) }}</span>
                                     <kbd class="fi-mouseless-help-kbd">{{ \Blemli\FilamentMouseless\Support\Keys::display($key) }}</kbd>
                                 </li>
@@ -65,6 +101,7 @@
                                         'fi-mouseless-help-item-unavailable' => ! $row['onPage'],
                                     ])
                                     data-mouseless-help-item="{{ $row['id'] }}"
+                                    data-combo="{{ $row['combo'] }}"
                                     @if ($row['readonly']) data-mouseless-help-readonly @endif
                                 >
                                     <span>
@@ -82,6 +119,10 @@
                         </ul>
                     </section>
                 @endif
+
+                <p x-show="empty" x-cloak class="fi-mouseless-help-empty">
+                    {{ __('filament-mouseless::mouseless.help.filter_empty') }}
+                </p>
             </div>
 
             <footer class="fi-mouseless-help-footer">
