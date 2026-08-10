@@ -139,7 +139,6 @@ class PresetRegistry
             'parent_slug' => $p->parent_slug,
             'bindings' => $p->bindings ?? [],
             'disabled_actions' => $p->disabled_actions ?? [],
-            'panels' => $p->panels,
             'source' => $p->source,
         ];
     }

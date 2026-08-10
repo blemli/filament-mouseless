@@ -1264,6 +1264,12 @@ function bootMouseless() {
         // still-teachable actions. Empty (statistics off, or nothing ranked
         // yet) = no restriction — teach behaves exactly as without stats.
         const clickPriority = Array.isArray(teach.clickPriority) ? teach.clickPriority : [];
+        // Nudges must not cross panels: the same action can carry a different
+        // combo per panel (->remap() is per panel), so a stashed nudge tags
+        // the panel it was captured on and only replays there.
+        const panelBase = () => {
+            try { return new URL(cfg.homeUrl || '/', window.location.origin).pathname.replace(/\/$/, ''); } catch { return ''; }
+        };
         let muted = !!teach.muted;
         let nudgedThisPage = false;
         document.addEventListener('livewire:navigated', () => {
@@ -1334,7 +1340,7 @@ function bootMouseless() {
                 && !(link.getAttribute('href') || '').startsWith('#');
             if (navigates) {
                 console.log(TAG, 'teach: deferring nudge across navigation', actionId);
-                try { sessionStorage.setItem(TEACH_PENDING_KEY, JSON.stringify({ ...payload, at: Date.now() })); } catch {}
+                try { sessionStorage.setItem(TEACH_PENDING_KEY, JSON.stringify({ ...payload, at: Date.now(), panel: panelBase() })); } catch {}
                 return;
             }
 
@@ -1405,6 +1411,7 @@ function bootMouseless() {
                 sessionStorage.removeItem(TEACH_PENDING_KEY);
             } catch {}
             if (!pending || Date.now() - (pending.at || 0) > 15_000) return;
+            if (pending.panel !== undefined && pending.panel !== panelBase()) return;
             if (muted || nudgedThisPage) return;
             const st = states[pending.actionId] ??= {};
             if (st.dismissed || st.learned) return;

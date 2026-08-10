@@ -3,6 +3,7 @@
 namespace Blemli\FilamentMouseless\Livewire;
 
 use Blemli\FilamentMouseless\Models\Nudge;
+use Blemli\FilamentMouseless\Support\PanelAuth;
 use Illuminate\Support\Facades\Schema;
 use Livewire\Attributes\On;
 use Livewire\Component;
@@ -20,7 +21,7 @@ class TeachNudges extends Component
     public function shown(string $actionId): void
     {
         if ($this->accepts($actionId)) {
-            Nudge::recordShown((int) auth()->id(), $actionId);
+            Nudge::recordShown((int) PanelAuth::id(), $actionId);
         }
     }
 
@@ -28,7 +29,7 @@ class TeachNudges extends Component
     public function dismiss(string $actionId): void
     {
         if ($this->accepts($actionId)) {
-            Nudge::dismiss((int) auth()->id(), $actionId);
+            Nudge::dismiss((int) PanelAuth::id(), $actionId);
         }
     }
 
@@ -37,7 +38,7 @@ class TeachNudges extends Component
     public function used(string $actionId): void
     {
         if ($this->accepts($actionId)) {
-            Nudge::recordUsed((int) auth()->id(), $actionId);
+            Nudge::recordUsed((int) PanelAuth::id(), $actionId);
         }
     }
 
@@ -46,7 +47,7 @@ class TeachNudges extends Component
     public function clicked(string $actionId): void
     {
         if ($this->accepts($actionId)) {
-            Nudge::breakStreak((int) auth()->id(), $actionId);
+            Nudge::breakStreak((int) PanelAuth::id(), $actionId);
         }
     }
 
@@ -54,13 +55,13 @@ class TeachNudges extends Component
     public function mute(): void
     {
         if ($this->accepts(Nudge::MUTE_ALL)) {
-            Nudge::muteAll((int) auth()->id());
+            Nudge::muteAll((int) PanelAuth::id());
         }
     }
 
     protected function accepts(string $actionId): bool
     {
-        if (! auth()->check()) {
+        if (! PanelAuth::check()) {
             return false;
         }
 

@@ -32,7 +32,7 @@ class ScriptData implements JsonSerializable
     public function jsonSerialize(): array
     {
         try {
-            $resolved = app(BindingResolver::class)->forUser(auth()->id());
+            $resolved = app(BindingResolver::class)->forUser(PanelAuth::id());
         } catch (\Throwable) {
             $resolved = ['bindings' => [], 'preset' => null, 'disabled' => []];
         }
@@ -40,7 +40,7 @@ class ScriptData implements JsonSerializable
         return [
             'bindings' => $resolved['bindings'],
             'reserved' => Keys::reservedKeys(),
-            'listModeIgnore' => (array) config('mouseless.list_mode.ignore_in', []),
+            'listModeIgnore' => FilamentMouselessPlugin::listModeIgnoreSelectors(),
             'debug' => (bool) config('mouseless.debug', false),
             'underlines' => FilamentMouselessPlugin::underlinesEnabled(),
             'hints' => FilamentMouselessPlugin::hintsEnabled(),
@@ -89,8 +89,8 @@ class ScriptData implements JsonSerializable
         }
 
         return [
-            'chord' => (string) config('mouseless.jump.chord', 'ctrl,ctrl'),
-            'timeoutMs' => (int) config('mouseless.jump.timeout_ms', 350),
+            'chord' => FilamentMouselessPlugin::jumpChord(),
+            'timeoutMs' => FilamentMouselessPlugin::jumpTimeoutMs(),
             'strings' => [
                 'no_targets' => __('filament-mouseless::mouseless.jump.no_targets'),
                 'move_hint' => __('filament-mouseless::mouseless.jump.move_hint'),
@@ -108,7 +108,7 @@ class ScriptData implements JsonSerializable
      */
     protected function teach(): ?array
     {
-        if (! FilamentMouselessPlugin::teachingEnabled() || ! auth()->check()) {
+        if (! FilamentMouselessPlugin::teachingEnabled() || ! PanelAuth::check()) {
             return null;
         }
 
@@ -119,12 +119,12 @@ class ScriptData implements JsonSerializable
 
             // ->deferDays(X): newcomers get X quiet days before any teaching.
             $deferDays = FilamentMouselessPlugin::teachDeferredDays();
-            $createdAt = auth()->user()?->created_at;
+            $createdAt = PanelAuth::user()?->created_at;
             if ($deferDays > 0 && $createdAt && $createdAt->addDays($deferDays)->isFuture()) {
                 return null;
             }
 
-            $userId = (int) auth()->id();
+            $userId = (int) PanelAuth::id();
 
             return [
                 'muted' => Nudge::isMuted($userId),
@@ -196,7 +196,7 @@ class ScriptData implements JsonSerializable
      */
     protected function stats(): ?array
     {
-        if (! FilamentMouselessPlugin::statisticsEnabled() || ! auth()->check()) {
+        if (! FilamentMouselessPlugin::statisticsEnabled() || ! PanelAuth::check()) {
             return null;
         }
 

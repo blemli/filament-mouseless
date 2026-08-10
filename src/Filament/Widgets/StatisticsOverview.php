@@ -7,6 +7,7 @@ use Blemli\FilamentMouseless\Models\Statistic;
 use Blemli\FilamentMouseless\Services\BindingResolver;
 use Blemli\FilamentMouseless\Support\ActionMeta;
 use Blemli\FilamentMouseless\Support\Keys;
+use Blemli\FilamentMouseless\Support\PanelAuth;
 use Filament\Widgets\Widget;
 use Illuminate\Support\Facades\Schema;
 
@@ -33,7 +34,7 @@ class StatisticsOverview extends Widget
      */
     public static function canView(): bool
     {
-        if (! FilamentMouselessPlugin::statisticsEnabled() || ! auth()->check()) {
+        if (! FilamentMouselessPlugin::statisticsEnabled() || ! PanelAuth::check()) {
             return false;
         }
 
@@ -57,7 +58,7 @@ class StatisticsOverview extends Widget
      */
     public function weeklyTrend(): array
     {
-        $daily = Statistic::dailyCounts((int) auth()->id(), self::TREND_WEEKS * 7);
+        $daily = Statistic::dailyCounts((int) PanelAuth::id(), self::TREND_WEEKS * 7);
 
         $weeks = array_fill(0, self::TREND_WEEKS, ['kb' => 0, 'click' => 0]);
         $day = 0;
@@ -117,7 +118,7 @@ class StatisticsOverview extends Widget
     public function untappedActions(): array
     {
         try {
-            $bindings = (array) (app(BindingResolver::class)->forUser(auth()->id())['bindings'] ?? []);
+            $bindings = (array) (app(BindingResolver::class)->forUser(PanelAuth::id())['bindings'] ?? []);
         } catch (\Throwable) {
             return [];
         }
@@ -139,6 +140,6 @@ class StatisticsOverview extends Widget
     /** @return array<string, array{kb: int, click: int}> */
     protected function totals(): array
     {
-        return $this->totalsMemo ??= Statistic::perActionTotals((int) auth()->id());
+        return $this->totalsMemo ??= Statistic::perActionTotals((int) PanelAuth::id());
     }
 }

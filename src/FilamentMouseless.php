@@ -4,6 +4,7 @@ namespace Blemli\FilamentMouseless;
 
 use Blemli\FilamentMouseless\Services\BindingResolver;
 use Blemli\FilamentMouseless\Services\PresetRegistry;
+use Blemli\FilamentMouseless\Support\PanelAuth;
 
 class FilamentMouseless
 {
@@ -19,7 +20,7 @@ class FilamentMouseless
 
     public function forCurrentUser(): array
     {
-        return $this->resolver()->forUser(auth()->id());
+        return $this->resolver()->forUser(PanelAuth::id());
     }
 
     /** Drop the request-scoped resolution memos after a layout mutation. */

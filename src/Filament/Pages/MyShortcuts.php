@@ -8,6 +8,7 @@ use Blemli\FilamentMouseless\Filament\Concerns\InteractsWithShortcutsTable;
 use Blemli\FilamentMouseless\FilamentMouselessPlugin;
 use Blemli\FilamentMouseless\Models\Preset;
 use Blemli\FilamentMouseless\Models\UserSetting;
+use Blemli\FilamentMouseless\Support\PanelAuth;
 use Blemli\FilamentMouseless\Support\Shield;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
@@ -40,7 +41,7 @@ class MyShortcuts extends Page implements HasTable
 
     public static function canAccess(): bool
     {
-        if (! auth()->check()) {
+        if (! PanelAuth::check()) {
             return false;
         }
 
@@ -109,7 +110,7 @@ class MyShortcuts extends Page implements HasTable
             return $preset;
         }
 
-        return FilamentMouseless::registry()->find($preset['parent_slug'] ?? null, auth()->id())
+        return FilamentMouseless::registry()->find($preset['parent_slug'] ?? null, PanelAuth::id())
             ?? $this->localeDefaultPreset()
             ?? $preset;
     }
@@ -118,7 +119,7 @@ class MyShortcuts extends Page implements HasTable
     {
         $preset = $this->getShortcutsPreset();
 
-        return ($preset['owner_user_id'] ?? null) !== auth()->id();
+        return ($preset['owner_user_id'] ?? null) !== PanelAuth::id();
     }
 
     /**
@@ -181,22 +182,22 @@ class MyShortcuts extends Page implements HasTable
     protected function ownPresetModel(): ?Preset
     {
         $preset = $this->getShortcutsPreset();
-        if (($preset['owner_user_id'] ?? null) !== auth()->id()) {
+        if (($preset['owner_user_id'] ?? null) !== PanelAuth::id()) {
             return null;
         }
 
         return Preset::query()
-            ->where('owner_user_id', auth()->id())
+            ->where('owner_user_id', PanelAuth::id())
             ->where('slug', $preset['slug'])
             ->first();
     }
 
     protected function setActivePresetSlug(?string $slug): void
     {
-        $previous = UserSetting::query()->where('user_id', auth()->id())->value('active_preset_slug');
+        $previous = UserSetting::query()->where('user_id', PanelAuth::id())->value('active_preset_slug');
 
         UserSetting::updateOrCreate(
-            ['user_id' => auth()->id()],
+            ['user_id' => PanelAuth::id()],
             ['active_preset_slug' => $slug],
         );
 
@@ -204,7 +205,7 @@ class MyShortcuts extends Page implements HasTable
         $this->dispatch('mouseless-preset-changed');
 
         if ($previous !== $slug) {
-            PresetActivated::dispatch((int) auth()->id(), $previous, $slug);
+            PresetActivated::dispatch((int) PanelAuth::id(), $previous, $slug);
         }
     }
 
@@ -219,6 +220,6 @@ class MyShortcuts extends Page implements HasTable
     protected function localeDefaultPreset(): ?array
     {
         return FilamentMouseless::registry()->builtInForLocale(app()->getLocale())
-            ?? FilamentMouseless::registry()->find(config('mouseless.default_preset'));
+            ?? FilamentMouseless::registry()->find(FilamentMouselessPlugin::defaultPresetSlug());
     }
 }

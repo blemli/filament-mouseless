@@ -10,6 +10,7 @@ use Blemli\FilamentMouseless\Facades\FilamentMouseless;
 use Blemli\FilamentMouseless\FilamentMouselessPlugin;
 use Blemli\FilamentMouseless\Models\Preset;
 use Blemli\FilamentMouseless\Models\UserSetting;
+use Blemli\FilamentMouseless\Support\PanelAuth;
 use Blemli\FilamentMouseless\Support\PresetTransfer;
 use Filament\Actions\Action;
 use Filament\Actions\Concerns\InteractsWithActions;
@@ -59,7 +60,7 @@ class PresetSelector extends Widget implements HasActions, HasForms
         $this->ownPresetMemoLoaded = false;
 
         $this->form->fill([
-            'activePresetSlug' => UserSetting::forUser(auth()->id())->active_preset_slug ?? self::DEFAULT_OPTION,
+            'activePresetSlug' => UserSetting::forUser(PanelAuth::id())->active_preset_slug ?? self::DEFAULT_OPTION,
         ]);
     }
 
@@ -83,11 +84,11 @@ class PresetSelector extends Widget implements HasActions, HasForms
 
     protected function persistSelection(): void
     {
-        $previous = UserSetting::query()->where('user_id', auth()->id())->value('active_preset_slug');
+        $previous = UserSetting::query()->where('user_id', PanelAuth::id())->value('active_preset_slug');
         $slug = $this->selectedSlug();
 
         UserSetting::updateOrCreate(
-            ['user_id' => auth()->id()],
+            ['user_id' => PanelAuth::id()],
             ['active_preset_slug' => $slug],
         );
 
@@ -95,7 +96,7 @@ class PresetSelector extends Widget implements HasActions, HasForms
         $this->dispatch('mouseless-preset-changed');
 
         if ($previous !== $slug) {
-            PresetActivated::dispatch((int) auth()->id(), $previous, $slug);
+            PresetActivated::dispatch((int) PanelAuth::id(), $previous, $slug);
         }
     }
 
@@ -118,7 +119,7 @@ class PresetSelector extends Widget implements HasActions, HasForms
             ),
         ];
 
-        foreach (FilamentMouseless::registry()->all(auth()->id()) as $slug => $preset) {
+        foreach (FilamentMouseless::registry()->all(PanelAuth::id()) as $slug => $preset) {
             $options[$slug] = $this->optionHtml(
                 $preset['name'] ?? $slug,
                 $this->optionSubtitle($preset),
@@ -136,7 +137,7 @@ class PresetSelector extends Widget implements HasActions, HasForms
 
         $source = match (true) {
             ($preset['source'] ?? null) === 'builtin' => __('filament-mouseless::mouseless.widget.option_builtin'),
-            ($preset['owner_user_id'] ?? null) === auth()->id() => __('filament-mouseless::mouseless.widget.option_own'),
+            ($preset['owner_user_id'] ?? null) === PanelAuth::id() => __('filament-mouseless::mouseless.widget.option_own'),
             default => __('filament-mouseless::mouseless.widget.option_published'),
         };
 
@@ -286,7 +287,7 @@ class PresetSelector extends Widget implements HasActions, HasForms
                 }
 
                 // Published layouts carry the author's full name; private ones don't.
-                $authorSuffix = ' (' . (auth()->user()->name ?? '') . ')';
+                $authorSuffix = ' (' . (PanelAuth::user()->name ?? '') . ')';
 
                 if ($preset->is_published) {
                     $preset->update([
@@ -313,7 +314,7 @@ class PresetSelector extends Widget implements HasActions, HasForms
                         'name' => str_ends_with($preset->name, $authorSuffix)
                             ? $preset->name
                             : $preset->name . $authorSuffix,
-                        ...($requiresApproval ? [] : ['approved_at' => now(), 'approved_by' => auth()->id()]),
+                        ...($requiresApproval ? [] : ['approved_at' => now(), 'approved_by' => PanelAuth::id()]),
                     ]);
 
                     PresetPublished::dispatch($preset);
@@ -525,7 +526,7 @@ class PresetSelector extends Widget implements HasActions, HasForms
         }
 
         return Preset::query()
-            ->where('owner_user_id', auth()->id())
+            ->where('owner_user_id', PanelAuth::id())
             ->whereKey((int) $id)
             ->first();
     }
@@ -612,7 +613,7 @@ class PresetSelector extends Widget implements HasActions, HasForms
         $slug = $this->selectedSlug();
 
         return $this->ownPresetMemo = $slug === null ? null : Preset::query()
-            ->where('owner_user_id', auth()->id())
+            ->where('owner_user_id', PanelAuth::id())
             ->where('slug', $slug)
             ->first();
     }

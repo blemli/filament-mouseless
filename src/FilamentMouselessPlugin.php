@@ -75,6 +75,21 @@ class FilamentMouselessPlugin implements Plugin
     /** @var array<string, ?string> action id => combo (null/'' = unbind) */
     protected array $remaps = [];
 
+    protected ?string $defaultPreset = null;
+
+    /** @var array<int, string>|null */
+    protected ?array $disabledActions = null;
+
+    protected ?string $jumpChord = null;
+
+    protected ?int $jumpTimeoutMs = null;
+
+    /** @var array<int|string, mixed>|null flat list, or map keyed by platform */
+    protected ?array $reservedKeys = null;
+
+    /** @var array<int, string>|null */
+    protected ?array $listModeIgnoreIn = null;
+
     private static bool $loggedIgnoredRemap = false;
 
     private static bool $loggedSingletonConflict = false;
@@ -191,6 +206,96 @@ class FilamentMouselessPlugin implements Plugin
     }
 
     /**
+     * The preset users on this panel get before they pick one themselves.
+     * Overrides `mouseless.default_preset` — handy when panels serve
+     * different audiences (a German back office, an English customer panel).
+     * A built-in preset matching the UI locale still wins when one exists,
+     * same as with the config default.
+     */
+    public function defaultPreset(string $slug): static
+    {
+        $this->defaultPreset = $slug;
+
+        return $this;
+    }
+
+    /** Current panel's default-preset slug when set, else the config default. */
+    public static function defaultPresetSlug(): ?string
+    {
+        return static::safeGet()?->defaultPreset
+            ?? (config('mouseless.default_preset') ?: null);
+    }
+
+    /**
+     * Hide actions from this panel entirely: their bindings are stripped
+     * after resolution, so they vanish from the overlay, the cheatsheet and
+     * /my-shortcuts. Takes action ids (string or {@see MouselessAction}
+     * case); overrides `mouseless.disabled_actions` when called.
+     *
+     * @param  array<int, string|MouselessAction>  $actions
+     */
+    public function disabledActions(array $actions): static
+    {
+        $this->disabledActions = array_map(
+            fn (string | MouselessAction $action): string => $action instanceof MouselessAction ? $action->value : $action,
+            $actions,
+        );
+
+        return $this;
+    }
+
+    /** @return array<int, string> Current panel's list when set, else the config default. */
+    public static function disabledActionIds(): array
+    {
+        return static::safeGet()?->disabledActions
+            ?? (array) config('mouseless.disabled_actions', []);
+    }
+
+    /**
+     * Replace the reserved (unbindable) combo list for this panel — the
+     * recorder refuses these and the engine never registers them. Same
+     * shapes as `mouseless.reserved_keys`: a flat list, or a map keyed by
+     * platform ('all'/'mac'/'windows'/'linux'). A full override, not a
+     * merge — spread the config in yourself to only add combos.
+     *
+     * @param  array<int|string, mixed>  $keys
+     */
+    public function reservedKeys(array $keys): static
+    {
+        $this->reservedKeys = $keys;
+
+        return $this;
+    }
+
+    /** @return array<int|string, mixed> Raw shape; platform resolution happens in {@see Keys::reservedKeys()}. */
+    public static function reservedKeyRules(): array
+    {
+        return static::safeGet()?->reservedKeys
+            ?? (array) config('mouseless.reserved_keys', []);
+    }
+
+    /**
+     * Selectors in which bare-letter shortcuts (j, k, x, /, …) stay off so
+     * users can type freely — this panel's replacement for
+     * `mouseless.list_mode.ignore_in`.
+     *
+     * @param  array<int, string>  $selectors
+     */
+    public function listModeIgnoreIn(array $selectors): static
+    {
+        $this->listModeIgnoreIn = $selectors;
+
+        return $this;
+    }
+
+    /** @return array<int, string> Current panel's selectors when set, else the config default. */
+    public static function listModeIgnoreSelectors(): array
+    {
+        return static::safeGet()?->listModeIgnoreIn
+            ?? (array) config('mouseless.list_mode.ignore_in', []);
+    }
+
+    /**
      * Enforce the Shield permissions (`MouselessUse`, `View:MyShortcuts`).
      * Without this call, mouseless ignores those
      * permissions even when Shield is installed — the plugin Just Works
@@ -299,10 +404,15 @@ class FilamentMouselessPlugin implements Plugin
      * typing a label focuses or clicks it. Labels are hashed from each
      * control's stable identity, so a control keeps its letter across
      * reloads and locale switches. Opt-in: call ->jump() to enable.
+     *
+     * $chord ('ctrl,ctrl', 'alt,alt', …) and $timeoutMs (max gap between
+     * the two taps) override `mouseless.jump.*` for this panel.
      */
-    public function jump(bool $enabled = true): static
+    public function jump(bool $enabled = true, ?string $chord = null, ?int $timeoutMs = null): static
     {
         $this->renderJump = $enabled;
+        $this->jumpChord = $chord ?? $this->jumpChord;
+        $this->jumpTimeoutMs = $timeoutMs ?? $this->jumpTimeoutMs;
 
         return $this;
     }
@@ -310,6 +420,20 @@ class FilamentMouselessPlugin implements Plugin
     public static function jumpEnabled(): bool
     {
         return static::safeGet()?->renderJump ?? false;
+    }
+
+    /** Current panel's jump chord when set, else the config default. */
+    public static function jumpChord(): string
+    {
+        return static::safeGet()?->jumpChord
+            ?? (string) config('mouseless.jump.chord', 'ctrl,ctrl');
+    }
+
+    /** Current panel's double-tap timeout when set, else the config default. */
+    public static function jumpTimeoutMs(): int
+    {
+        return static::safeGet()?->jumpTimeoutMs
+            ?? (int) config('mouseless.jump.timeout_ms', 350);
     }
 
     /**

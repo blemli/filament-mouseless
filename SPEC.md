@@ -60,7 +60,7 @@ mouseless_presets
   owner_user_id (null for installation-published),
   source ('user' | 'imported'),
   parent_slug (fork chain),
-  bindings (json), panels (json, null = all),
+  bindings (json),
   is_published, published_at, approved_by, approved_at
 
 mouseless_user_settings

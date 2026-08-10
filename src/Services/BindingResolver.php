@@ -2,6 +2,7 @@
 
 namespace Blemli\FilamentMouseless\Services;
 
+use Blemli\FilamentMouseless\FilamentMouselessPlugin;
 use Blemli\FilamentMouseless\Models\UserSetting;
 use Blemli\FilamentMouseless\Support\Keys;
 use Blemli\FilamentMouseless\Support\Shield;
@@ -53,7 +54,7 @@ class BindingResolver
         }
 
         $settings = $userId ? $this->loadSettings($userId) : null;
-        $configDefault = config('mouseless.default_preset') ?: 'english-default';
+        $configDefault = FilamentMouselessPlugin::defaultPresetSlug() ?: 'english-default';
 
         // No explicit selection → follow the UI locale; switching the app
         // language switches the default preset automatically.
@@ -66,7 +67,7 @@ class BindingResolver
 
         $disabled = array_values(array_unique(array_merge(
             (array) ($preset['disabled_actions'] ?? []),
-            (array) config('mouseless.disabled_actions', []),
+            FilamentMouselessPlugin::disabledActionIds(),
         )));
 
         // Merge the parent-preset chain underneath this preset so bindings added
@@ -155,6 +156,6 @@ class BindingResolver
 
     public function listModeIgnoreSelectors(): array
     {
-        return (array) config('mouseless.list_mode.ignore_in', []);
+        return FilamentMouselessPlugin::listModeIgnoreSelectors();
     }
 }

@@ -44,7 +44,7 @@ class HelpOverlay extends Component
         // group (only when the plugin activates it) so the overlay and the
         // printable cheatsheet teach the double-tap.
         if (FilamentMouselessPlugin::jumpEnabled()) {
-            $groups['ui']['ui.jump'] = (string) config('mouseless.jump.chord', 'ctrl,ctrl');
+            $groups['ui']['ui.jump'] = FilamentMouselessPlugin::jumpChord();
         }
 
         $plugin = FilamentMouselessPlugin::safeGet();

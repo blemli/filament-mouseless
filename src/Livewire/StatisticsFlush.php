@@ -5,6 +5,7 @@ namespace Blemli\FilamentMouseless\Livewire;
 use Blemli\FilamentMouseless\Events\MilestoneReached;
 use Blemli\FilamentMouseless\FilamentMouselessPlugin;
 use Blemli\FilamentMouseless\Models\Statistic;
+use Blemli\FilamentMouseless\Support\PanelAuth;
 use Filament\Notifications\Notification;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Number;
@@ -52,13 +53,13 @@ class StatisticsFlush extends Component
             return;
         }
 
-        $crossed = Statistic::record((int) auth()->id(), $clean);
+        $crossed = Statistic::record((int) PanelAuth::id(), $clean);
 
         if ($crossed !== []) {
-            $lifetime = Statistic::lifetimeKeyboardCount((int) auth()->id());
+            $lifetime = Statistic::lifetimeKeyboardCount((int) PanelAuth::id());
 
             foreach ($crossed as $milestone) {
-                MilestoneReached::dispatch((int) auth()->id(), $milestone, $lifetime);
+                MilestoneReached::dispatch((int) PanelAuth::id(), $milestone, $lifetime);
             }
 
             $this->congratulate(max($crossed));
@@ -72,7 +73,7 @@ class StatisticsFlush extends Component
                 'count' => Number::format($milestone),
             ]))
             ->body(__('filament-mouseless::mouseless.stats.milestone.body', [
-                'count' => Number::format(Statistic::lifetimeKeyboardCount((int) auth()->id())),
+                'count' => Number::format(Statistic::lifetimeKeyboardCount((int) PanelAuth::id())),
             ]))
             ->success()
             ->icon('heroicon-o-trophy')
@@ -82,7 +83,7 @@ class StatisticsFlush extends Component
 
     protected function accepts(): bool
     {
-        if (! auth()->check() || ! FilamentMouselessPlugin::statisticsEnabled()) {
+        if (! PanelAuth::check() || ! FilamentMouselessPlugin::statisticsEnabled()) {
             return false;
         }
 

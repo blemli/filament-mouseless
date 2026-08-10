@@ -11,6 +11,7 @@ use Blemli\FilamentMouseless\Models\Statistic;
 use Blemli\FilamentMouseless\Services\CustomActionRegistry;
 use Blemli\FilamentMouseless\Support\ActionMeta;
 use Blemli\FilamentMouseless\Support\Keys;
+use Blemli\FilamentMouseless\Support\PanelAuth;
 use Blemli\FilamentMouseless\Support\ShortcutConflicts;
 use Filament\Actions\Action;
 use Filament\Actions\BulkAction;
@@ -88,7 +89,7 @@ trait InteractsWithShortcutsTable
         $this->flushCachedTableRecords();
 
         ShortcutsChanged::dispatch(
-            (int) auth()->id(),
+            (int) PanelAuth::id(),
             (string) ($old['slug'] ?? ''),
             (array) ($old['bindings'] ?? []),
             $bindings,
@@ -282,9 +283,9 @@ trait InteractsWithShortcutsTable
                     ->label(__('filament-mouseless::mouseless.teach.unmute'))
                     ->icon('heroicon-m-bell')
                     ->color('gray')
-                    ->visible(fn (): bool => $this->shortcutsTeachEnabled() && Nudge::isMuted((int) auth()->id()))
+                    ->visible(fn (): bool => $this->shortcutsTeachEnabled() && Nudge::isMuted((int) PanelAuth::id()))
                     ->action(function (): void {
-                        Nudge::clear((int) auth()->id(), Nudge::MUTE_ALL);
+                        Nudge::clear((int) PanelAuth::id(), Nudge::MUTE_ALL);
 
                         Notification::make()
                             ->title(__('filament-mouseless::mouseless.teach.unmuted'))
@@ -354,7 +355,7 @@ trait InteractsWithShortcutsTable
      */
     public function hasShortcutsStatistics(): bool
     {
-        if (! FilamentMouselessPlugin::statisticsEnabled() || ! auth()->check()) {
+        if (! FilamentMouselessPlugin::statisticsEnabled() || ! PanelAuth::check()) {
             return false;
         }
 
@@ -368,7 +369,7 @@ trait InteractsWithShortcutsTable
     /** Whether the teach column (and its states) should render at all. */
     protected function shortcutsTeachEnabled(): bool
     {
-        if (! FilamentMouselessPlugin::teachingEnabled() || ! auth()->check()) {
+        if (! FilamentMouselessPlugin::teachingEnabled() || ! PanelAuth::check()) {
             return false;
         }
 
@@ -389,7 +390,7 @@ trait InteractsWithShortcutsTable
             return;
         }
 
-        Nudge::clear((int) auth()->id(), $record['id']);
+        Nudge::clear((int) PanelAuth::id(), $record['id']);
         // The click resolved the records before the delete — flush, or the
         // badge renders its stale state until the next full refresh.
         $this->flushCachedTableRecords();
@@ -553,7 +554,7 @@ trait InteractsWithShortcutsTable
         $rows = [...$rows, ...$this->customShortcutRows($bindings, $disabled)];
 
         if ($this->shortcutsTeachEnabled()) {
-            $states = Nudge::statesFor((int) auth()->id());
+            $states = Nudge::statesFor((int) PanelAuth::id());
 
             foreach ($rows as &$row) {
                 $state = $states[$row['id']] ?? null;
@@ -568,7 +569,7 @@ trait InteractsWithShortcutsTable
         }
 
         if ($this->hasShortcutsStatistics()) {
-            $invocations = Statistic::perActionTotals((int) auth()->id());
+            $invocations = Statistic::perActionTotals((int) PanelAuth::id());
 
             foreach ($rows as &$row) {
                 $row['invoked'] = (int) ($invocations[$row['id']]['kb'] ?? 0);

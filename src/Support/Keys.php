@@ -2,6 +2,8 @@
 
 namespace Blemli\FilamentMouseless\Support;
 
+use Blemli\FilamentMouseless\FilamentMouselessPlugin;
+
 class Keys
 {
     /** Mirrors the canonical modifier order of normalize() in resources/js/index.js. */
@@ -91,7 +93,7 @@ class Keys
      */
     public static function reservedKeys(): array
     {
-        $config = (array) config('mouseless.reserved_keys', []);
+        $config = FilamentMouselessPlugin::reservedKeyRules();
 
         if (array_is_list($config)) {
             return $config;

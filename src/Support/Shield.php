@@ -105,7 +105,7 @@ class Shield
             return true;
         }
 
-        $user = auth()->user();
+        $user = PanelAuth::user();
         if (! $user) {
             return false;
         }

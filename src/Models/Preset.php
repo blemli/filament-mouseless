@@ -5,6 +5,7 @@ namespace Blemli\FilamentMouseless\Models;
 use Blemli\FilamentMouseless\Events\PresetCreated;
 use Blemli\FilamentMouseless\Events\PresetDeleted;
 use Blemli\FilamentMouseless\Services\PresetRegistry;
+use Blemli\FilamentMouseless\Support\PanelAuth;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 
@@ -22,11 +23,10 @@ class Preset extends Model
     protected $casts = [
         'bindings' => 'array',
         'disabled_actions' => 'array',
-        'panels' => 'array',
         'is_published' => 'bool',
         'published_at' => 'datetime',
         'approved_at' => 'datetime',
-        // Strict comparisons against auth()->id() decide the lock/fork flow —
+        // Strict comparisons against PanelAuth::id() decide the lock/fork flow —
         // some drivers return numeric strings without this cast.
         'owner_user_id' => 'integer',
     ];
@@ -51,7 +51,7 @@ class Preset extends Model
             'description' => $description,
             'locale' => $source['locale'] ?? app()->getLocale(),
             'version' => $source['version'] ?? '1.0',
-            'owner_user_id' => auth()->id(),
+            'owner_user_id' => PanelAuth::id(),
             'source' => $origin,
             'parent_slug' => $source['slug'] ?? null,
             'bindings' => (array) ($source['bindings'] ?? []),
@@ -65,7 +65,7 @@ class Preset extends Model
      */
     public static function defaultLayoutName(): string
     {
-        $firstName = str(auth()->user()?->name ?? 'My')->before(' ')->toString();
+        $firstName = str(PanelAuth::user()?->name ?? 'My')->before(' ')->toString();
 
         return static::uniqueNameForUser(
             __('filament-mouseless::mouseless.table.fork.name', ['name' => $firstName]),
@@ -75,7 +75,7 @@ class Preset extends Model
     public static function isNameTakenForUser(string $name, ?string $ignoreSlug = null): bool
     {
         return static::query()
-            ->where('owner_user_id', auth()->id())
+            ->where('owner_user_id', PanelAuth::id())
             ->where('name', $name)
             ->when($ignoreSlug, fn ($query) => $query->where('slug', '!=', $ignoreSlug))
             ->exists();

@@ -36,11 +36,11 @@ php artisan mouseless:install
 
 ## Features
 
-Dark-Mode Support, Language Adaptive: DE (**E**rstellen), EN (**N**ew), ES (**C**rear), FR (**C**réer) & IT (**N**uovo), Filament Native Style (no custom theme needed), Mobile Friendly, Hidden on Devices without Keyboard, Respects your Theme & Font & Color, Stateless mode available (without migrations), Show a Shortcuts Overlay with <kbd>?</kbd>, Convenient `mouseless:install` command, Let Users Register custom Combinations, Compatible with Filament Shield but not required, Configure everything like Icons &  Labels & Positions, Printable CheatSheat, Go to Resources with Shortcuts, Navigate Table Rows, Highlight Shortcuts in UI, Utility to rename existing actions, Create your most important Resource from anywhere, Escape to Dashboard, Teach Shortcuts to users without annoying them, Jump to any Control with a Double-Tap of Ctrl (opt-in), Laravel-Events to hook into, Reorder Rows (also in Repeaters), Show Statistics on avoided clicks,  Giga Combination possible i.e. ⌃⌘⌥⇧K, Filtersearch the Cheatsheet, Nudge for the Cheatsheet, 
+Dark-Mode Support, Language Adaptive: DE (**E**rstellen), EN (**N**ew), ES (**C**rear), FR (**C**réer) & IT (**N**uovo), Filament Native Style (no custom theme needed), Mobile Friendly, Hidden on Devices without Keyboard, Respects your Theme & Font & Color, Stateless mode available (without migrations), Show a Shortcuts Overlay with <kbd>?</kbd>, Convenient `mouseless:install` command, Let Users Register custom Combinations, Compatible with Filament Shield but not required, Configure everything like Icons &  Labels & Positions, Printable CheatSheat, Go to Resources with Shortcuts, Navigate Table Rows, Highlight Shortcuts in UI, Utility to rename existing actions, Create your most important Resource from anywhere, Escape to Dashboard, Teach Shortcuts to users without annoying them, Jump to any Control with a Double-Tap of Ctrl (opt-in), Laravel-Events to hook into, Reorder Rows (also in Repeaters), Show Statistics on avoided clicks,  Giga Combination possible i.e. ⌃⌘⌥⇧K, Filtersearch the Cheatsheet, Nudge for the Cheatsheet, Multi-Panel Support (per-panel config, shared muscle memory), 
 
 ### roadmap
 
-Multipanel support, Multitenant Support,  Let Users share Presets with eachother, Let Admins Moderate Shared Presets (remove unused ones &see which action is the most overwritten, most used),  `shorcuts:list` command, Detect already existing shortcuts of actions (artisan?), ~~singleton preset~~, Free Key Visualisation, unattended install, uninstall command
+Multitenant Support,   Let Users share Presets with eachother, Let Admins Moderate Shared Presets (remove unused ones &see which action is the most overwritten, most used),  `shorcuts:list` command, Detect already existing shortcuts of actions (artisan?),  unattended install, uninstall command
 
 ### Languages
 
@@ -434,7 +434,48 @@ The chord is configurable — a double-tap of any single modifier:
 ],
 ```
 
+Or per panel, right on the plugin:
+
+```php
+FilamentMouselessPlugin::make()->jump(chord: 'alt,alt', timeoutMs: 400)
+```
+
 A general chord system (arbitrary key sequences for any action) may come later.
+
+### Multiple Panels
+
+Register the plugin in every panel that should get the keyboard layer — the `mouseless:install` command offers all your panel providers. Each panel gets its own plugin instance, so every fluent option can differ per panel:
+
+```php
+// AdminPanelProvider
+FilamentMouselessPlugin::make()
+    ->defaultPreset('german-default')
+    ->remap('crud.create', 'alt+shift+n')
+    ->jump()
+
+// CustomerPanelProvider
+FilamentMouselessPlugin::make()
+    ->defaultPreset('english-default')
+    ->disabledActions(['table.reorder'])
+    ->stateless()
+```
+
+Settings that used to be config-only have per-panel counterparts now; the config value stays the fallback for panels that don't call them:
+
+| Plugin method | Overrides |
+| --- | --- |
+| `->defaultPreset('slug')` | `mouseless.default_preset` |
+| `->disabledActions([...])` | `mouseless.disabled_actions` |
+| `->remap('id', 'combo')` | `mouseless.remap` (per entry) |
+| `->jump(chord: …, timeoutMs: …)` | `mouseless.jump` |
+| `->reservedKeys([...])` | `mouseless.reserved_keys` (full replacement) |
+| `->listModeIgnoreIn([...])` | `mouseless.list_mode.ignore_in` |
+
+What's **per panel**: everything above plus all existing plugin options (overlay, hints, teach, statistics, stateless/singleton, Shield strictness, icons & labels). Navigation shortcuts, the <kbd>g</kbd> palette and jump labels always follow the panel you're on.
+
+What's **shared across panels** (per user, deliberately — muscle memory belongs to the person, not the panel): the active preset, personal layouts, statistics and teach progress. Picking a preset on one panel picks it everywhere.
+
+Panels may use **different auth guards** — the package resolves users through the current panel's guard. They must share **one user table**, though: all per-user state is keyed by a plain user id.
 
 ### Events
 
