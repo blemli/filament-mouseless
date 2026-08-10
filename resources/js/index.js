@@ -46,6 +46,11 @@ function bootMouseless() {
     let jumpTargets = []; // [{ el, label, commit, badge, typed, rest }]
     let jumpMoveItem = null;      // x-sortable-item key of the grabbed row
     let jumpMoveContainer = null; // its [x-sortable] container
+    let jumpMoveFromIndex = -1;   // index at grab time — the single 'end' dispatch needs it
+    let jumpPlacedItem = null;      // last Enter-dropped row — keeps its outline
+    let jumpPlacedContainer = null; // until the next grab / mouse / mode exit
+    let jumpOutlineTimer = 0;       // re-asserts outlines wiped by Livewire morphs
+    let jumpOutlineObserver = null; // same job, but synchronously (before paint)
 
     // Anchor row for shift+j / shift+k range selection. A DOM node, not an
     // index, because rows re-render on sort / filter / paginate. Null between
@@ -451,11 +456,36 @@ function bootMouseless() {
         // Scroll/resize REPOSITION the badges (they follow their targets);
         // a grabbed sortable row survives scrolling too but drops on
         // click/blur/navigation.
-        document.addEventListener('mousedown', () => { tapDirty = true; lastTapUp = 0; if (jumpOpen) closeJump(); endJumpMove(); }, true);
+        document.addEventListener('mousedown', () => { tapDirty = true; lastTapUp = 0; if (jumpOpen) closeJump(); endJumpMove(); clearJumpPlaced(); }, true);
         window.addEventListener('blur', () => { tapDirty = true; lastTapUp = 0; closeJump(); endJumpMove(); });
         window.addEventListener('scroll', () => { if (jumpOpen) scheduleJumpReposition(); }, { capture: true, passive: true });
         window.addEventListener('resize', () => { if (jumpOpen) scheduleJumpReposition(); });
-        document.addEventListener('livewire:navigated', () => { closeJump(); endJumpMove(); });
+        document.addEventListener('livewire:navigated', () => { closeJump(); endJumpMove(); clearJumpPlaced(); });
+
+        // Entering table reorder mode is THE moment the badges are wanted —
+        // pop them without demanding a double-tap first. Poll for the drag
+        // handles (cheap: one selector every 300ms); rising edge opens,
+        // falling edge retracts everything the mode left behind. Initial
+        // state is read at boot so a page that somehow loads mid-reorder
+        // doesn't surprise with badges.
+        let hadReorderHandles = !!document.querySelector('.fi-ta-reorder-handle');
+        setInterval(() => {
+            const has = !!document.querySelector('.fi-ta-reorder-handle');
+            if (has === hadReorderHandles) return;
+            hadReorderHandles = has;
+            if (!has) {
+                endJumpMove();
+                clearJumpPlaced();
+                if (jumpOpen) closeJump();
+                return;
+            }
+            if (jumpOpen || gotoOpen || jumpMoveContainer) return;
+            if (document.querySelector('[data-mouseless-recording]')) return;
+            const overlay = document.querySelector('[data-mouseless-overlay]');
+            if (overlay && isVisible(overlay)) return;
+            console.log(TAG, 'jump: reorder mode started — opening badges');
+            openJump();
+        }, 300);
     }
 
     // FNV-1a 32-bit — tiny, deterministic, good spread for short DOM keys.
@@ -589,6 +619,17 @@ function bootMouseless() {
             }
             out.push({ el, key, commit, rect });
         };
+
+        // Reorder mode: rows are otherwise skipped below, but each row's drag
+        // handle is a target — committing one grabs the row for ↑/↓ moves
+        // (commitJump routes anything inside [x-sortable-handle] to move mode).
+        // The x-sortable-item value is the record key, so labels stay stable
+        // across reorders and reloads.
+        for (const handle of root.querySelectorAll('.fi-ta-reorder-handle')) {
+            const item = handle.closest('[x-sortable-item]');
+            if (!item) continue;
+            push(handle, 'reorder:' + item.getAttribute('x-sortable-item'), 'click');
+        }
 
         // Selected rows — and the row the j/k cursor is on (highlight = focus
         // inside the row) — contribute per-cell targets: the selection checkbox,
@@ -878,30 +919,135 @@ function bootMouseless() {
         const item = handle.closest('[x-sortable-item]');
         const container = handle.closest('[x-sortable]');
         if (!item || !container) { handle.click(); return; }
+        clearJumpPlaced();
         jumpMoveItem = item.getAttribute('x-sortable-item');
         jumpMoveContainer = container;
+        jumpMoveFromIndex = jumpMoveItems().indexOf(item);
         styleJumpMove(true);
+        ensureJumpOutlineWatch();
         toast(cfg.jump?.strings?.move_hint);
         console.log(TAG, 'jump: move mode on', jumpMoveItem);
     }
 
-    // Livewire re-renders after every reorder, so the grabbed row is tracked
-    // by its x-sortable-item key, never by element reference.
-    function jumpMoveEl() {
-        if (!jumpMoveContainer || !jumpMoveContainer.isConnected) return null;
-        return jumpMoveContainer.querySelector(`[x-sortable-item="${CSS.escape(jumpMoveItem)}"]`);
+    function jumpMoveItems() {
+        return Array.from(jumpMoveContainer.children).filter(c => c.matches && c.matches('[x-sortable-item]'));
     }
 
-    function styleJumpMove(on) {
-        const el = jumpMoveEl();
-        if (!el) return;
+    // Livewire re-renders after every reorder, so the grabbed row is tracked
+    // by its x-sortable-item key, never by element reference.
+    function jumpSortableEl(container, item) {
+        if (!container || !container.isConnected) return null;
+        return container.querySelector(`[x-sortable-item="${CSS.escape(item)}"]`);
+    }
+
+    function jumpMoveEl() {
+        return jumpSortableEl(jumpMoveContainer, jumpMoveItem);
+    }
+
+    function setRowOutline(el, on) {
         el.style.outline = on ? '2px solid #f59e0b' : '';
         el.style.outlineOffset = on ? '1px' : '';
     }
 
-    function endJumpMove() {
+    function styleJumpMove(on) {
+        const el = jumpMoveEl();
+        if (el) setRowOutline(el, on);
+    }
+
+    // The morph after a reorder round-trip strips client-set inline styles.
+    // A MutationObserver re-asserts the outline the moment the style attr
+    // is wiped — mutation callbacks run before the next paint, so the bare
+    // state never becomes visible. The 200ms timer is the belt-and-braces
+    // fallback; both retire when neither marker is active. The observer
+    // only writes when the outline is actually missing, or its own write
+    // would re-trigger it forever.
+    function ensureJumpOutlineWatch() {
+        if (!jumpOutlineTimer) jumpOutlineTimer = setInterval(jumpOutlineTick, 200);
+        if (!jumpOutlineObserver) jumpOutlineObserver = new MutationObserver(jumpOutlineEnforce);
+        jumpOutlineObserver.observe(jumpMoveContainer, {
+            attributes: true, attributeFilter: ['style'], subtree: true, childList: true,
+        });
+    }
+
+    function jumpOutlineEnforce() {
+        if (jumpMoveContainer) {
+            const el = jumpMoveEl();
+            if (el && !el.style.outline) setRowOutline(el, true);
+        }
+        if (jumpPlacedContainer) {
+            const el = jumpSortableEl(jumpPlacedContainer, jumpPlacedItem);
+            if (el) { if (!el.style.outline) setRowOutline(el, true); }
+            else if (!jumpPlacedContainer.isConnected) { jumpPlacedItem = null; jumpPlacedContainer = null; }
+        }
+    }
+
+    function jumpOutlineTick() {
+        jumpOutlineEnforce();
+        if (!jumpMoveContainer && !jumpPlacedContainer) {
+            clearInterval(jumpOutlineTimer);
+            jumpOutlineTimer = 0;
+            if (jumpOutlineObserver) { jumpOutlineObserver.disconnect(); jumpOutlineObserver = null; }
+        }
+    }
+
+    function clearJumpPlaced() {
+        if (!jumpPlacedContainer) return;
+        const el = jumpSortableEl(jumpPlacedContainer, jumpPlacedItem);
+        if (el) setRowOutline(el, false);
+        jumpPlacedItem = null;
+        jumpPlacedContainer = null;
+    }
+
+    // One synthetic SortableJS 'end' per GESTURE, not per arrow step —
+    // per-step dispatch fired a Livewire round-trip and full table morph on
+    // every press, which flickered the whole table. Like a real drag, the
+    // handlers see grab-index → drop-index plus the final DOM order.
+    function commitJumpMoveOrder() {
+        const item = jumpMoveEl();
+        if (!item) return;
+        const j = jumpMoveItems().indexOf(item);
+        if (j < 0 || j === jumpMoveFromIndex) return;
+        const ev = new CustomEvent('end', { bubbles: false });
+        ev.item = item;
+        ev.from = jumpMoveContainer;
+        ev.to = jumpMoveContainer;
+        ev.oldIndex = jumpMoveFromIndex;
+        ev.newIndex = j;
+        ev.oldDraggableIndex = jumpMoveFromIndex;
+        ev.newDraggableIndex = j;
+        jumpMoveContainer.dispatchEvent(ev);
+    }
+
+    // Escape: nothing was dispatched yet, so the grabbed row just slides
+    // back to where it was picked up — a true cancel.
+    function cancelJumpMove() {
+        const item = jumpMoveEl();
+        if (item) {
+            const siblings = jumpMoveItems().filter(el => el !== item);
+            if (jumpMoveFromIndex >= siblings.length) {
+                if (siblings.length) siblings[siblings.length - 1].after(item);
+            } else {
+                siblings[jumpMoveFromIndex].before(item);
+            }
+            setRowOutline(item, false);
+        }
+        jumpMoveItem = null;
+        jumpMoveContainer = null;
+        console.log(TAG, 'jump: move mode cancelled');
+    }
+
+    // keepOutline: an Enter-drop hands the outline over to the "placed"
+    // marker instead of clearing it — the user keeps sight of the row they
+    // just positioned while the badges are back up for the next grab.
+    function endJumpMove(keepOutline = false) {
         if (!jumpMoveContainer) return;
-        styleJumpMove(false);
+        commitJumpMoveOrder();
+        if (keepOutline) {
+            jumpPlacedItem = jumpMoveItem;
+            jumpPlacedContainer = jumpMoveContainer;
+        } else {
+            styleJumpMove(false);
+        }
         jumpMoveItem = null;
         jumpMoveContainer = null;
         console.log(TAG, 'jump: move mode off');
@@ -915,32 +1061,43 @@ function bootMouseless() {
             e.stopPropagation();
             const item = jumpMoveEl();
             if (!item) { endJumpMove(); return; }
-            const container = jumpMoveContainer;
-            const items = Array.from(container.children).filter(c => c.matches && c.matches('[x-sortable-item]'));
+            const items = jumpMoveItems();
             const i = items.indexOf(item);
             const j = i + dir;
             if (i < 0 || j < 0 || j >= items.length) return;
+            // Pure DOM move — the synthetic 'end' event waits until the
+            // gesture completes (commitJumpMoveOrder), so arrow steps cost
+            // no round-trips and nothing re-renders under the user.
             if (dir < 0) items[j].before(item); else items[j].after(item);
-            // Mimic the SortableJS 'end' event the x-on:end handlers expect:
-            // key-value reads oldIndex/newIndex, repeater and reorderable
-            // tables read $event.item + $event.target.sortable.toArray()
-            // (DOM order — already moved above).
-            const ev = new CustomEvent('end', { bubbles: false });
-            ev.item = item;
-            ev.from = container;
-            ev.to = container;
-            ev.oldIndex = i;
-            ev.newIndex = j;
-            ev.oldDraggableIndex = i;
-            ev.newDraggableIndex = j;
-            container.dispatchEvent(ev);
-            setTimeout(() => styleJumpMove(true), 120); // survive the re-render
+            styleJumpMove(true);
             return;
         }
         if (['Enter', 'Escape', ' ', 'Tab'].includes(e.key)) {
             e.preventDefault();
             e.stopPropagation();
-            endJumpMove();
+            // Enter means "row placed" — the accumulated move is dispatched,
+            // the row keeps its outline, and the badges reopen once the
+            // reorder round-trip settles, so the next row is one letter away
+            // instead of another double-tap. Escape cancels (row slides back,
+            // nothing dispatched); Space/Tab commit and end the gesture.
+            const reopen = e.key === 'Enter';
+            const container = jumpMoveContainer;
+            if (e.key === 'Escape') {
+                cancelJumpMove();
+                clearJumpPlaced();
+                return;
+            }
+            endJumpMove(reopen);
+            if (!reopen) clearJumpPlaced();
+            if (reopen) {
+                setTimeout(() => {
+                    if (jumpOpen || gotoOpen || jumpMoveContainer) return;
+                    if (!container || !container.isConnected) return;
+                    const overlay = document.querySelector('[data-mouseless-overlay]');
+                    if (overlay && isVisible(overlay)) return;
+                    openJump();
+                }, 150);
+            }
             return;
         }
         // Any other key just drops the row where it is.
