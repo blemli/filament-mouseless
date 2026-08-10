@@ -119,6 +119,8 @@ return [
         'body_page' => 'Cambiare pagina funziona anche senza mouse.',
         'body_sort' => 'L\'ordinamento funziona anche senza mouse.',
         'body_jump' => 'Un doppio tocco mette una lettera su ogni controllo: digitala e ci sei.',
+        'help_title' => 'Premi :key per vedere tutte le scorciatoie',
+        'body_help' => 'Una pagina con tutte le scorciatoie — filtrabile e stampabile.',
         'change' => 'Cambia scorciatoia',
         'dismiss' => 'Non mostrare più',
         'mute' => 'Non mostrare nessun suggerimento',

@@ -1362,6 +1362,40 @@ function bootMouseless() {
             teachRecordUsed('ui.jump');
         }, true);
 
+        // ---- cheatsheet nudge: teach that the overlay exists at all ----
+        // No click to hook on (nothing on the page IS the cheatsheet), so it
+        // fires on a timer once the page has settled — same one-per-page slot,
+        // backoff, dismiss and mute as every click nudge. dispatch() already
+        // advances the ui.help streak on every keyboard open, so three opens
+        // mark it taught like any other action.
+        if (teach.helpNudge !== false) {
+            const armHelpNudge = () => setTimeout(maybeHelpNudge, 12_000);
+            armHelpNudge();
+            document.addEventListener('livewire:navigated', armHelpNudge);
+        }
+
+        function maybeHelpNudge() {
+            const st = states['ui.help'] ??= {};
+            if (muted || nudgedThisPage || st.dismissed || st.learned) return;
+            if (st.nextAt && Date.now() < st.nextAt) return;
+            if (document.visibilityState !== 'visible') return; // backgrounded tab — retry next page
+            const combo = bindingOf('ui.help');
+            if (!combo) return;
+            // They're literally looking at the cheatsheet (or mid-gesture).
+            const overlay = document.querySelector('[data-mouseless-overlay]');
+            if (overlay && isVisible(overlay)) return;
+            if (jumpOpen || gotoOpen) return;
+            nudgedThisPage = true;
+            console.log(TAG, 'teach: cheatsheet nudge');
+            renderNudge({
+                actionId: 'ui.help',
+                combo,
+                key: displayCombo(combo),
+                label: '',
+                title: t.help_title,
+            });
+        }
+
         // A nudge stashed by a navigating click on the previous page: show it
         // here, where the user actually is. Stale entries (reopened tab) drop.
         function replayPendingNudge() {
@@ -1516,6 +1550,7 @@ function bootMouseless() {
             'list.prev-page': 'body_page',
             'list.sort': 'body_sort',
             'ui.jump': 'body_jump',
+            'ui.help': 'body_help',
         };
 
         // Everything a nudge needs, resolved while the clicked element still
@@ -1537,7 +1572,9 @@ function bootMouseless() {
             return { actionId, combo, key, label };
         }
 
-        function renderNudge({ actionId, combo, key, label }) {
+        // `title` overrides the "you could have just hit" template — the
+        // cheatsheet nudge is proactive, nothing was clicked.
+        function renderNudge({ actionId, combo, key, label, title }) {
             console.log(TAG, 'teach: nudging', actionId, '=', combo);
 
             const actions = [];
@@ -1562,7 +1599,7 @@ function bootMouseless() {
                 .close());
 
             const notification = new window.FilamentNotification()
-                .title((t.title || 'You could have just hit :key').replace(':key', key))
+                .title((title || t.title || 'You could have just hit :key').replace(':key', key))
                 .icon('heroicon-o-cursor-arrow-ripple')
                 .seconds(12)
                 .actions(actions);

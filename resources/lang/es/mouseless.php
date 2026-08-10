@@ -119,6 +119,8 @@ return [
         'body_page' => 'Cambiar de página también funciona sin ratón.',
         'body_sort' => 'Ordenar también funciona sin ratón.',
         'body_jump' => 'Un doble toque pone una letra en cada control: escríbela y llegas.',
+        'help_title' => 'Pulsa :key para ver todos los atajos',
+        'body_help' => 'Una página con todos los atajos — con búsqueda e impresión.',
         'change' => 'Cambiar atajo',
         'dismiss' => 'No mostrar más',
         'mute' => 'No mostrar ningún consejo',

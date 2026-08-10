@@ -119,6 +119,8 @@ return [
         'body_page' => 'Das Umblättern geht auch ohne Maus.',
         'body_sort' => 'Das Sortieren geht auch ohne Maus.',
         'body_jump' => 'Ein Doppel-Tipp beschriftet jedes Element mit einem Buchstaben — tippen genügt.',
+        'help_title' => 'Mit :key siehst du alle Tastenkürzel',
+        'body_help' => 'Eine Seite mit allen Kürzeln — durchsuchbar und druckbar.',
         'change' => 'Kürzel ändern',
         'dismiss' => 'Nicht mehr anzeigen',
         'mute' => 'Gar keine Tipps anzeigen',

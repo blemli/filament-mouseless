@@ -120,6 +120,8 @@ return [
         'body_page' => 'Flipping pages works without the mouse.',
         'body_sort' => 'Sorting works without the mouse.',
         'body_jump' => 'A double-tap puts a letter on every control — type it and you are there.',
+        'help_title' => 'Press :key to see every shortcut',
+        'body_help' => 'One page with every keyboard shortcut — searchable and printable.',
         'change' => 'Change shortcut',
         'dismiss' => "Don't show again",
         'mute' => "Don't show any tips",

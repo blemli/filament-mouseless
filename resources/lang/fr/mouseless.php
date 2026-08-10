@@ -119,6 +119,8 @@ return [
         'body_page' => 'Changer de page fonctionne aussi sans souris.',
         'body_sort' => 'Le tri fonctionne aussi sans souris.',
         'body_jump' => 'Un double appui pose une lettre sur chaque contrôle — tapez-la et vous y êtes.',
+        'help_title' => 'Appuyez sur :key pour voir tous les raccourcis',
+        'body_help' => 'Une page avec tous les raccourcis — filtrable et imprimable.',
         'change' => 'Modifier le raccourci',
         'dismiss' => 'Ne plus afficher',
         'mute' => "N'afficher aucune astuce",

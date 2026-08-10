@@ -64,6 +64,8 @@ class FilamentMouselessPlugin implements Plugin
 
     protected bool $searchableCheatsheet = true;
 
+    protected bool $cheatsheetNudge = true;
+
     protected string | Closure | null $icon = null;
 
     protected string | Closure | null $shortcutsLabel = null;
@@ -510,6 +512,28 @@ class FilamentMouselessPlugin implements Plugin
     public function isCheatsheetSearchable(): bool
     {
         return $this->searchableCheatsheet;
+    }
+
+    /**
+     * With ->teach() on, users who never opened the ? overlay get a one-off
+     * "press ? for the cheatsheet" notification (usual backoff/dismiss/mute;
+     * three opens mark it taught). On by default — this turns it off.
+     */
+    public function nudgeCheatsheet(bool $enabled = true): static
+    {
+        $this->cheatsheetNudge = $enabled;
+
+        return $this;
+    }
+
+    public function dontNudgeCheatSheet(): static
+    {
+        return $this->nudgeCheatsheet(false);
+    }
+
+    public static function cheatsheetNudgeEnabled(): bool
+    {
+        return static::safeGet()?->cheatsheetNudge ?? true;
     }
 
     public function showShortcutsOnMobile(bool $enabled = true): static

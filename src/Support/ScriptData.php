@@ -128,6 +128,7 @@ class ScriptData implements JsonSerializable
 
             return [
                 'muted' => Nudge::isMuted($userId),
+                'helpNudge' => FilamentMouselessPlugin::cheatsheetNudgeEnabled(),
                 'states' => Nudge::statesFor($userId),
                 // Statistics-informed focus (empty without ->statistics()):
                 // the engine spends its one-nudge-per-page on these first.
@@ -140,7 +141,7 @@ class ScriptData implements JsonSerializable
                     // generic labeled-button fallback.
                     'body', 'body_tab', 'body_nav', 'body_row_open', 'body_row_select',
                     'body_back', 'body_search', 'body_search_global', 'body_page', 'body_sort',
-                    'body_jump',
+                    'body_jump', 'body_help', 'help_title',
                 ])->mapWithKeys(fn (string $key) => [
                     $key => __("filament-mouseless::mouseless.teach.{$key}"),
                 ])->all(),
