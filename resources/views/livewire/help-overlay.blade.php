@@ -6,6 +6,7 @@
         filter() {
             const q = this.q.trim().toLowerCase();
             let hits = 0;
+            let first = null;
             this.$root.querySelectorAll('.fi-mouseless-help-body section').forEach((section) => {
                 {{-- A hit on the group heading ("Navigation") keeps its whole group. --}}
                 const heading = section.querySelector('.fi-mouseless-help-group-heading');
@@ -15,14 +16,31 @@
                     {{-- textContent covers label + displayed keycap (⌥N); data-combo
                          makes the raw form ("alt+n") searchable too. --}}
                     const hay = (item.textContent + ' ' + (item.dataset.combo || '')).toLowerCase();
-                    const hit = q === '' || groupHit || hay.includes(q);
+                    const direct = q !== '' && hay.includes(q);
+                    const hit = q === '' || groupHit || direct;
                     item.classList.toggle('fi-mouseless-help-item-filtered', ! hit);
+                    item.classList.remove('fi-mouseless-help-item-hit');
+                    if (direct && ! first && ! item.classList.contains('fi-mouseless-help-item-unavailable')) first = item;
                     if (hit) visible++;
                 });
                 section.classList.toggle('fi-mouseless-help-section-filtered', visible === 0);
                 hits += visible;
             });
+            {{-- Enter's target: the first DIRECT match — never a row that only
+                 rode in on its group heading, never a greyed-out one. --}}
+            first?.classList.add('fi-mouseless-help-item-hit');
             this.empty = q !== '' && hits === 0;
+        },
+        run() {
+            const item = this.$root.querySelector('.fi-mouseless-help-item-hit');
+            if (! item) return;
+            const actionId = item.getAttribute('data-mouseless-help-item');
+            this.open = false;
+            {{-- "Run" the help action = the overlay itself — closing it is the run. --}}
+            if (actionId === 'ui.help') return;
+            {{-- Wait out the fade: some dispatch paths check overlay visibility
+                 (ui.close would re-toggle a still-fading overlay). --}}
+            setTimeout(() => window.dispatchEvent(new CustomEvent('mouseless-execute', { detail: { actionId } })), 250);
         },
     }"
     x-init="$watch('q', () => filter())"
@@ -58,6 +76,7 @@
                         type="search"
                         x-ref="search"
                         x-model="q"
+                        @keydown.enter.prevent="run()"
                         placeholder="{{ __('filament-mouseless::mouseless.help.filter_placeholder') }}"
                         aria-label="{{ __('filament-mouseless::mouseless.help.filter_placeholder') }}"
                         class="fi-mouseless-help-search"

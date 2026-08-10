@@ -134,10 +134,23 @@ body.fi-mouseless-mobile:not(.fi-mouseless-kbd) .fi-mouseless-shortcuts-link {
 }
 
 /* Rows/groups the filter box hid. Deliberately NOT reset in print — Cmd+P
- * with an active filter prints exactly the visible subset. */
-.fi-mouseless-help-item-filtered,
+ * with an active filter prints exactly the visible subset. The compound
+ * selector outweighs .fi-mouseless-help-item's display:flex, which is
+ * declared later in this file. */
+.fi-mouseless-help-item.fi-mouseless-help-item-filtered,
 .fi-mouseless-help-section-filtered {
     display: none;
+}
+
+/* The first direct match — the row Enter executes. Same primary-tint +
+ * accent-bar idiom as the table row cursor; the negative margin cancels the
+ * padding so rows don't shift while filtering. */
+.fi-mouseless-help-item.fi-mouseless-help-item-hit {
+    background: color-mix(in oklab, var(--primary-500) 15%, transparent);
+    box-shadow: inset 3px 0 0 0 var(--primary-500);
+    border-radius: 0.25rem;
+    padding-inline: 0.375rem;
+    margin-inline: -0.375rem;
 }
 
 .fi-mouseless-help-empty {

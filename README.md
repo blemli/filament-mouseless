@@ -187,7 +187,14 @@ FilamentMouselessPlugin::make()
     ->disableCheatsheetPrinting()
 ```
 
-### Look & Feel
+#### Filtersearch the cheatsheet
+
+The overlay opens with a focused filter box: type to narrow the list by action name, key (`⌥N` or "alt"), or group heading. Groups without hits collapse, the first match is highlighted and <kbd>Enter</kbd> executes it — the cheatsheet doubles as a command palette. Printing with an active filter prints exactly the visible subset. Don't want the box?
+
+```php
+FilamentMouselessPlugin::make()
+    ->dontSearchCheatSheet()
+```
 
 #### Custom Icon
 

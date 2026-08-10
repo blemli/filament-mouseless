@@ -112,6 +112,18 @@ function bootMouseless() {
         }, 60);
     });
 
+    // The cheatsheet's Enter-to-run: the overlay names an action id and the
+    // engine executes it exactly like the keypress would (stats and teach
+    // streaks included). ui.jump is a gesture, not a dispatchable action —
+    // open the badges directly.
+    window.addEventListener('mouseless-execute', (e) => {
+        const actionId = e.detail?.actionId;
+        if (!actionId) return;
+        console.log(TAG, 'mouseless-execute ->', actionId);
+        if (actionId === 'ui.jump') { openJump(); return; }
+        dispatch(actionId);
+    });
+
     // Shared with the Blade key-capture snippets (record modal, key-search
     // modal) so combo normalization can never drift from the engine's.
     window.mouselessEventToKey = eventToKey;
