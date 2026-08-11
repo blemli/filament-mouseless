@@ -8,6 +8,7 @@ use Blemli\FilamentMouseless\Filament\Concerns\InteractsWithShortcutsTable;
 use Blemli\FilamentMouseless\FilamentMouselessPlugin;
 use Blemli\FilamentMouseless\Models\Preset;
 use Blemli\FilamentMouseless\Models\UserSetting;
+use Blemli\FilamentMouseless\Support\Keys;
 use Blemli\FilamentMouseless\Support\PanelAuth;
 use Blemli\FilamentMouseless\Support\Shield;
 use Filament\Notifications\Notification;
@@ -62,12 +63,23 @@ class MyShortcuts extends Page implements HasTable
     }
 
     /**
-     * Deep-link the table search: /my-shortcuts?search=alt+e lands with that
-     * combo (or label) already filtered in. The teach notification's "change
+     * Deep-link the table search: /my-shortcuts?keys=alt+e lands with that
+     * combo filtered in (keystrokes only) — the teach notification's "change
      * shortcut" button uses it to jump straight to the clicked action's row.
+     * /my-shortcuts?search=… stays a plain text search matching labels too.
      */
     public function mount(): void
     {
+        // "?keys=alt+e" arrives with the + decoded to a space — restore it.
+        $keys = Keys::normalize(str_replace(' ', '+', trim((string) request()->query('keys', ''))));
+
+        if ($keys !== null) {
+            $this->tableSearch = $keys;
+            $this->keySearchCombo = $keys;
+
+            return;
+        }
+
         $search = (string) request()->query('search', '');
 
         if ($search !== '') {
@@ -123,9 +135,10 @@ class MyShortcuts extends Page implements HasTable
     }
 
     /**
-     * Singleton mode (plugin ->singleton()): presets exist but stay invisible —
-     * the view drops the selector aside, the locked banner and the fork
-     * confirmation, and the auto-fork below happens without a notification.
+     * Singleton mode (the plugin default; disabled via ->presets()): presets
+     * exist but stay invisible — the view drops the selector aside, the locked
+     * banner and the fork confirmation, and the auto-fork below happens
+     * without a notification.
      */
     public function isSingletonMode(): bool
     {

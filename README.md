@@ -40,7 +40,7 @@ Dark-Mode Support, Language Adaptive: DE (**E**rstellen), EN (**N**ew), ES (**C*
 
 ### roadmap
 
-Multitenant Support,   Let Users share Presets with eachother, Let Admins Moderate Shared Presets (remove unused ones &see which action is the most overwritten, most used),  `shorcuts:list` command, Detect already existing shortcuts of actions (artisan?),  unattended install, uninstall command
+Let Users share Presets with eachother, Let Admins Moderate Shared Presets (remove unused ones &see which action is the most overwritten, most used),  `shorcuts:list` command, Detect already existing shortcuts of actions (artisan?),  unattended install, uninstall command
 
 ### Languages
 
@@ -104,20 +104,20 @@ This hides the `/my-shortcuts` page and removes its user-menu link. Shortcuts st
 
 For unattended installs, `php artisan mouseless:install --stateless` skips the migration prompt entirely.
 
-#### Singleton Mode
+#### Singleton Mode (the default) & Presets
 
-Want users to rebind shortcuts, but the whole *presets* concept is more than your app needs? Singleton mode keeps `/my-shortcuts` fully editable and hides everything preset-shaped:
+Out of the box the plugin runs in **singleton mode**: `/my-shortcuts` is fully editable, but the whole *presets* concept stays out of sight. Users see just the shortcuts table — no preset dropdown, no create/rename/delete/publish layout buttons, no import/export, no "locked preset" banner, and the <kbd>?</kbd> overlay drops its "source: …" footer. Rebinding, disabling and resetting shortcuts all work; the first edit silently creates one managed personal layout per user in the background (no fork confirmation, no notification), and later edits keep writing to it.
+
+Want users to manage whole keyboard layouts instead — switch between the built-in presets, author their own, import/export them as JSON? Surface the preset UI:
 
 ```php
 ->plugins([
   FilamentMouselessPlugin::make()
-      ->singleton(),
+      ->presets(),
 ])
 ```
 
-Users see just the shortcuts table — no preset dropdown, no create/rename/delete/publish layout buttons, no import/export, no "locked preset" banner, and the <kbd>?</kbd> overlay drops its "source: …" footer. Rebinding, disabling and resetting shortcuts work exactly as before; the first edit silently creates one managed personal layout per user in the background (no fork confirmation, no notification), and later edits keep writing to it.
-
-Because that per-user layout lives in the database, singleton mode still needs the package migrations — it sits between the default mode (full preset UI) and `->stateless()` (no customization at all). Combining `->singleton()` with `->stateless()` is contradictory; stateless wins and a warning is logged.
+Because the singleton per-user layout lives in the database, singleton mode still needs the package migrations — it sits between `->presets()` (full preset UI) and `->stateless()` (no customization at all). Combining `->presets()` with `->stateless()` is contradictory; stateless wins and a warning is logged.
 
 #### Statistics on avoided clicks
 
@@ -222,6 +222,8 @@ FilamentMouselessPlugin::make()
 ```
 
 ### User Presets
+
+Everything in this section assumes the preset UI is surfaced with `->presets()` (see above) — in the default singleton mode, layouts are invisible plumbing.
 
 #### Personal layouts
 

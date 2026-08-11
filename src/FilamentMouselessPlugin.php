@@ -54,7 +54,9 @@ class FilamentMouselessPlugin implements Plugin
 
     protected bool $stateless = false;
 
-    protected bool $singleton = false;
+    protected bool $singleton = true;
+
+    private bool $presetsExplicitlyEnabled = false;
 
     protected bool $strictPermissions = false;
 
@@ -92,7 +94,7 @@ class FilamentMouselessPlugin implements Plugin
 
     private static bool $loggedIgnoredRemap = false;
 
-    private static bool $loggedSingletonConflict = false;
+    private static bool $loggedPresetsConflict = false;
 
     public function getId(): string
     {
@@ -118,19 +120,23 @@ class FilamentMouselessPlugin implements Plugin
     }
 
     /**
-     * Singleton mode: users never see presets — no preset dropdown, no
-     * create/rename/delete/publish layout actions, no import/export, no
-     * preset name anywhere. They can still rebind (or disable) every
-     * shortcut on /my-shortcuts; behind the scenes the package quietly
-     * manages one personal layout per user, created on their first edit.
+     * Surface the full preset UI instead of the default singleton mode:
+     * the preset dropdown with create/rename/delete/publish layout actions
+     * and JSON import/export on /my-shortcuts, the preset name in the
+     * ? overlay footer, and the fork confirmation on first edit.
      *
-     * Unlike ->stateless() this keeps per-user state, so the package
-     * migrations are still required. Combining it with ->stateless() is
-     * contradictory — stateless wins and singleton is ignored (logged once).
+     * In singleton mode (the default) users never see presets — they can
+     * still rebind (or disable) every shortcut on /my-shortcuts, while the
+     * package quietly manages one personal layout per user, created on
+     * their first edit. Either way that per-user state needs the package
+     * migrations; only ->stateless() works without them. Combining
+     * ->presets() with ->stateless() is contradictory — stateless wins and
+     * the whole shortcuts UI stays hidden (logged once).
      */
-    public function singleton(bool $enabled = true): static
+    public function presets(bool $enabled = true): static
     {
-        $this->singleton = $enabled;
+        $this->singleton = ! $enabled;
+        $this->presetsExplicitlyEnabled = $enabled;
 
         return $this;
     }
@@ -725,9 +731,9 @@ class FilamentMouselessPlugin implements Plugin
 
     public function register(Panel $panel): void
     {
-        if ($this->singleton && $this->stateless && ! self::$loggedSingletonConflict) {
-            self::$loggedSingletonConflict = true;
-            Log::warning('[filament-mouseless] ->singleton() and ->stateless() are mutually exclusive — stateless wins, singleton mode is ignored. Remove one of the two calls.');
+        if ($this->presetsExplicitlyEnabled && $this->stateless && ! self::$loggedPresetsConflict) {
+            self::$loggedPresetsConflict = true;
+            Log::warning('[filament-mouseless] ->presets() and ->stateless() are mutually exclusive — stateless wins and hides the whole shortcuts UI. Remove one of the two calls.');
         }
 
         $pages = [];

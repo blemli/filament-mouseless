@@ -52,47 +52,58 @@ function makeLockedShortcutsTableHost(): object
     };
 }
 
-it('is off by default', function () {
-    expect(FilamentMouselessPlugin::make()->isSingleton())->toBeFalse()
-        ->and(FilamentMouselessPlugin::singletonEnabled())->toBeFalse();
+it('is on by default', function () {
+    expect(FilamentMouselessPlugin::make()->isSingleton())->toBeTrue();
 });
 
-it('enables singleton mode fluently', function () {
-    expect(FilamentMouselessPlugin::make()->singleton()->isSingleton())->toBeTrue()
-        ->and(FilamentMouselessPlugin::make()->singleton()->singleton(false)->isSingleton())->toBeFalse();
+it('stays off for panels without the plugin', function () {
+    expect(FilamentMouselessPlugin::singletonEnabled())->toBeFalse();
 });
 
-it('lets stateless win when combined with singleton', function () {
-    $plugin = FilamentMouselessPlugin::make()->singleton()->stateless();
+it('disables singleton mode via presets()', function () {
+    expect(FilamentMouselessPlugin::make()->presets()->isSingleton())->toBeFalse()
+        ->and(FilamentMouselessPlugin::make()->presets()->presets(false)->isSingleton())->toBeTrue();
+});
+
+it('lets stateless win over singleton mode', function () {
+    $plugin = FilamentMouselessPlugin::make()->stateless();
 
     expect($plugin->isSingleton())->toBeFalse()
         ->and($plugin->isStateless())->toBeTrue();
 });
 
-it('warns once when singleton and stateless are combined', function () {
+it('warns once when presets and stateless are combined', function () {
     // The one-shot flag is process-global — reset it so this test doesn't
     // depend on being the first registration in the PHPUnit process.
-    (new ReflectionProperty(FilamentMouselessPlugin::class, 'loggedSingletonConflict'))->setValue(null, false);
+    (new ReflectionProperty(FilamentMouselessPlugin::class, 'loggedPresetsConflict'))->setValue(null, false);
 
     Log::shouldReceive('warning')
         ->once()
-        ->withArgs(fn (string $message): bool => str_contains($message, 'singleton'));
+        ->withArgs(fn (string $message): bool => str_contains($message, 'presets'));
 
-    $plugin = FilamentMouselessPlugin::make()->singleton()->stateless();
+    $plugin = FilamentMouselessPlugin::make()->presets()->stateless();
     $plugin->register(Panel::make()->id('conflict-a'));
     // Second registration must not log again (one-shot flag).
     $plugin->register(Panel::make()->id('conflict-b'));
 });
 
+it('does not warn when stateless rides on the singleton default', function () {
+    (new ReflectionProperty(FilamentMouselessPlugin::class, 'loggedPresetsConflict'))->setValue(null, false);
+
+    Log::shouldReceive('warning')->never();
+
+    FilamentMouselessPlugin::make()->stateless()->register(Panel::make()->id('stateless-default'));
+});
+
 it('reports singleton mode for the current panel', function () {
-    makeCurrentPanelWithPlugin('singleton-panel', FilamentMouselessPlugin::make()->singleton());
+    makeCurrentPanelWithPlugin('singleton-panel', FilamentMouselessPlugin::make());
 
     expect(FilamentMouselessPlugin::singletonEnabled())->toBeTrue()
         ->and((new MyShortcuts)->isSingletonMode())->toBeTrue();
 });
 
 it('keeps the shortcuts page accessible in singleton mode', function () {
-    makeCurrentPanelWithPlugin('singleton-access-panel', FilamentMouselessPlugin::make()->singleton());
+    makeCurrentPanelWithPlugin('singleton-access-panel', FilamentMouselessPlugin::make());
 
     $user = new class extends User
     {
@@ -107,7 +118,7 @@ it('keeps the shortcuts page accessible in singleton mode', function () {
 });
 
 it('skips the fork confirmation modal in singleton mode', function () {
-    makeCurrentPanelWithPlugin('singleton-fork-panel', FilamentMouselessPlugin::make()->singleton());
+    makeCurrentPanelWithPlugin('singleton-fork-panel', FilamentMouselessPlugin::make());
 
     $action = makeLockedShortcutsTableHost()->configureShortcutsForkConfirmation(Action::make('record'));
 
@@ -116,7 +127,7 @@ it('skips the fork confirmation modal in singleton mode', function () {
 });
 
 it('keeps the fork confirmation modal outside singleton mode', function () {
-    makeCurrentPanelWithPlugin('default-fork-panel', FilamentMouselessPlugin::make());
+    makeCurrentPanelWithPlugin('default-fork-panel', FilamentMouselessPlugin::make()->presets());
 
     $action = makeLockedShortcutsTableHost()->configureShortcutsForkConfirmation(Action::make('record'));
 
@@ -124,13 +135,13 @@ it('keeps the fork confirmation modal outside singleton mode', function () {
 });
 
 it('hides the preset source from the help overlay in singleton mode', function () {
-    makeCurrentPanelWithPlugin('singleton-overlay-panel', FilamentMouselessPlugin::make()->singleton());
+    makeCurrentPanelWithPlugin('singleton-overlay-panel', FilamentMouselessPlugin::make());
 
     Livewire::test(HelpOverlay::class)->assertViewHas('preset', null);
 });
 
 it('keeps the preset source in the help overlay outside singleton mode', function () {
-    makeCurrentPanelWithPlugin('default-overlay-panel', FilamentMouselessPlugin::make());
+    makeCurrentPanelWithPlugin('default-overlay-panel', FilamentMouselessPlugin::make()->presets());
 
     Livewire::test(HelpOverlay::class)->assertViewHas(
         'preset',
