@@ -58,6 +58,7 @@ German highlights: `alt+n` (Neu), `alt+b` (Bearbeiten), `alt+l` (Löschen), `alt
 mouseless_presets
   id, slug (unique), name, locale, version,
   owner_user_id (null for installation-published),
+  tenant_id (Filament tenant it was published under; null = installation-wide),
   source ('user' | 'imported'),
   parent_slug (fork chain),
   bindings (json),
@@ -81,6 +82,8 @@ Two paths:
 - **In-app publishing** — opt-in. When `mouseless.publishing.enabled` is true, users with the `publish-mouseless-preset` Gate see a "Publish" button. Optional moderation queue (`require_approval`) routes drafts through the admin page. Published presets appear in everyone's picker.
 
 Slug uniqueness enforced on publish. Name collisions OK (`compact-by-alice`, `compact-by-bob`).
+
+**Multi-tenancy:** published layouts are installation-wide by default. `->scopePublishingToTenant()` (or `mouseless.publishing.scope_to_tenant`) keeps them inside the Filament tenant they were published from — publish stamps the current tenant on the layout, the picker filters by the viewer's tenant, tenant-less layouts stay global. Everything else is tenancy-safe by construction: all per-user state (presets, statistics, nudges, settings) follows the user across tenants, and URLs come from tenant-aware Filament helpers. Caveat for later: the admin statistics helpers (`Statistic::totals()`, `perActionTotalsAllUsers()`, `leaderboard()`) aggregate installation-wide — an admin widget built on them must filter by tenant membership itself.
 
 ## SuperAdmin page (System nav group)
 

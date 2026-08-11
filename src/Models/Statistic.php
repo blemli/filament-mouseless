@@ -126,7 +126,10 @@ class Statistic extends Model
     }
 
     /**
-     * Org-wide totals for the admin view.
+     * Org-wide totals for the admin view. Aggregates over EVERY user of the
+     * installation — statistics rows carry no tenant, so a multi-tenant admin
+     * widget built on this must add its own tenant filter (e.g. constrain
+     * user_id to the current tenant's members) before showing the numbers.
      *
      * @return array{keyboard: int, clicks: int, users: int}
      */
@@ -144,7 +147,8 @@ class Statistic extends Model
     }
 
     /**
-     * Per-action totals across ALL users (admin "most used shortcuts").
+     * Per-action totals across ALL users (admin "most used shortcuts") —
+     * installation-wide, not tenant-aware; see {@see totals()}.
      *
      * @return array<string, array{kb: int, click: int}>
      */
@@ -154,7 +158,8 @@ class Statistic extends Model
     }
 
     /**
-     * Top users by lifetime keyboard count (admin leaderboard).
+     * Top users by lifetime keyboard count (admin leaderboard) — ranks every
+     * user of the installation, not tenant-aware; see {@see totals()}.
      *
      * @return array<int, array{user_id: int, keyboard: int}>
      */

@@ -15,6 +15,7 @@ use Blemli\FilamentMouseless\Support\PresetTransfer;
 use Filament\Actions\Action;
 use Filament\Actions\Concerns\InteractsWithActions;
 use Filament\Actions\Contracts\HasActions;
+use Filament\Facades\Filament;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
@@ -295,6 +296,7 @@ class PresetSelector extends Widget implements HasActions, HasForms
                         'published_at' => null,
                         'approved_at' => null,
                         'approved_by' => null,
+                        'tenant_id' => null,
                         'name' => str_ends_with($preset->name, $authorSuffix)
                             ? substr($preset->name, 0, -strlen($authorSuffix))
                             : $preset->name,
@@ -308,9 +310,14 @@ class PresetSelector extends Widget implements HasActions, HasForms
                 } else {
                     $requiresApproval = (bool) config('mouseless.publishing.require_approval');
 
+                    // Stamped even while ->scopePublishingToTenant() is off, so
+                    // enabling it later scopes existing layouts correctly.
+                    $tenant = Filament::getTenant();
+
                     $preset->update([
                         'is_published' => true,
                         'published_at' => now(),
+                        'tenant_id' => $tenant ? (string) $tenant->getKey() : null,
                         'name' => str_ends_with($preset->name, $authorSuffix)
                             ? $preset->name
                             : $preset->name . $authorSuffix,

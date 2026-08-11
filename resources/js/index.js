@@ -33,6 +33,12 @@ function bootMouseless() {
     const ignoreSel = ignoreList.join(',');
     const strings = cfg.strings || {};
 
+    // A resource detail page: …/create, …/{id}, …/{id}/edit or …/{id}/view —
+    // match[1] is the list URL. Any segment depth before the ending, because
+    // tenant-scoped panels and clusters insert extra path segments.
+    const detailPageMatch = () =>
+        window.location.pathname.match(/^(\/.+)\/(create|\d+(\/(edit|view))?)$/);
+
     // ---- "go to" palette state (nav.goto leader-key overlay) ----
     let gotoOpen = false;
     let gotoQuery = '';
@@ -1512,8 +1518,7 @@ function bootMouseless() {
             }
 
             // Breadcrumb back to the list from a record page → Escape.
-            if (el.closest?.('.fi-breadcrumbs a')
-                && /^(\/[^\/]+\/[^\/]+)\/(create|\d+(\/(edit|view))?)$/.test(window.location.pathname)) {
+            if (el.closest?.('.fi-breadcrumbs a') && detailPageMatch()) {
                 const combo = bindingOf('ui.close');
                 if (combo) return { actionId: 'ui.close', combo, target: el.closest('.fi-breadcrumbs a') };
             }
@@ -1591,7 +1596,7 @@ function bootMouseless() {
                 actions.push(new window.FilamentNotificationAction('change')
                     .label(t.change || 'Change shortcut')
                     .button()
-                    .url(`${teach.shortcutsUrl}?search=${encodeURIComponent(combo)}`));
+                    .url(`${teach.shortcutsUrl}?keys=${encodeURIComponent(combo)}`));
             }
             actions.push(new window.FilamentNotificationAction('dismiss')
                 .label(t.dismiss || 'Not for this action')
@@ -1686,7 +1691,11 @@ function bootMouseless() {
             )).find(isVisible);
         }
 
-        // UI and navigation actions are always reachable.
+        // Tab cycling needs a tab bar (list filter tabs and form Tabs
+        // components share the .fi-tabs markup the dispatcher walks).
+        if (id === 'ui.next-tab' || id === 'ui.prev-tab') return tabItems().length > 0;
+
+        // Remaining UI and navigation actions are always reachable.
         if (id.startsWith('ui.') || id.startsWith('nav.')) return true;
 
         // Managed custom actions expose a data-mouseless hook on their button.
@@ -1697,13 +1706,52 @@ function bootMouseless() {
 
         if (id === 'crud.create') {
             if (document.querySelector('a[href$="/create"]')) return true;
-            if (/^(\/[^\/]+\/[^\/]+)\/(create|\d+(\/(edit|view))?)$/.test(window.location.pathname)) return true;
+            if (detailPageMatch()) return true;
             return !!cfg.rootResource;
         }
 
-        if (id === 'list.next-row' || id === 'list.prev-row' || id === 'list.toggle-row'
-            || id === 'list.select-next-row' || id === 'list.select-prev-row') {
+        if (id === 'list.next-row' || id === 'list.prev-row') {
             return !!document.querySelector('.fi-ta-row, .fi-ta-record');
+        }
+
+        // Selection shortcuts additionally need the checkbox column — a table
+        // without ->selectable() (or with no rows) has nothing to toggle. This
+        // mirrors the dispatcher: select-all runs via the filamentTable Alpine
+        // component, never via a "selectAll" action button, so the generic
+        // button probe below would wrongly dim it on every page.
+        if (id === 'list.select-all' || id === 'list.toggle-row'
+            || id === 'list.select-next-row' || id === 'list.select-prev-row') {
+            return !!document.querySelector('.fi-ta-record-checkbox');
+        }
+
+        // Sort / group / columns have no mountAction button either — probe the
+        // same controls their dispatchers focus or open.
+        if (id === 'list.sort') {
+            return !!Array.from(document.querySelectorAll(
+                '.fi-ta-header-cell-sort-btn, select[wire\\:model*="tableSort"]',
+            )).find(isVisible);
+        }
+        if (id === 'list.group') {
+            return !!Array.from(document.querySelectorAll(
+                '.fi-ta-grouping-settings-fields select, select[wire\\:model*="tableGrouping"]',
+            )).find(isVisible);
+        }
+        if (id === 'list.columns') {
+            return !!Array.from(document.querySelectorAll(
+                '.fi-ta-col-manager-dropdown .fi-dropdown-trigger button, .fi-ta-col-manager-trigger button, [data-mouseless="list.columns"]',
+            )).find(isVisible);
+        }
+
+        // Submit needs an open form (or a save/create action button fallback).
+        if (id === 'crud.submit') {
+            if (Array.from(document.querySelectorAll('form[wire\\:submit]')).find(isVisible)) return true;
+            return !!(findActionButton('save', document, true) || findActionButton('create', document, true));
+        }
+
+        // Copy-as-markdown serializes a table row, an infolist, or form fields
+        // — absent all three there is nothing to copy.
+        if (id === 'record.copy-markdown') {
+            return !!document.querySelector('.fi-ta-row, .fi-ta-record, .fi-in-entry, .fi-fo-field');
         }
 
         if (id === 'list.next-page' || id === 'list.prev-page') {
@@ -1718,7 +1766,8 @@ function bootMouseless() {
 
         if (id === 'list.filter') {
             if (document.querySelector('.fi-ta-filters-trigger-action-ctn button')
-                || document.querySelector('.fi-ta-filters-dropdown .fi-dropdown-trigger button')) return true;
+                || document.querySelector('.fi-ta-filters-dropdown .fi-dropdown-trigger button')
+                || document.querySelector('[x-on\\:click*="toggleFiltersDropdown"]')) return true;
             // Fall through: modal-style filters render a plain action button.
         }
 
@@ -1729,6 +1778,10 @@ function bootMouseless() {
             if (Array.from(document.querySelectorAll('.fi-ta-header-toolbar .fi-dropdown-trigger .fi-ac-btn-group')).find(isVisible)) return true;
             return !!document.querySelector('.fi-ta-record-checkbox');
         }
+
+        // The dispatcher's last resort is clicking [data-mouseless="<id>"]
+        // (hidden or not) — an app-wired target must never be dimmed.
+        if (document.querySelector(`[data-mouseless="${id}"]`)) return true;
 
         const names = filamentActionNames(id);
         if (!names.length) return true; // Unknown action type — never dim.
@@ -1971,8 +2024,7 @@ function bootMouseless() {
                 document.activeElement.blur?.();
                 return;
             }
-            const path = window.location.pathname;
-            const m = path.match(/^(\/[^\/]+\/[^\/]+)\/(create|\d+(\/(edit|view))?)$/);
+            const m = detailPageMatch();
             if (m) {
                 console.log(TAG, 'dispatch -> ui.close: back to', m[1]);
                 return goUrl(m[1]);
@@ -2387,7 +2439,7 @@ function bootMouseless() {
 
         // crud.create — URL-based navigation.
         //   1. Existing /create link on the page → use it (resource list / header).
-        //   2. URL is a resource detail page (create/edit/view/show) → /{panel}/{slug}/create.
+        //   2. URL is a resource detail page (create/edit/view/show) → sibling /create.
         //   3. Otherwise → fall back to cfg.rootResource (config('app.root_resource')).
         if (actionId === 'crud.create') {
             const link = document.querySelector('a[href$="/create"]');
@@ -2396,7 +2448,7 @@ function bootMouseless() {
                 return goUrl(link.href);
             }
             const path = window.location.pathname;
-            const m = path.match(/^(\/[^\/]+\/[^\/]+)\/(create|\d+(\/(edit|view))?)$/);
+            const m = detailPageMatch();
             if (m) {
                 const url = m[1] + '/create';
                 console.log(TAG, 'dispatch -> crud.create via resource URL:', url);
@@ -2404,12 +2456,16 @@ function bootMouseless() {
             }
             const root = cfg.rootResource;
             if (root) {
-                const panel = path.split('/')[1] || 'admin';
                 let url;
                 if (root.startsWith('/')) {
                     url = root.endsWith('/create') ? root : `${root}/create`;
                 } else {
-                    url = `/${panel}/${root}/create`;
+                    // Panel base from the tenant-aware home URL (like nav.*) —
+                    // under tenancy that's /{panel}/{tenant}, not the first
+                    // path segment.
+                    let base = '/' + (path.split('/')[1] || 'admin');
+                    try { base = new URL(cfg.homeUrl || base, window.location.origin).pathname.replace(/\/$/, '') || base; } catch {}
+                    url = `${base}/${root}/create`;
                 }
                 console.log(TAG, 'dispatch -> crud.create via root_resource:', url);
                 return goUrl(url);
@@ -3184,8 +3240,7 @@ function bootMouseless() {
         }
 
         // Breadcrumb back to the list from a record page → Escape.
-        if (el.closest?.('.fi-breadcrumbs a')
-            && /^(\/[^\/]+\/[^\/]+)\/(create|\d+(\/(edit|view))?)$/.test(window.location.pathname)) {
+        if (el.closest?.('.fi-breadcrumbs a') && detailPageMatch()) {
             return bound('ui.close') ? 'ui.close' : null;
         }
 

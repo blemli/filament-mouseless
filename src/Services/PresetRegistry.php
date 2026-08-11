@@ -4,13 +4,14 @@ namespace Blemli\FilamentMouseless\Services;
 
 use Blemli\FilamentMouseless\FilamentMouselessPlugin;
 use Blemli\FilamentMouseless\Models\Preset;
+use Filament\Facades\Filament;
 
 class PresetRegistry
 {
     /** @var ?array<string, array> Built-ins come from config files — immutable per request. */
     private ?array $builtInCache = null;
 
-    /** @var array<int, array<string, array>> Request-scoped memo — flushed after layout mutations. */
+    /** @var array<string, array<string, array>> Request-scoped memo — flushed after layout mutations. */
     private array $allCache = [];
 
     public function flush(): void
@@ -26,7 +27,11 @@ class PresetRegistry
      */
     public function all(?int $userId = null): array
     {
-        return $this->allCache[$userId ?? 0] ??= $this->load($userId);
+        // The tenant is part of the memo key: published layouts can be
+        // tenant-scoped, so the same user sees different sets per tenant.
+        $key = ($userId ?? 0) . '@' . static::tenantKey();
+
+        return $this->allCache[$key] ??= $this->load($userId);
     }
 
     /**
@@ -43,7 +48,19 @@ class PresetRegistry
         }
 
         if (FilamentMouselessPlugin::publishingEnabled()) {
-            foreach (Preset::query()->where('is_published', true)->get() as $p) {
+            $published = Preset::query()->where('is_published', true);
+
+            // Tenant-scoped publishing: only layouts published under the
+            // current tenant, plus tenant-less ones — those were published
+            // outside any tenant context and stay installation-wide.
+            if (FilamentMouselessPlugin::publishingScopedToTenant()) {
+                $tenant = static::tenantKey();
+                $published->where(fn ($query) => $query
+                    ->whereNull('tenant_id')
+                    ->when($tenant !== '', fn ($query) => $query->orWhere('tenant_id', $tenant)));
+            }
+
+            foreach ($published->get() as $p) {
                 if (! $this->isApprovedIfRequired($p)) {
                     continue;
                 }
@@ -52,6 +69,12 @@ class PresetRegistry
         }
 
         return $presets;
+    }
+
+    /** The current Filament tenant's key as a string, '' when there is none. */
+    protected static function tenantKey(): string
+    {
+        return (string) (Filament::getTenant()?->getKey() ?? '');
     }
 
     public function find(?string $slug, ?int $userId = null): ?array

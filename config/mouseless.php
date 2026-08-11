@@ -13,11 +13,17 @@ return [
     | approval UI, so approve in code: $preset->forceFill(['approved_at' =>
     | now(), 'approved_by' => $adminId])->save(). Set require_approval to
     | false to skip the queue entirely.
+    |
+    | scope_to_tenant keeps published layouts inside the Filament tenant they
+    | were published from (multi-tenant panels). Layouts published outside any
+    | tenant context stay visible installation-wide. Same as calling
+    | ->scopePublishingToTenant() on the plugin.
     */
     'publishing' => [
         'enabled' => false,
         'require_approval' => true,
         'gate' => 'publish-mouseless-preset',
+        'scope_to_tenant' => false,
     ],
 
     /*

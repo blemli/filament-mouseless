@@ -36,7 +36,7 @@ php artisan mouseless:install
 
 ## Features
 
-Dark-Mode Support, Language Adaptive: DE (**E**rstellen), EN (**N**ew), ES (**C**rear), FR (**C**réer) & IT (**N**uovo), Filament Native Style (no custom theme needed), Mobile Friendly, Hidden on Devices without Keyboard, Respects your Theme & Font & Color, Stateless mode available (without migrations), Show a Shortcuts Overlay with <kbd>?</kbd>, Convenient `mouseless:install` command, Let Users Register custom Combinations, Compatible with Filament Shield but not required, Configure everything like Icons &  Labels & Positions, Printable CheatSheat, Go to Resources with Shortcuts, Navigate Table Rows, Highlight Shortcuts in UI, Utility to rename existing actions, Create your most important Resource from anywhere, Escape to Dashboard, Teach Shortcuts to users without annoying them, Jump to any Control with a Double-Tap of Ctrl (opt-in), Laravel-Events to hook into, Reorder Rows (also in Repeaters), Show Statistics on avoided clicks,  Giga Combination possible i.e. ⌃⌘⌥⇧K, Filtersearch the Cheatsheet, Nudge for the Cheatsheet, Multi-Panel Support (per-panel config, shared muscle memory), 
+Dark-Mode Support, Language Adaptive: DE (**E**rstellen), EN (**N**ew), ES (**C**rear), FR (**C**réer) & IT (**N**uovo), Filament Native Style (no custom theme needed), Mobile Friendly, Hidden on Devices without Keyboard, Respects your Theme & Font & Color, Stateless mode available (without migrations), Show a Shortcuts Overlay with <kbd>?</kbd>, Convenient `mouseless:install` command, Let Users Register custom Combinations, Compatible with Filament Shield but not required, Configure everything like Icons &  Labels & Positions, Printable CheatSheat, Go to Resources with Shortcuts, Navigate Table Rows, Highlight Shortcuts in UI, Utility to rename existing actions, Create your most important Resource from anywhere, Escape to Dashboard, Teach Shortcuts to users without annoying them, Jump to any Control with a Double-Tap of Ctrl (opt-in), Laravel-Events to hook into, Reorder Rows (also in Repeaters), Show Statistics on avoided clicks,  Giga Combination possible i.e. ⌃⌘⌥⇧K, Filtersearch the Cheatsheet, Nudge for the Cheatsheet, Multi-Panel Support (per-panel config, shared muscle memory), Tenant Support, 
 
 ### roadmap
 
@@ -241,6 +241,16 @@ Off by default. Enable it per panel:
 ```
 
 Published layouts appear in every user's layout dropdown (with the author's name appended). Moderation and a permission gate are configurable via `mouseless.publishing` in the config.
+
+On a multi-tenant panel, published layouts cross tenant boundaries by default. Chain `->scopePublishingToTenant()` to keep each layout inside the tenant it was published from — layouts published outside any tenant context stay visible installation-wide:
+
+```php
+->plugins([
+  FilamentMouselessPlugin::make()
+      ->publishable()
+      ->scopePublishingToTenant(),
+])
+```
 
 ### Custom Actions
 

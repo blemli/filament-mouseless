@@ -600,6 +600,9 @@ class FilamentMouselessServiceProvider extends PackageServiceProvider
             'create_mouseless_user_settings_table',
             'create_mouseless_nudges_table',
             'create_mouseless_statistics_table',
+            // Upgrade for installs that migrated before tenant scoping existed;
+            // no-ops on fresh installs (guarded by hasColumn).
+            'add_tenant_id_to_mouseless_presets_table',
         ];
     }
 }

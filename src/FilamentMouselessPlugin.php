@@ -62,6 +62,8 @@ class FilamentMouselessPlugin implements Plugin
 
     protected ?bool $publishable = null;
 
+    protected ?bool $scopePublishingToTenant = null;
+
     protected bool $printableCheatsheet = true;
 
     protected bool $searchableCheatsheet = true;
@@ -341,6 +343,29 @@ class FilamentMouselessPlugin implements Plugin
     {
         return static::safeGet()?->isPublishable()
             ?? (bool) config('mouseless.publishing.enabled');
+    }
+
+    /**
+     * Keep published layouts inside the Filament tenant they were published
+     * from: publishing stamps the current tenant on the layout, and the
+     * preset picker only lists published layouts from the viewer's tenant.
+     * Layouts published outside any tenant context (or before this was
+     * enabled) carry no tenant and stay visible installation-wide. Off by
+     * default — published layouts cross tenant boundaries. Equivalent to
+     * `mouseless.publishing.scope_to_tenant`.
+     */
+    public function scopePublishingToTenant(bool $enabled = true): static
+    {
+        $this->scopePublishingToTenant = $enabled;
+
+        return $this;
+    }
+
+    /** Current panel's flag when set, else the config default. */
+    public static function publishingScopedToTenant(): bool
+    {
+        return static::safeGet()?->scopePublishingToTenant
+            ?? (bool) config('mouseless.publishing.scope_to_tenant');
     }
 
     /**
