@@ -243,6 +243,7 @@ return [
             'label' => 'Rechercher par appui de touche',
             'hint' => 'Appuyez sur une touche pour voir ce qui lui est associé. (Échap pour annuler)',
             'press' => 'Appuyez sur une touche pour rechercher…',
+            'active' => 'Recherche par touche — saisissez du texte pour revenir à la recherche textuelle',
         ],
         'fork' => [
             'heading' => 'Créer votre propre layout ?',

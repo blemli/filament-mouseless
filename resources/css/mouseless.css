@@ -728,10 +728,28 @@ body.fi-mouseless-mobile:not(.fi-mouseless-kbd) .fi-mouseless-shortcuts-link {
 
 /* Once relocated: cancel the icon button's negative bleed on the start side
  * so it clears the wrapper's border, and let it keep the prefix's footprint
- * (icon glyph ends up ~0.75rem in, where the magnifier was). */
+ * (icon glyph ends up ~0.75rem in, where the magnifier was). The end margin
+ * stays slightly negative to eat the icon button's padding, but leaves a
+ * visible gap to the input text. */
 .fi-mouseless-layout-main .fi-ta-search-field .fi-mouseless-key-search-btn {
     margin-block: 0;
-    margin-inline: 0.25rem -0.5rem;
+    margin-inline: 0.25rem -0.125rem;
+}
+
+/* Keycap chips standing in for the input text while a key search is active
+ * (injected by syncKeySearchCaps in index.js): the same caps as the table's
+ * combo column. The input keeps the combo as its value — Filament's clear-X,
+ * filter indicator and type-to-exit all still apply — but its text is
+ * blanked below so the combo shows once, as keycaps rather than plain text. */
+.fi-mouseless-key-search-caps {
+    flex: none;
+    pointer-events: none;
+    margin-inline-start: 0.25rem;
+}
+
+.fi-input-wrp.fi-mouseless-key-search-mode .fi-input {
+    color: transparent;
+    caret-color: var(--gray-400);
 }
 
 .fi-mouseless-key-search-modal {

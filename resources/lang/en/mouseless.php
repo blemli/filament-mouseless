@@ -246,6 +246,7 @@ return [
             'label' => 'Search by key press',
             'hint' => 'Press a key to see what is bound to it. (Esc to cancel)',
             'press' => 'Press a key to search…',
+            'active' => 'Key search — type in the box to switch to text search',
         ],
         'fork' => [
             'heading' => 'Create your own layout?',

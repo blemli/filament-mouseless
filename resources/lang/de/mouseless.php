@@ -243,6 +243,7 @@ return [
             'label' => 'Per Tastendruck suchen',
             'hint' => 'Drücke eine Taste, um zu sehen, was darauf belegt ist. (Esc bricht ab)',
             'press' => 'Taste drücken, um zu suchen…',
+            'active' => 'Tastensuche — Tippen im Feld wechselt zur Textsuche',
         ],
         'fork' => [
             'heading' => 'Eigenes Layout erstellen?',

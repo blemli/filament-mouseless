@@ -243,6 +243,7 @@ return [
             'label' => 'Buscar pulsando una tecla',
             'hint' => 'Pulsa una tecla para ver qué tiene asignado. (Esc para cancelar)',
             'press' => 'Pulsa una tecla para buscar…',
+            'active' => 'Búsqueda por tecla: escribe en el campo para volver a la búsqueda de texto',
         ],
         'fork' => [
             'heading' => '¿Crear tu propio layout?',

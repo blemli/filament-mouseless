@@ -431,14 +431,65 @@ function bootMouseless() {
     // into the toolbar and drop the moved one; the MutationObserver runs
     // before paint, so the correction never flashes.
     function setupKeySearchRelocate() {
+        // Keycap chips standing in for the input text while a key search is
+        // active: the button carries the caps in data-mouseless-keycaps as
+        // space-joined labels (server-set), rendered as a <kbd> group right
+        // after the icon. The wrapper class blanks the input's own duplicate
+        // text via CSS.
+        const syncKeySearchCaps = (btn) => {
+            const wrp = btn.closest('.fi-input-wrp');
+            const joined = btn.dataset.mouselessKeycaps ?? '';
+            const caps = joined.split(' ').filter(Boolean);
+            const group = wrp?.querySelector('.fi-mouseless-key-search-caps');
+
+            if (!wrp || !caps.length) {
+                group?.remove();
+                wrp?.classList.remove('fi-mouseless-key-search-mode');
+                return;
+            }
+
+            const target = group ?? (() => {
+                const el = document.createElement('span');
+                el.className = 'fi-mouseless-kbd-group fi-mouseless-key-search-caps';
+                btn.after(el);
+                return el;
+            })();
+
+            if (target.dataset.caps !== joined) {
+                target.dataset.caps = joined;
+                target.replaceChildren(...caps.map((cap) => {
+                    const kbd = document.createElement('kbd');
+                    kbd.className = 'fi-mouseless-kbd';
+                    kbd.textContent = cap;
+                    return kbd;
+                }));
+            }
+
+            wrp.classList.add('fi-mouseless-key-search-mode');
+        };
+
         const relocate = () => {
             const btn = document.querySelector('.fi-ta-header-toolbar .fi-mouseless-key-search-btn');
             if (!btn) return;
             const wrp = btn.closest('.fi-ta-header-toolbar')?.querySelector('.fi-ta-search-field .fi-input-wrp');
             if (wrp && btn.parentElement !== wrp) wrp.insertBefore(btn, wrp.firstChild);
+            syncKeySearchCaps(btn);
         };
         relocate();
-        new MutationObserver(relocate).observe(document.body, { childList: true, subtree: true });
+        new MutationObserver(relocate).observe(document.body, {
+            childList: true,
+            subtree: true,
+            // Morphs can flip data-mouseless-keycaps without any childList
+            // change (same button node, new attributes) — watch it directly.
+            attributes: true,
+            attributeFilter: ['data-mouseless-keycaps'],
+        });
+        // In caps mode the input's (blanked) value is the combo text; select
+        // it on focus so the first keystroke replaces it wholesale — typing
+        // swaps the chips for a plain text search of exactly what was typed.
+        document.addEventListener('focusin', (e) => {
+            if (e.target.matches?.('.fi-mouseless-key-search-mode .fi-input')) e.target.select();
+        });
     }
 
     // with their own keyboard nav) via data-mouseless-jump="ignore" on any

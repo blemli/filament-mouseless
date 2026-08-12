@@ -243,6 +243,7 @@ return [
             'label' => 'Cerca premendo un tasto',
             'hint' => 'Premi un tasto per vedere cosa gli è assegnato. (Esc per annullare)',
             'press' => 'Premi un tasto per cercare…',
+            'active' => 'Ricerca per tasto: digita nel campo per tornare alla ricerca testuale',
         ],
         'fork' => [
             'heading' => 'Creare il tuo layout?',

@@ -74,7 +74,7 @@ class MyShortcuts extends Page implements HasTable
         $keys = Keys::normalize(str_replace(' ', '+', trim((string) request()->query('keys', ''))));
 
         if ($keys !== null) {
-            $this->tableSearch = $keys;
+            $this->tableSearch = Keys::display($keys);
             $this->keySearchCombo = $keys;
 
             return;

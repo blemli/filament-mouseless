@@ -40,6 +40,14 @@ trait InteractsWithShortcutsTable
 {
     public ?string $recordingActionId = null;
 
+    /**
+     * Non-null while the search came in as a key press (the key-search modal
+     * or a ?keys= deep link): filtering then matches keystrokes only, not
+     * action labels. Cleared as soon as the search text is edited by hand,
+     * which drops back to the plain label+combo text search.
+     */
+    public ?string $keySearchCombo = null;
+
     /** @var array{combo: string, otherActionId: string}|null */
     public ?array $pendingSteal = null;
 
@@ -331,8 +339,21 @@ trait InteractsWithShortcutsTable
                     ->icon('heroicon-m-key')
                     ->iconButton()
                     ->color('gray')
-                    ->tooltip(__('filament-mouseless::mouseless.table.key_search.label'))
-                    ->extraAttributes(['class' => 'fi-mouseless-key-search-btn'])
+                    ->tooltip(fn (): string => $this->keySearchActive()
+                        ? __('filament-mouseless::mouseless.table.key_search.active')
+                        : __('filament-mouseless::mouseless.table.key_search.label'))
+                    // While a key search is active the captured combo rides
+                    // along as space-joined keycap labels (labels never contain
+                    // spaces; JSON gets backslash-mangled in attribute rendering)
+                    // — syncKeySearchCaps() (index.js) renders them as <kbd>
+                    // chips inside the search box, which is what tells a key
+                    // search apart from a typed one.
+                    ->extraAttributes(fn (): array => [
+                        'class' => 'fi-mouseless-key-search-btn',
+                        ...($this->keySearchActive()
+                            ? ['data-mouseless-keycaps' => Keys::display($this->keySearchCombo)]
+                            : []),
+                    ])
                     ->modalHeading(__('filament-mouseless::mouseless.table.key_search.label'))
                     // Counterpart to the record modal's warning-yellow key
                     // icon — see the record action above.
@@ -444,7 +465,14 @@ trait InteractsWithShortcutsTable
     {
         $rows = $this->shortcutRows();
 
-        if (filled($search)) {
+        if ($this->keySearchActive((string) $search)) {
+            // Key search: keystrokes only, token-wise — "g" finds "g" and
+            // "ctrl+alt+g" but neither labels containing g nor "pageup".
+            $tokens = explode('+', (string) $this->keySearchCombo);
+
+            $rows = array_filter($rows, fn (array $r): bool => $r['normalized'] !== null
+                && array_diff($tokens, explode('+', $r['normalized'])) === []);
+        } elseif (filled($search)) {
             $needle = mb_strtolower(trim($search));
             // Second try with spaces as separators: "?search=alt+e" URLs
             // arrive with the + already decoded to a space.
@@ -706,9 +734,39 @@ trait InteractsWithShortcutsTable
     /** Called by the key-search modal once a combo was captured. */
     public function applyKeySearch(string $combo): void
     {
-        $this->tableSearch = Keys::normalize($combo) ?? '';
+        $normalized = Keys::normalize($combo);
+
+        $this->keySearchCombo = $normalized;
+        // The search value is the keycap form ("⌃ ⌥ G", not "ctrl+alt+g") —
+        // it feeds the filter indicator and its clear-X; in the box itself
+        // it is blanked and stood in for by <kbd> chips (see index.js).
+        $this->tableSearch = $normalized === null ? '' : Keys::display($normalized);
         $this->resetPage();
         $this->unmountAction();
+    }
+
+    /**
+     * True while the table search still is the untouched result of a key
+     * capture (the modal or a ?keys= deep link). Self-clearing: once the
+     * search text is hand-edited it no longer equals the captured combo's
+     * keycap form, key mode ends and plain text search takes over. Also
+     * drives the key button's lit (warning) state in the toolbar.
+     */
+    public function keySearchActive(?string $search = null): bool
+    {
+        if ($this->keySearchCombo === null) {
+            return false;
+        }
+
+        $search ??= (string) ($this->tableSearch ?? '');
+
+        if (trim($search) !== Keys::display($this->keySearchCombo)) {
+            $this->keySearchCombo = null;
+
+            return false;
+        }
+
+        return true;
     }
 
     public function shortcutsHaveChanges(): bool
