@@ -321,6 +321,14 @@ function bootMouseless() {
 
         const rowScoped = ROW_LEVEL_ACTIONS.has(actionId);
         const focusedRow = document.activeElement?.closest?.('.fi-ta-row, .fi-ta-record');
+        // A record page's own header actions (Bearbeiten on a view page) win
+        // over relation-manager rows the user never cursored into — same
+        // order the dispatcher uses, so underlines and ⌥-badges land where
+        // the combo will actually act.
+        if (rowScoped && !scopeRow && !focusedRow) {
+            const pageBtn = pageLevelActionButton(actionId);
+            if (pageBtn) return pageBtn;
+        }
         const scope = rowScoped
             ? (scopeRow ?? focusedRow ?? document.querySelector('.fi-ta-row, .fi-ta-record') ?? document)
             : document;
@@ -2534,10 +2542,22 @@ function bootMouseless() {
         const rowScoped = ROW_LEVEL_ACTIONS.has(actionId);
         const focusedRow = document.activeElement?.closest?.('.fi-ta-row, .fi-ta-record');
 
-        if (rowScoped && !focusedRow && document.querySelector('.fi-ta-row, .fi-ta-record')) {
-            console.warn(TAG, actionId, 'requires a focused row — press j/k first');
-            toast(strings.no_match);
-            return;
+        if (rowScoped && !focusedRow) {
+            // A record page carries the record's OWN actions in its header —
+            // ⌥B on a view page means THIS record's Bearbeiten, not a
+            // relation-manager row's. Rows only claim the combo once the
+            // user has actually cursored into one.
+            const pageBtn = pageLevelActionButton(actionId);
+            if (pageBtn) {
+                console.log(TAG, 'dispatch ->', actionId, 'via page-level header action', pageBtn);
+                pageBtn.click();
+                return;
+            }
+            if (document.querySelector('.fi-ta-row, .fi-ta-record')) {
+                console.warn(TAG, actionId, 'requires a focused row — press j/k first');
+                toast(strings.no_match);
+                return;
+            }
         }
 
         // Record actions (history, approve, …) also render as row actions.
@@ -2655,8 +2675,9 @@ function bootMouseless() {
         return lines.length > 2 ? lines.join('\n') : null;
     }
 
-    function findActionButton(actionName, scope = document, quiet = false) {
+    function findActionButton(actionName, scope = document, quiet = false, excludeRows = false) {
         const log = (...args) => { if (!quiet) console.log(...args); };
+        const rowBound = (el) => excludeRows && el.closest('.fi-ta-row, .fi-ta-record');
 
         // Strategy 1: wire:click="mountAction('name'…)" — modal/method actions
         const wireSelectors = [
@@ -2674,6 +2695,7 @@ function bootMouseless() {
             const all = scope.querySelectorAll(sel);
             if (all.length) log(TAG, '    [wire] selector matched', all.length, 'el(s):', sel);
             for (const el of all) {
+                if (rowBound(el)) continue;
                 if (isVisible(el) && !el.disabled) return el;
                 if (!groupedFallback && !el.disabled && el.closest('.fi-dropdown-panel')) groupedFallback = el;
             }
@@ -2711,7 +2733,7 @@ function bootMouseless() {
             log(TAG, '    [label] trying labels:', labels);
             const candidates = scope.querySelectorAll('.fi-ac-btn-action, .fi-ac-link-action, .fi-ac-icon-btn-action, .fi-ac-badge-action');
             for (const el of candidates) {
-                if (!isVisible(el) || el.disabled) continue;
+                if (rowBound(el) || !isVisible(el) || el.disabled) continue;
                 const text = (el.textContent || '').replace(/\s+/g, ' ').trim();
                 for (const label of labels) {
                     if (text.toLowerCase() === label.toLowerCase()) {
@@ -2727,6 +2749,32 @@ function bootMouseless() {
             return groupedFallback;
         }
 
+        return null;
+    }
+
+    // Page-level target for a row-scoped action: a record page (…/{id},
+    // …/{id}/view, …/{id}/edit) renders the record's OWN edit/delete/… in its
+    // header, outside every table row — those must win over relation-manager
+    // rows the user never cursored into. Route-based header actions carry no
+    // wire:click (Bearbeiten on a view page is a plain link), so they are
+    // matched by the record's URL as a fallback. Null on list pages: their
+    // header holds no row-scoped actions, rows keep requiring the cursor.
+    function pageLevelActionButton(actionId) {
+        for (const name of filamentActionNames(actionId)) {
+            const btn = findActionButton(name, document, true, true);
+            if (btn) return btn;
+        }
+        const m = detailPageMatch();
+        const recordId = m ? (m[2].match(/^\d+/) || [null])[0] : null;
+        if (!recordId) return null;
+        const suffixes = actionId === 'crud.edit'
+            ? [`/${recordId}/edit`]
+            : (actionId === 'crud.view' ? [`/${recordId}`, `/${recordId}/view`] : []);
+        for (const suffix of suffixes) {
+            const link = Array.from(document.querySelectorAll(`a.fi-btn[href$="${suffix}"], a.fi-ac-btn-action[href$="${suffix}"]`))
+                .find((el) => !el.closest('.fi-ta-row, .fi-ta-record') && isVisible(el));
+            if (link) return link;
+        }
         return null;
     }
 
