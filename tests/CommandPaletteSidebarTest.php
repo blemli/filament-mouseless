@@ -9,12 +9,12 @@
  * The engine ships as plain JS without a build step; pin the mechanism here.
  */
 it('reveals a collapsed sidebar for the command palette and restores it', function (): void {
-    $engine = file_get_contents(__DIR__.'/../resources/js/index.js');
+    $engine = file_get_contents(__DIR__ . '/../resources/js/index.js');
 
     expect($engine)
         ->toContain('function focusGlobalSearch()')
         ->toContain('findGlobalSearchInput(document, { includeHidden: true })')
-        ->toContain("store.isOpen = true;")
+        ->toContain('store.isOpen = true;')
         ->toContain("new CustomEvent('mouseless-sidebar-revealed')")
         ->toContain("new CustomEvent('mouseless-sidebar-restored')")
         ->toContain("document.addEventListener('livewire:navigated', () => { sidebarRevealedForSearch = false; });")
