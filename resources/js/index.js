@@ -2935,11 +2935,19 @@ function bootMouseless() {
         store.isOpen = true;
         sidebarRevealedForSearch = true;
         window.dispatchEvent(new CustomEvent('mouseless-sidebar-revealed'));
-        requestAnimationFrame(() => requestAnimationFrame(() => {
-            const input = findGlobalSearchInput(document, { includeHidden: true });
-            input?.focus();
-            input?.select?.();
-        }));
+        // The field is display:none until the sidebar's x-show transition has
+        // run — poll briefly instead of guessing the frame.
+        let attempts = 0;
+        const tryFocus = () => {
+            const input = findGlobalSearchInput(document);
+            if (input) {
+                input.focus();
+                input.select?.();
+                return;
+            }
+            if (++attempts < 40) setTimeout(tryFocus, 25);
+        };
+        setTimeout(tryFocus, 0);
         return true;
     }
 
