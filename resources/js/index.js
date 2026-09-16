@@ -108,6 +108,30 @@ function bootMouseless() {
 
     document.addEventListener('keydown', onKeydown, true);
 
+    // The global search may live in the sidebar (->topbar(false)); Filament
+    // hides it with x-show while the rail is collapsed. nav.command-palette
+    // then reveals the sidebar for the search (see focusGlobalSearch) and the
+    // engine puts it back as soon as the field is left: focus moves elsewhere
+    // (Tab, Escape/ui.close blurring it), a click lands outside the sidebar,
+    // or the page navigates (Filament re-applies the persisted state itself).
+    document.addEventListener('mousedown', (e) => {
+        pointerInSidebar = !!e.target.closest?.('.fi-sidebar');
+    }, true);
+    document.addEventListener('mouseup', () => { setTimeout(() => { pointerInSidebar = false; }, 0); }, true);
+    document.addEventListener('focusout', (e) => {
+        if (!sidebarRevealedForSearch) return;
+        if (e.target !== findGlobalSearchInput(document, { includeHidden: true })) return;
+        setTimeout(() => {
+            if (pointerInSidebar) return;
+            if (document.activeElement?.closest?.('.fi-sidebar')) return;
+            restoreSidebarAfterSearch();
+        }, 150);
+    }, true);
+    document.addEventListener('click', (e) => {
+        if (sidebarRevealedForSearch && !e.target.closest?.('.fi-sidebar')) restoreSidebarAfterSearch();
+    }, true);
+    document.addEventListener('livewire:navigated', () => { sidebarRevealedForSearch = false; });
+
     // When the help overlay opens, grey out shortcuts whose target isn't on the
     // current page. The server pre-marks custom rows via their onPage flag; this
     // re-checks live so it stays correct after Livewire updates / SPA nav.
@@ -1726,7 +1750,7 @@ function bootMouseless() {
     function probeAvailable(id) {
         // The command palette maps to Filament's global search — available only
         // when that field is actually rendered on the current page.
-        if (id === 'nav.command-palette') return !!findGlobalSearchInput(document);
+        if (id === 'nav.command-palette') return !!findGlobalSearchInput(document, { includeHidden: true });
 
         // A language switcher / recently-viewed list only exists when the app
         // provides one — they opt in via a data-mouseless attribute on their
@@ -2122,11 +2146,8 @@ function bootMouseless() {
             // combo in capture phase (preventDefault + stopPropagation), so we must
             // focus the field ourselves — otherwise cmd+k just gets swallowed.
             if (actionId === 'nav.command-palette') {
-                const input = findGlobalSearchInput(document);
-                if (input) {
+                if (focusGlobalSearch()) {
                     console.log(TAG, 'dispatch -> nav.command-palette: focusing global search');
-                    input.focus();
-                    input.select?.();
                     return;
                 }
                 console.warn(TAG, 'nav.command-palette: no global search field on this page');
@@ -2872,19 +2893,62 @@ function bootMouseless() {
     // Filament's top-bar global search input lives in .fi-global-search-field and
     // binds to $wire.search (distinct from the per-table `tableSearch`). This is
     // the target for nav.command-palette / cmd+k.
-    function findGlobalSearchInput(scope = document) {
+    // includeHidden: also accept the search field while it is hidden inside a
+    // collapsed sidebar — focusGlobalSearch reveals the rail first.
+    function findGlobalSearchInput(scope = document, { includeHidden = false } = {}) {
+        const reachable = (el) => isVisible(el) || (includeHidden && !!el.closest('.fi-sidebar'));
         const field = scope.querySelector('.fi-global-search-field');
         const input = field?.querySelector('input');
-        if (input && isVisible(input)) return input;
+        if (input && reachable(input)) return input;
         // Fallback: match the wire:model="search" binding directly.
         for (const el of scope.querySelectorAll('input[type="search"]')) {
             for (const attr of el.attributes) {
-                if (attr.name.startsWith('wire:model') && attr.value === 'search' && isVisible(el)) {
+                if (attr.name.startsWith('wire:model') && attr.value === 'search' && reachable(el)) {
                     return el;
                 }
             }
         }
         return null;
+    }
+
+    let sidebarRevealedForSearch = false;
+    let pointerInSidebar = false;
+
+    function sidebarStore() {
+        return window.Alpine?.store?.('sidebar') ?? null;
+    }
+
+    // Focus the global search; when it is hidden in a collapsed sidebar, open
+    // the rail for it (isOpen only — never isOpenDesktop, so the persisted
+    // collapse state survives and navigation restores it) and focus once the
+    // x-show transition has run. Hosts can react to the two window events.
+    function focusGlobalSearch() {
+        const visible = findGlobalSearchInput(document);
+        if (visible) {
+            visible.focus();
+            visible.select?.();
+            return true;
+        }
+        const hidden = findGlobalSearchInput(document, { includeHidden: true });
+        const store = sidebarStore();
+        if (!hidden || !store) return false;
+        store.isOpen = true;
+        sidebarRevealedForSearch = true;
+        window.dispatchEvent(new CustomEvent('mouseless-sidebar-revealed'));
+        requestAnimationFrame(() => requestAnimationFrame(() => {
+            const input = findGlobalSearchInput(document, { includeHidden: true });
+            input?.focus();
+            input?.select?.();
+        }));
+        return true;
+    }
+
+    function restoreSidebarAfterSearch() {
+        if (!sidebarRevealedForSearch) return;
+        sidebarRevealedForSearch = false;
+        const store = sidebarStore();
+        if (store) store.isOpen = false;
+        window.dispatchEvent(new CustomEvent('mouseless-sidebar-restored'));
     }
 
     function filamentActionNames(actionId) {
